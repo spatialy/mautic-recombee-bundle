@@ -1,2 +1,2 @@
-# mautic-recombee-bundle
-Products recommendation for emails and pages
+# MauticRecombeeBundle
+More info soon. Subscribe https://mtcextendee.com/
