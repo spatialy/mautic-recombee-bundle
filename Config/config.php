@@ -134,10 +134,6 @@ return [
             ],
         ],
         'public' => [
-            'mautic_recombee_webhook' => [
-                'path'       => '/recombee/hook',
-                'controller' => 'MauticRecombeeBundle:Webhook:process',
-            ],
         ],
         'api'    => [
             'mautic_recombee_api' => [
