@@ -37,8 +37,11 @@ class RecombeeApi extends AbstractRecombeeApi
      * @param IntegrationHelper $integrationHelper
      * @param Logger            $logger
      */
-    public function __construct(TrackableModel $pageTrackableModel, IntegrationHelper $integrationHelper, Logger $logger)
-    {
+    public function __construct(
+        TrackableModel $pageTrackableModel,
+        IntegrationHelper $integrationHelper,
+        Logger $logger
+    ) {
         $this->logger = $logger;
 
         $integration = $integrationHelper->getIntegrationObject('Recombee');
@@ -48,7 +51,9 @@ class RecombeeApi extends AbstractRecombeeApi
             $keys = $integration->getDecryptedApiKeys();
 
             if (isset($keys['database']) && isset($keys['secret_key'])) {
-                $this->client = new Client($keys['database'], $keys['secret_key']);
+                $this->client = new Client(
+                    $keys['database'], $keys['secret_key'], 'https', ['serviceName' => 'mautic']
+                );
             }
         }
 
