@@ -59,10 +59,7 @@ class RecombeeGenerator
 
     public function getContentByToken(RecombeeToken $recombeeToken, $template)
     {
-        $this->contactTracker->setSystemContact($this->leadModel->getEntity(1));
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
-        $testLead = $this->leadModel->getEntity(1);
-
         $templateContent = implode('',$recombee->getPageTemplate());
         if ('emailTemplate' === $template) {
             $templateContent = implode('', $recombee->getEmailTemplate());

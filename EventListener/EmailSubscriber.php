@@ -58,20 +58,6 @@ class EmailSubscriber extends CommonSubscriber
         ];
     }
 
-    /**
-     * Add email to available page tokens.
-     *
-     * @param EmailBuilderEvent $event
-     */
-    public function onPageBuild(EmailBuilderEvent $event)
-    {
-        $tokensFind = $this->recombeeHelper->getRecombeeRegex();
-        if ($event->tokensRequested(array_values($tokensFind))) {
-            $event->addTokens(
-                $event->filterTokens($this->recombeeHelper->getRecombeeTokens())
-            );
-        }
-    }
 
     /**
      * @param EmailSendEvent $event

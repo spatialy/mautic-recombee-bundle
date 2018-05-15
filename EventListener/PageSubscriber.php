@@ -86,19 +86,6 @@ class PageSubscriber extends CommonSubscriber
     }
 
     /**
-     * Add forms to available page tokens.
-     *
-     * @param PageBuilderEvent $event
-     */
-    public function onPageBuild(Events\PageBuilderEvent $event)
-    {
-        if ($event->tokensRequested($this->recombeeHelper->getRecombeeRegex())) {
-            $tokenHelper = new BuilderTokenHelper($this->factory, 'recombee');
-            $event->addTokensFromHelper($tokenHelper, $this->recombeeHelper->getRecombeeRegex(), 'name', 'id', true);
-        }
-    }
-
-    /**
      * Trigger actions for page hits.
      *
      * @param PageHitEvent $event
@@ -123,7 +110,7 @@ class PageSubscriber extends CommonSubscriber
     public function onPageDisplay(Events\PageDisplayEvent $event)
     {
         if ($event->getPage()) {
-            //$event->setContent($this->recombeeTokenReplacer->replacePageTokens($event->getContent()));
+            $event->setContent($this->recombeeTokenReplacer->replacePageTokens($event->getContent()));
         }
     }
 }

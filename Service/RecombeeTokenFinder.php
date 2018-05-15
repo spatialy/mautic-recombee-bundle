@@ -43,7 +43,7 @@ class RecombeeTokenFinder
             return;
         }
         foreach ($matches[1] as $key => $match) {
-            $recombeeToken = $this->recombeeToken->parseToken($match);
+            $this->recombeeToken->parseToken($match);
             if ($this->recombeeToken->isIsToken()) {
                 $this->recombeeTokens[$matches[0][$key]] = $this->recombeeToken;
             }

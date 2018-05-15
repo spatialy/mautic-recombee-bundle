@@ -56,11 +56,9 @@ class RecombeeToken
      */
     public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker)
     {
-        $this->recombeeModel = $recombeeModel;
+        $this->recombeeModel  = $recombeeModel;
         $this->contactTracker = $contactTracker;
     }
-
-
 
 
     public function setToken($values)
@@ -91,14 +89,14 @@ class RecombeeToken
         array_shift($tokenData);
 
         // Then parse all optional
+        $values = [];
         if (!empty($tokenData)) {
-            $values = [];
             foreach ($tokenData as $value) {
                 list($key, $val) = explode("=", $value);
                 $values[$key] = $val;
             }
-            $this->setToken($values);
         }
+        $this->setToken($values);
     }
 
     /**
@@ -131,6 +129,7 @@ class RecombeeToken
                 return $lead->getId();
             }
         }
+
         return $this->userId;
     }
 
@@ -171,9 +170,9 @@ class RecombeeToken
      */
     public function setId($id)
     {
-        if($this->id != $id) {
+        if ($this->id != $id) {
             $entity = $this->recombeeModel->getEntity($id);
-            if($entity instanceof Recombee && $entity->getId()){
+            if ($entity instanceof Recombee && $entity->getId()) {
                 $this->setEntity($entity);
             }
         }
@@ -205,6 +204,7 @@ class RecombeeToken
         if (!$this->limit && $this->entity) {
             return $this->entity->getNumberOfItems();
         }
+
         return $this->limit;
     }
 
