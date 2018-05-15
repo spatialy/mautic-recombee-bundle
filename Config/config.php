@@ -13,6 +13,7 @@ return [
                     'mautic.recombee.helper',
                     'mautic.recombee.service.replacer',
                     'mautic.recombee.service.api.commands',
+                    'mautic.recombee.service.token.html.replacer',
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [
@@ -27,6 +28,11 @@ return [
                 'arguments' => [
                     'mautic.recombee.helper',
                     'mautic.recombee.service.replacer',
+                ],
+            ],
+            'mautic.recombee.buildjs.subscriber' => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
+                'arguments' => [
                 ],
             ],
         ],
@@ -87,6 +93,10 @@ return [
             ],
             'mautic.recombee.service.token'                       => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken::class,
+                'arguments' => [
+                    'mautic.recombee.model.recombee',
+                    'mautic.tracker.contact'
+                ],
             ],
             'mautic.recombee.service.token.finder'                => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenFinder::class,
@@ -112,6 +122,13 @@ return [
                     'twig',
                 ],
             ],
+            'mautic.recombee.service.token.html.replacer'             => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenHTMLReplacer::class,
+                'arguments' => [
+                    'mautic.recombee.service.token.generator',
+                    'mautic.recombee.service.token',
+                ],
+            ],
         ],
         'integrations' => [
             'mautic.integration.recombee' => [
@@ -134,6 +151,10 @@ return [
             ],
         ],
         'public' => [
+            'mautic_recombee_api_content' => [
+                'path'       => '/recombee/dwc',
+                'controller' => 'MauticRecombeeBundle:Ajax:get',
+            ],
         ],
         'api'    => [
             'mautic_recombee_api' => [

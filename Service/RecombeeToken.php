@@ -12,168 +12,189 @@
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
 use Mautic\LeadBundle\Entity\Lead;
+use Mautic\LeadBundle\Tracker\ContactTracker;
+use Mautic\LeadBundle\Tracker\Service\DeviceTrackingService\DeviceTrackingService;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
+use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 
 class RecombeeToken
 {
-    private $recombeeType = 'RecommendItemsToUser';
 
-    private $recombeeId;
+    private $id;
 
-    private $recombeeItemId;
+    private $itemId;
 
-    private $recombeeUserId;
+    private $userId;
 
-    private $recombeeToken;
+    private $type;
+
+    private $token;
 
     private $isToken = false;
 
     private $limit;
 
-    public function setToken($tokenValue)
+    /** @var  Recombee $entity */
+    private $entity;
+
+    /**
+     * @var RecombeeModel
+     */
+    private $recombeeModel;
+
+    /**
+     * @var ContactTracker
+     */
+    private $contactTracker;
+
+
+    /**
+     * RecombeeToken constructor.
+     *
+     * @param RecombeeModel  $recombeeModel
+     * @param ContactTracker $contactTracker
+     */
+    public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker)
+    {
+        $this->recombeeModel = $recombeeModel;
+        $this->contactTracker = $contactTracker;
+    }
+
+
+
+
+    public function setToken($values)
+    {
+        $this->setIsToken(true);
+        foreach ($values as $key => $value) {
+            $setter = 'set'.ucfirst($key);
+            if (method_exists($this, $setter)) {
+                $this->$setter($value);
+            }
+        }
+    }
+
+
+    /**
+     * @param $tokenValue
+     */
+    public function parseToken($tokenValue)
     {
         $tokenData = explode('|', $tokenValue);
 
         if (empty($tokenData['0'])) {
             return;
         }
-        $this->setIsToken(true);
 
         // first must be recombe ID
-        $this->setRecombeeId($tokenData['0']);
+        $this->setId($tokenData['0']);
         array_shift($tokenData);
 
         // Then parse all optional
         if (!empty($tokenData)) {
+            $values = [];
             foreach ($tokenData as $value) {
                 list($key, $val) = explode("=", $value);
-                switch ($key) {
-                    case "type":
-                        $this->setRecombeeType($val);
-                        break;
-                    case "user-id":
-                        $this->setRecombeeUserId($val);
-                        break;
-                    case "item-id":
-                        $this->setRecombeeItemId($val);
-                        break;
-                    case "limit":
-                        $this->setLimit($val);
-                        break;
-                }
+                $values[$key] = $val;
             }
+            $this->setToken($values);
         }
     }
 
     /**
      * @return mixed
      */
-    public function getRecombeeId()
+    public function getType()
     {
-        return $this->recombeeId;
+        if (!$this->type) {
+            return 'RecommendItemsToUser';
+        }
+
+        return $this->type;
     }
 
     /**
-     * @param mixed $recombeeId
+     * @param mixed $type
      */
-    public function setRecombeeId($recombeeId)
+    public function setType($type)
     {
-        $this->recombeeId = $recombeeId;
-    }
-
-    /**
-     * @return string
-     */
-    public function getRecombeeType(): string
-    {
-        return $this->recombeeType;
-    }
-
-    /**
-     * @param string $recombeeType
-     */
-    public function setRecombeeType(string $recombeeType)
-    {
-        $this->recombeeType = $recombeeType;
+        $this->type = $type;
     }
 
     /**
      * @return mixed
      */
-    public function getRecombeeItemId()
+    public function getUserId()
     {
-        return $this->recombeeItemId;
+        if (!$this->userId) {
+            if ($lead = $this->contactTracker->getContact()) {
+                return $lead->getId();
+            }
+        }
+        return $this->userId;
     }
 
     /**
-     * @param mixed $recombeeItemId
+     * @param mixed $userId
      */
-    public function setRecombeeItemId($recombeeItemId)
+    public function setUserId($userId)
     {
-        $this->recombeeItemId = $recombeeItemId;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRecombeeUserId()
-    {
-        return $this->recombeeUserId;
-    }
-
-    /**
-     * @param mixed $recombeeUserId
-     */
-    public function setRecombeeUserId($recombeeUserId)
-    {
-        $this->recombeeUserId = $recombeeUserId;
+        $this->userId = $userId;
     }
 
     /**
      * @return mixed
      */
-    public function getRecombeeToken()
+    public function getItemId()
     {
-        return $this->recombeeToken;
+        return $this->itemId;
     }
 
     /**
-     * @param mixed $recombeeToken
+     * @param mixed $itemId
      */
-    public function setRecombeeToken($recombeeToken)
+    public function setItemId($itemId)
     {
-        $this->recombeeToken = $recombeeToken;
+        $this->itemId = $itemId;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getId()
+    {
+        return $this->id;
+    }
+
+    /**
+     * @param mixed $id
+     */
+    public function setId($id)
+    {
+        if($this->id != $id) {
+            $entity = $this->recombeeModel->getEntity($id);
+            if($entity instanceof Recombee && $entity->getId()){
+                $this->setEntity($entity);
+            }
+        }
+
+        $this->id = $id;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getToken()
+    {
+        return $this->token;
     }
 
     /**
      * @return boolean
      */
-    public function isIsToken(): bool
+    public function isIsToken()
     {
         return $this->isToken;
-    }
-
-    /**
-     * @param boolean $isToken
-     */
-    public function setIsToken(bool $isToken)
-    {
-        $this->isToken = $isToken;
-    }
-
-    public function setDefaultFromEntity(Recombee $entity, Lead $lead)
-    {
-        if (!$this->getRecombeeType()) {
-            $this->setRecombeeType($entity->getRecommendationsType());
-        }
-
-        if (!$this->getLimit()) {
-            $this->setLimit($entity->getNumberOfItems());
-        }
-
-        if (!$this->getRecombeeUserId()) {
-            $this->setRecombeeUserId($lead->getId());
-        }
     }
 
     /**
@@ -181,6 +202,9 @@ class RecombeeToken
      */
     public function getLimit()
     {
+        if (!$this->limit && $this->entity) {
+            return $this->entity->getNumberOfItems();
+        }
         return $this->limit;
     }
 
@@ -191,6 +215,31 @@ class RecombeeToken
     {
         $this->limit = $limit;
     }
+
+    /**
+     * @param boolean $isToken
+     */
+    public function setIsToken(bool $isToken)
+    {
+        $this->isToken = $isToken;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEntity()
+    {
+        return $this->entity;
+    }
+
+    /**
+     * @param mixed $entity
+     */
+    public function setEntity($entity)
+    {
+        $this->entity = $entity;
+    }
+
 
 }
 

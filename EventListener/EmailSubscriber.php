@@ -76,21 +76,18 @@ class EmailSubscriber extends CommonSubscriber
     /**
      * @param EmailSendEvent $event
      */
-    public function onEmailDisplay(
-        EmailSendEvent $event
-    ) {
+    public function onEmailDisplay(EmailSendEvent $event)
+    {
         $this->onEmailGenerate($event);
     }
 
     /**
      * @param EmailSendEvent $event
      */
-    public function onEmailGenerate(
-        EmailSendEvent $event
-    ) {
+    public function onEmailGenerate(EmailSendEvent $event)
+    {
         if ($event->getEmail()) {
             $event->setContent($this->recombeeTokenReplacer->replaceEmailTokens($event->getContent()));
         }
-
     }
 }

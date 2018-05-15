@@ -22,6 +22,7 @@ use Mautic\PageBundle\Event\PageHitEvent;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenHTMLReplacer;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 use Recombee\RecommApi\Requests\AddDetailView;
 use Recombee\RecommApi\Requests as Reqs;
@@ -48,18 +49,29 @@ class PageSubscriber extends CommonSubscriber
     private $apiCommands;
 
     /**
+     * @var RecombeeTokenHTMLReplacer
+     */
+    private $HTMLReplacer;
+
+
+    /**
      * PageSubscriber constructor.
      *
-     * @param RecombeeHelper $recombeeHelper
+     * @param RecombeeHelper            $recombeeHelper
+     * @param RecombeeTokenReplacer     $recombeeTokenReplacer
+     * @param ApiCommands               $apiCommands
+     * @param RecombeeTokenHTMLReplacer $HTMLReplacer
      */
     public function __construct(
         RecombeeHelper $recombeeHelper,
         RecombeeTokenReplacer $recombeeTokenReplacer,
-        ApiCommands $apiCommands
+        ApiCommands $apiCommands,
+        RecombeeTokenHTMLReplacer $HTMLReplacer
     ) {
         $this->recombeeHelper        = $recombeeHelper;
         $this->recombeeTokenReplacer = $recombeeTokenReplacer;
         $this->apiCommands           = $apiCommands;
+        $this->HTMLReplacer          = $HTMLReplacer;
     }
 
     /**
@@ -93,7 +105,6 @@ class PageSubscriber extends CommonSubscriber
      */
     public function onPageHit(PageHitEvent $event)
     {
-        $lead    = $event->getLead();
         $request = $event->getRequest();
         if (!empty($request->get('Recombee'))) {
             $commands = \GuzzleHttp\json_decode($request->get('Recombee'), true);
@@ -111,8 +122,8 @@ class PageSubscriber extends CommonSubscriber
      */
     public function onPageDisplay(Events\PageDisplayEvent $event)
     {
-        $event->setContent(
-            $this->recombeeTokenReplacer->replacePageTokens($event->getContent())
-        );
+        if ($event->getPage()) {
+            //$event->setContent($this->recombeeTokenReplacer->replacePageTokens($event->getContent()));
+        }
     }
 }

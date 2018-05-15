@@ -60,9 +60,8 @@ class RecombeeGenerator
     public function getContentByToken(RecombeeToken $recombeeToken, $template)
     {
         $this->contactTracker->setSystemContact($this->leadModel->getEntity(1));
-        $recombee = $this->recombeeModel->getEntity($recombeeToken->getRecombeeId());
+        $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
         $testLead = $this->leadModel->getEntity(1);
-        $recombeeToken->setDefaultFromEntity($recombee, $testLead);
 
         $templateContent = implode('',$recombee->getPageTemplate());
         if ('emailTemplate' === $template) {
@@ -77,11 +76,11 @@ class RecombeeGenerator
         ];
 
         try {
-            switch ($recombeeToken->getRecombeeType()) {
+            switch ($recombeeToken->getType()) {
                 case "RecommendItemsToUser":
                     $items = $this->recombeeApi->getClient()->send(
                         new Reqs\RecommendItemsToUser(
-                            $recombeeToken->getRecombeeUserId(),
+                            $recombeeToken->getUserId(),
                             $recombeeToken->getLimit(),
                             $options
                         )
