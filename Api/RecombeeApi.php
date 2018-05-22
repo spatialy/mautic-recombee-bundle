@@ -52,7 +52,10 @@ class RecombeeApi extends AbstractRecombeeApi
 
             if (isset($keys['database']) && isset($keys['secret_key'])) {
                 $this->client = new Client(
-                    $keys['database'], $keys['secret_key'], 'https', ['serviceName' => 'mautic']
+                    $keys['database'],
+                    $keys['secret_key'],
+                    'https',
+                    ['serviceName' => 'Mautic '.$this->get('kernel')->getVersion()]
                 );
             }
         }

@@ -65,7 +65,6 @@ class RecombeeGenerator
             $templateContent = implode('', $recombee->getEmailTemplate());
         }
 
-
         $options = [
             'filter'       => $recombee->getFilter(),
             'booster'      => $recombee->getBoost(),

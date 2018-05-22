@@ -1,7 +1,7 @@
 # MauticRecombeeBundle
 
-More info soon. 
-
 Subscribe https://mtcextendee.com/
+
+composer require kuzmany/mautic-recombee-bundle
 
 Not ready to production yet.

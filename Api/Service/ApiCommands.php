@@ -140,7 +140,6 @@ class ApiCommands
         }
 
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
-
         try {
             //batch processing
             if (count($requests) > 1) {
@@ -150,7 +149,6 @@ class ApiCommands
             }
             //$this->logger->debug('Recombee results:'.var_dump($this->getCommandOutput()));
         } catch (Ex\ResponseException $e) {
-
             $this->logger->error(
                 $this->translator->trans(
                     'mautic.plugin.recombee.api.error',
@@ -188,7 +186,7 @@ class ApiCommands
         if (!isset($requests[0])) {
             $requests = [$requests];
         }
-
+        die(print_r($requests));
         try {
             //batch processing
             if (count($requests) > 1) {
@@ -242,6 +240,51 @@ class ApiCommands
         $key
     ) {
         return $this->interactionRequiredParams[$key];
+    }
+
+    public function getCommandResult()
+    {
+        $errors  = [];
+        $results = $this->getCommandOutput();
+        if (is_array($results)) {
+            foreach ($results as $result) {
+                if (!empty($result['json']['error'])) {
+                    $errors[] = $result['json']['error'];
+                }
+            }
+        }
+        if (!empty($errors)) {
+            return $errors;
+        }
+
+        return true;
+    }
+
+    /**
+     * Display commands results
+     *
+     * @param array  $results
+     * @param string $title
+     */
+    private function displayCmdTextFromResult(array $results, $title = '', OutputInterface $output)
+    {
+        $errors = [];
+        foreach ($results as $result) {
+            if (!empty($result['json']['error'])) {
+                $errors[] = $result['json']['error'];
+            }
+        }
+        // just add empty space
+        if ($title != '') {
+            $title .= ' ';
+        }
+        $errors = [];
+        $output->writeln(sprintf('<info>Procesed '.$title.count($results).'</info>'));
+        $output->writeln('Success '.$title.(count($results) - count($errors)));
+        /*if (!empty($errors)) {
+            $output->writeln('Errors '.$title.count($errors));
+            $output->writeln($errors, true);
+        }*/
     }
 
 }

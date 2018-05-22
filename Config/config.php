@@ -158,7 +158,7 @@ return [
         ],
         'api'    => [
             'mautic_recombee_api' => [
-                'path'       => '/recombee/{component}/{user}/{action}/{item}',
+                'path'       => '/recombee/{component}',
                 'controller' => 'MauticRecombeeBundle:Api\RecombeeApi:process',
                 'method'     => 'POST',
             ],

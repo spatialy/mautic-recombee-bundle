@@ -11,8 +11,10 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Controller\Api;
 
+use FOS\RestBundle\Util\Codes;
 use Mautic\ApiBundle\Controller\CommonApiController;
 use Mautic\LeadBundle\Entity\Lead;
+use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use Recombee\RecommApi\Exceptions as Ex;
 use Symfony\Component\HttpFoundation\Response;
@@ -42,51 +44,30 @@ class RecombeeApiController extends CommonApiController
         parent::initialize($event);
     }
 
+
     /**
-     * @param $compnent
-     * @param $user
-     * @param $action
-     * @param $item
+     * @param $component
      *
      * @return array|Response
      */
-    public function processAction($component, $user, $action, $item)
+    public function processAction($component)
     {
-        $response = ['success' => false];
-
-        if (!in_array($component, $this->components) || !in_array($action, $this->actions)) {
-            return $this->returnError(
-                $this->translator->trans('mautic.plugin.recombee.api.wrong.component.action', [], 'validators'),
-                Response::HTTP_BAD_REQUEST
-            );
+        $data = $this->request->request->all();
+        /** @var ApiCommands $apiCommands */
+        $apiCommands = $this->get('mautic.recombee.service.api.commands');
+        $apiCommands->callCommand($component, $this->request->request->all());
+        if ($apiCommands->getCommandResult()) {
+            $view     = $this->view(['succes' => true]);
+            return $this->handleView($view);
         }
 
-        $lead = $this->leadModel->getEntity($user);
-        if (!$lead instanceof Lead || !$lead->getId()) {
-            return $this->returnError(
-                $this->translator->trans('mautic.plugin.recombee.contact.doesnt.exist', [], 'validators'),
-                Response::HTTP_BAD_REQUEST
-            );
-        }
-
-        // change method from POST to DELETE
-        if ($action == 'delete') {
-            $this->request->setMethod('DELETE');
-        }
-
-        try {
-            $class = 'Recombee\\RecommApi\\Requests\\'.$action.$component;
-            $this->recombeeHelper->getClient()->send(new $class($user, $item, ['cascadeCreate' => true]));
-            $response = ['success' => true];
-        } catch (Ex\ApiException $e) {
-            return $this->returnError(
-                $this->translator->trans($e->getMessage(), [], 'validators'),
-                Response::HTTP_INTERNAL_SERVER_ERROR
-            );
-        }
-
-        $view = $this->view($response);
-
-        return $this->handleView($view);
+        return $this->returnError(
+            $this->translator->trans(
+                'mautic.plugin.recombee.api.component.error',
+                ['%componet' => $component],
+                'validators'
+            ),
+            Response::HTTP_BAD_REQUEST
+        );
     }
 }

@@ -39,7 +39,7 @@ class BuildJsSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            CoreEvents::BUILD_MAUTIC_JS => ['onBuildJs', 300],
+            CoreEvents::BUILD_MAUTIC_JS => ['onBuildJs', -500],
         ];
     }
 
@@ -101,7 +101,8 @@ MauticJS.replaceRecombeeContent = function (params) {
     }
 };
 
-MauticJS.beforeFirstEventDelivery(MauticJS.replaceRecombeeContent);
+MauticJS.onFirstEventDelivery(MauticJS.replaceRecombeeContent);
+
 JS;
         $event->appendJs($js, 'Mautic Recombee Content');
     }
