@@ -1,0 +1,96 @@
+<?php
+
+/*
+ * @copyright   2017 Mautic Contributors. All rights reserved
+ * @author      Mautic, Inc.
+ *
+ * @link        https://mautic.org
+ *
+ * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
+ */
+
+namespace MauticPlugin\MauticRecombeeBundle\Api\Service;
+
+use Mautic\LeadBundle\Model\ListModel;
+use Mautic\PluginBundle\Helper\IntegrationHelper;
+use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
+use Psr\Log\LoggerInterface;
+use Recombee\RecommApi\Requests as Reqs;
+use Recombee\RecommApi\Exceptions as Ex;
+use Recurr\Transformer\TranslatorInterface;
+
+class SegmentMapping
+{
+
+    /**
+     * @var ListModel
+     */
+    private $listModel;
+
+    /**
+     * @var IntegrationHelper
+     */
+    private $integrationHelper;
+
+    private $integrationPrefix = 'segment_on_';
+
+    /**
+     * ApiCommands constructor.
+     *
+     * @param ListModel         $listModel
+     * @param IntegrationHelper $integrationHelper
+     */
+    public function __construct(
+        ListModel $listModel,
+        IntegrationHelper $integrationHelper
+    ) {
+
+        $this->listModel         = $listModel;
+        $this->integrationHelper = $integrationHelper;
+    }
+
+    /**
+     * @param $apiRequest
+     * @param $userId
+     */
+    public function map($apiRequest, $userId)
+    {
+        $lead['id'] = $userId;
+        $settings   = $this->integrationHelper->getIntegrationObject('Recombee')->getIntegrationSettings(
+        )->getFeatureSettings();
+
+        if (empty($settings['abandoned_cart'])) {
+            return;
+        }
+        if (!in_array($apiRequest, ['AddCartAddition', 'AddPurchase'])) {
+            return;
+        }
+
+        if (!empty($settings[$this->integrationPrefix.'AddCartAddition'])) {
+            $segmentAddCartAddition = $settings[$this->integrationPrefix.'AddCartAddition'];
+            if ($segmentAddCartAddition) {
+                switch ($apiRequest) {
+                    case "AddCartAddition":
+                        $this->listModel->addLead($lead, [$segmentAddCartAddition]);
+                        break;
+                    case "AddPurchase":
+                        $this->listModel->removeLead($lead, [$segmentAddCartAddition]);
+                        break;
+                }
+            }
+        }
+
+        if (!empty($settings[$this->integrationPrefix.'AddPurchase'])) {
+            $segmentAddPurchase = $settings[$this->integrationPrefix.'AddPurchase'];
+            if ($segmentAddPurchase) {
+                switch ($apiRequest) {
+                    case "AddPurchase":
+                        $this->listModel->addLead($lead, [$segmentAddPurchase]);
+                        break;
+                }
+            }
+        }
+
+    }
+}
+

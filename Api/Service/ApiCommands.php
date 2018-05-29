@@ -11,12 +11,11 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Api\Service;
 
-use Mautic\CoreBundle\Translation\Translator;
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
 use Psr\Log\LoggerInterface;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
-use Recurr\Transformer\TranslatorInterface;
+use Symfony\Component\Translation\TranslatorInterface;
 
 class ApiCommands
 {
@@ -47,21 +46,29 @@ class ApiCommands
     private $translator;
 
     /**
+     * @var SegmentMapping
+     */
+    private $segmentMapping;
+
+    /**
      * ApiCommands constructor.
      *
      * @param RecombeeApi         $recombeeApi
      * @param LoggerInterface     $logger
      * @param TranslatorInterface $translator
+     * @param SegmentMapping      $segmentMapping
      */
     public function __construct(
         RecombeeApi $recombeeApi,
         LoggerInterface $logger,
-        \Symfony\Component\Translation\TranslatorInterface $translator
+        TranslatorInterface $translator,
+        SegmentMapping $segmentMapping
     ) {
 
-        $this->recombeeApi = $recombeeApi;
-        $this->logger      = $logger;
-        $this->translator  = $translator;
+        $this->recombeeApi    = $recombeeApi;
+        $this->logger         = $logger;
+        $this->translator     = $translator;
+        $this->segmentMapping = $segmentMapping;
     }
 
     private function optionsChecker($apiRequest, $options)
@@ -98,8 +105,9 @@ class ApiCommands
             $batchOptions = [$batchOptions];
         }
 
-        $command  = 'Recombee\RecommApi\Requests\\'.$apiRequest;
-        $requests = [];
+        $command        = 'Recombee\RecommApi\Requests\\'.$apiRequest;
+        $requests       = [];
+        $segmentMapping = [];
         foreach ($batchOptions as $options) {
             $userId = $options['userId'];
             unset($options['userId']);
@@ -137,6 +145,7 @@ class ApiCommands
                     );
                     break;
             }
+            $this->segmentMapping->map($apiRequest, $userId);
         }
 
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
@@ -186,7 +195,6 @@ class ApiCommands
         if (!isset($requests[0])) {
             $requests = [$requests];
         }
-        die(print_r($requests));
         try {
             //batch processing
             if (count($requests) > 1) {

@@ -14,6 +14,7 @@ namespace MauticPlugin\MauticRecombeeBundle\Service;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
+use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 use Recombee\RecommApi\Exceptions as Ex;
 use Recombee\RecommApi\Requests as Reqs;
@@ -60,6 +61,11 @@ class RecombeeGenerator
     public function getContentByToken(RecombeeToken $recombeeToken, $template)
     {
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
+
+        if (!$recombee instanceof Recombee) {
+            return;
+        }
+
         $templateContent = implode('',$recombee->getPageTemplate());
         if ('emailTemplate' === $template) {
             $templateContent = implode('', $recombee->getEmailTemplate());
