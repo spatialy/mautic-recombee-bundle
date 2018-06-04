@@ -28,7 +28,7 @@ class RecombeeTypesType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder->add(
-            'recommendationsType',
+            'type',
             'choice',
             [
                 'choices' => [

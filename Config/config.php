@@ -16,6 +16,19 @@ return [
                     'mautic.recombee.service.token.html.replacer',
                 ],
             ],
+            'mautic.recombee.campaignbundle.subscriber'  => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\CampaignSubscriber::class,
+                'arguments' => [
+                    'mautic.lead.model.lead',
+                    'mautic.email.model.email',
+                    'mautic.campaign.model.event',
+                    'mautic.channel.model.queue',
+                    'mautic.email.model.send_email_to_user',
+                    'mautic.recombee.service.api.commands',
+                    'mautic.recombee.service.token.finder',
+                    'mautic.recombee.service.token.generator'
+                ],
+            ],
             'mautic.recombee.leadbundle.subscriber'  => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\LeadSubscriber::class,
                 'arguments' => [
@@ -163,6 +176,10 @@ return [
             'mautic_recombee_api_content' => [
                 'path'       => '/recombee/dwc',
                 'controller' => 'MauticRecombeeBundle:Ajax:get',
+            ],
+            'mautic_recombee_tests' => [
+                'path'       => '/recombee/tests',
+                'controller' => 'MauticRecombeeBundle:Tests:run',
             ],
         ],
         'api'    => [

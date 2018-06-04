@@ -22,7 +22,7 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
         <?php echo $view['form']->row($form['numberOfItems']); ?>
 
         <div style="display:none">
-            <?php echo $view['form']->row($form['recommendationsType']); ?>
+            <?php echo $view['form']->row($form['type']); ?>
             <?php echo $view['form']->row($form['filter']); ?>
             <?php echo $view['form']->row($form['boost']); ?>
         </div>
@@ -82,6 +82,8 @@ echo $view['assets']->includeStylesheet('plugins/MauticRecombeeBundle/Assets/css
 
 <?php $view['slots']->start('rightFormContent'); ?>
 <?php echo $view['form']->row($form['isPublished']); ?>
+<?php echo $view['form']->row($form['object']); ?>
+
 
 <hr />
 <h5><?php echo $view['translator']->trans('mautic.plugin.recombee.template.tags'); ?></h5>

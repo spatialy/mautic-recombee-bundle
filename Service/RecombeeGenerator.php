@@ -49,33 +49,56 @@ class RecombeeGenerator
         RecombeeApi $recombeeApi,
         ContactTracker $contactTracker,
         LeadModel $leadModel,
-        \Twig_Environment  $twig
+        \Twig_Environment $twig
     ) {
         $this->recombeeApi    = $recombeeApi;
         $this->recombeeModel  = $recombeeModel;
         $this->contactTracker = $contactTracker;
         $this->leadModel      = $leadModel;
-        $this->twig = $twig;
+        $this->twig           = $twig;
     }
 
-    public function getContentByToken(RecombeeToken $recombeeToken, $template)
+    /**
+     * @param RecombeeToken $recombeeToken
+     * @param array         $options
+     */
+    public function getResultByToken(RecombeeToken $recombeeToken, $options = [])
     {
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
 
         if (!$recombee instanceof Recombee) {
             return;
         }
-
-        $templateContent = implode('',$recombee->getPageTemplate());
-        if ('emailTemplate' === $template) {
-            $templateContent = implode('', $recombee->getEmailTemplate());
-        }
-
+        $recombeeToken->setUserId(1);
         $options = [
-            'filter'       => $recombee->getFilter(),
-            'booster'      => $recombee->getBoost(),
-            'returnProperties' => true,
+            "expertSettings" => [
+                "algorithmSettings" => [
+                    "evaluator" => [
+                        "name" => "reql",
+                    ],
+                    "model"     => [
+                        "name"     => "reminder",
+                        "settings" => [
+                            "parameters" => [
+                                "interaction-types"        => [
+                                    "cart-addition" => [
+                                        "enabled" => true,
+                                        "weight"  => 1.0,
+                                        "min-age" => 3600,
+                                        "max-age" => 3600*48,
+                                    ],
+                                ],
+                                "filter-purchased-max-age" => 3600*72,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
         ];
+
+        $options['filter']= $recombee->getFilter();
+        $options['booster']= $recombee->getBoost();
+        $options['returnProperties']= true;
 
         try {
             switch ($recombeeToken->getType()) {
@@ -87,19 +110,13 @@ class RecombeeGenerator
                             $options
                         )
                     );
-
-                    $template = $this->twig->createTemplate($templateContent);
-                    $output = '';
-                    foreach ($items['recomms'] as $item) {
-                   // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
-                    $output .= $template->render($item['values']);
-                    }
-                    return $output;
-
+                    break;
             }
+            die(print_r($items));
+            return $items['recomms'];
+
         } catch (Ex\ApiTimeoutException $e) {
             die(print_r($e->getMessage()));
-
             //Handle timeout => use fallback
         } catch (Ex\ResponseException $e) {
             die(print_r($e->getMessage()));
@@ -107,6 +124,34 @@ class RecombeeGenerator
         } catch (Ex\ApiException $e) {
             die(print_r($e->getMessage()));
             //ApiException is parent of both ResponseException and ApiTimeoutException
+        }
+    }
+
+
+    public function getContentByToken(RecombeeToken $recombeeToken, $template)
+    {
+        $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
+
+        if (!$recombee instanceof Recombee) {
+            return;
+        }
+
+        $templateContent = implode('', $recombee->getPageTemplate());
+        if ('emailTemplate' === $template) {
+            $templateContent = implode('', $recombee->getEmailTemplate());
+        }
+
+        $items = $this->getResultByToken($recombeeToken);
+
+        if (!empty($items)) {
+            $template = $this->twig->createTemplate($templateContent);
+            $output   = '';
+            foreach ($items as $item) {
+                // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
+                $output .= $template->render($item['values']);
+            }
+
+            return $output;
         }
     }
 }

@@ -99,7 +99,7 @@ class RecombeeHelper
                 continue;
             }
             $tokenType = 'RecombeeItems';
-            if ($entity->getRecommendationsType() == 'users') {
+            if ($entity->getType() == 'users') {
                 $tokenType = 'RecombeeUsers';
             }
 
@@ -292,7 +292,7 @@ class RecombeeHelper
     public function getRecombeeKeysFromEntity(Recombee $entity)
     {
         $params = [];
-        if (strpos($entity->getRecommendationsType(), 'RecommendUsers') !== false) {
+        if (strpos($entity->getType(), 'RecommendUsers') !== false) {
             $params['listClass']         = 'Recombee\RecommApi\Requests\ListUsers';
             $params['listPropertyClass'] = 'Recombee\RecommApi\Requests\ListUserProperties';
             $params['key']               = 'userId';

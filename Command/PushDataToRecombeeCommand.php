@@ -40,7 +40,7 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('mautic:integration:recombee:import')
+        $this->setName('mautic:recombee:import')
             ->setDescription('Import data to Recombee')
             ->addOption(
                 '--type',
@@ -112,21 +112,6 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
                     )
                 )
             );
-        }
-
-        if ($type === 'items') {
-            $integrationKeys = $integrationObject->getKeys();
-            $file            = $integrationKeys['import_items'];
-            if (empty($file)) {
-                return $output->writeln(
-                    sprintf(
-                        '<error>ERROR:</error> <info>'.$translator->trans(
-                            'mautic.plugin.recombee.command.option.required',
-                            ['%file' => 'file', 'actions' => 'items']
-                        )
-                    )
-                );
-            }
         }
 
         if ($type !== 'contacts') {

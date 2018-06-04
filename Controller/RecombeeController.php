@@ -188,7 +188,7 @@ class RecombeeController extends AbstractStandardFormController
             case 'example':
                 $entity = $args['entity'];
 
-                $entity->setRecommendationsType('RecommendItemsToUser');
+                $entity->setType('RecommendItemsToUser');
                 $params = $recombeeHelper->getRecombeeKeysFromEntity($entity);
                 $viewParameters['params'] = $params;
                 $properties = $recombeeHelper->getClient()->send(new $params['listPropertyClass']());;

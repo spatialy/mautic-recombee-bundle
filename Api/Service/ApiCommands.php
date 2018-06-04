@@ -48,7 +48,7 @@ class ApiCommands
     /**
      * @var SegmentMapping
      */
-    private $segmentMapping;
+    protected $segmentMapping;
 
     /**
      * ApiCommands constructor.
@@ -75,6 +75,9 @@ class ApiCommands
     {
         $options                   = array_keys($options);
         $interactionRequiredParams = $this->getInteractionRequiredParam($apiRequest);
+        if (!isset($interactionRequiredParams['userId'])) {
+            $interactionRequiredParams = array_merge(['userId'],$interactionRequiredParams);
+        }
         //required params no contains from input
         if (count(array_intersect($options, $interactionRequiredParams)) != count($interactionRequiredParams)) {
             $this->logger->error(
@@ -97,17 +100,14 @@ class ApiCommands
     public function callCommand($apiRequest, array $batchOptions)
     {
         if (false === $this->optionsChecker($apiRequest, $batchOptions)) {
-            return;
+         //   return false;
         }
-
         // not batch
         if (!isset($batchOptions[0])) {
             $batchOptions = [$batchOptions];
         }
-
         $command        = 'Recombee\RecommApi\Requests\\'.$apiRequest;
         $requests       = [];
-        $segmentMapping = [];
         foreach ($batchOptions as $options) {
             $userId = $options['userId'];
             unset($options['userId']);
@@ -143,10 +143,19 @@ class ApiCommands
                         $portion,
                         $options
                     );
+
                     break;
+                    case "RecommendItemsToUser":
+                                $requests[] = new $command(
+                                    $userId,
+                                    5,
+                                    $options
+                                );
+                        break;
             }
-            $this->segmentMapping->map($apiRequest, $userId);
+            //$this->segmentMapping->map($apiRequest, $userId);
         }
+
 
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
         try {
@@ -158,6 +167,8 @@ class ApiCommands
             }
             //$this->logger->debug('Recombee results:'.var_dump($this->getCommandOutput()));
         } catch (Ex\ResponseException $e) {
+
+            die($e->getMessage());
             $this->logger->error(
                 $this->translator->trans(
                     'mautic.plugin.recombee.api.error',
@@ -203,12 +214,13 @@ class ApiCommands
                 $this->setCommandOutput($this->recombeeApi->getClient()->send(end($requests)));
             }
         } catch (Ex\ResponseException $e) {
-            $this->logger->error(
+            throw new \Exception($e->getMessage());
+           /* $this->logger->error(
                 $this->translator->trans(
                     'mautic.plugin.recombee.api.error',
                     ['%error' => $e->getMessage()]
                 )
-            );
+            );*/
         }
     }
 
@@ -262,7 +274,7 @@ class ApiCommands
             }
         }
         if (!empty($errors)) {
-            return $errors;
+            throw new \Exception($errors);
         }
 
         return true;

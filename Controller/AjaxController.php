@@ -95,7 +95,7 @@ class AjaxController extends CommonAjaxController
         $items = [];
 
         if($enity && $enity->isPublished(true)){
-            $class = $enity->getRecommendationsType();
+            $class = $enity->getType();
             try {
                 $items =     $recombeeHelper->getClient()->send(new $class(2, 9,    [
                     'returnProperties' => true,

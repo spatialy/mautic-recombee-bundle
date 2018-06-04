@@ -148,7 +148,31 @@ class RecombeeType extends AbstractType
 
 
         $builder->add(
-            'recommendationsType',
+            'object',
+            'choice',
+            [
+                'choices'     => [
+                    'RecommendItemsToUser' => 'mautic.plugin.recombee.form.recommendations.items_to_user',
+                    'ListUserCartAdditions' => 'mautic.plugin.recombee.form.recommendations.user_cart_additions',
+                ],
+                'expanded'    => false,
+                'multiple'    => false,
+                'label'       => 'mautic.plugin.recombee.form.recommendations.object',
+                'label_attr'  => ['class' => ''],
+                'empty_value' => false,
+                'required'    => true,
+                'constraints' => [
+                    new NotBlank(
+                        [
+                            'message' => 'mautic.core.value.required',
+                        ]
+                    ),
+                ],
+            ]
+        );
+
+        $builder->add(
+            'type',
             'choice',
             [
                 'choices'     => [
@@ -170,6 +194,7 @@ class RecombeeType extends AbstractType
                 ],
             ]
         );
+
 
         $builder->add('isPublished', 'yesno_button_group');
 

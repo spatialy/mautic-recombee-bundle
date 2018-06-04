@@ -35,14 +35,22 @@ class ProcessData
     {
         $funcProperty = 'Recombee\RecommApi\Requests\\'.$funcProperty;
         $funcValue    = 'Recombee\RecommApi\Requests\\'.$funcValue;
-
+        if (!isset($items[0])) {
+            $items = [$items];
+        }
         $uniqueParams = [];
-        foreach ($items as $itemId => $item) {
+        foreach ($items as $item) {
+            /** @todo  check */
+            if (!isset($item['id'])) {
+                throw new \Exception('ID  missing: '.print_r($item, true));
+            }
+            $itemId = $item['id'];
             unset($item['id']);
             foreach ($item as $key => $value) {
                 if (is_array($value)) {
-                    if (isset($value[0])) {
+                    if (count($value) == count($value, COUNT_RECURSIVE)) {
                         $item[$key] = json_encode(array_values($value));
+                        unset($item[$key]);
                     } else {
                         unset($item[$key]);
                         continue;
@@ -61,7 +69,9 @@ class ProcessData
         }
         $allowedImagesFileTypes = ['gif', 'png', 'jpg'];
         foreach ($uniqueParams as $key => $value) {
-            if (in_array(pathinfo($value, PATHINFO_EXTENSION), $allowedImagesFileTypes)) {
+            if (is_array($value)) {
+                $this->requestsPropertyName[] = new $funcProperty($key, 'set');
+            }else if (in_array(pathinfo($value, PATHINFO_EXTENSION), $allowedImagesFileTypes)) {
                 $this->requestsPropertyName[] = new $funcProperty($key, 'image');
             } elseif (is_int($value)) {
                 $this->requestsPropertyName[] = new $funcProperty($key, 'int');
@@ -71,8 +81,6 @@ class ProcessData
                 $this->requestsPropertyName[] = new $funcProperty($key, 'double');
             } elseif (is_bool($value)) {
                 $this->requestsPropertyName[] = new $funcProperty($key, 'boolean');
-            } elseif (is_array($value)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'set');
             } elseif ((bool) strtotime($value) === true) {
                 $this->requestsPropertyName[] = new $funcProperty($key, 'timestamp');
             } else {

@@ -162,38 +162,22 @@ class RecombeeIntegration extends AbstractIntegration
                 YesNoButtonGroupType::class,
                 [
                     'label' => 'mautic.plugin.recombee.abandoned_cart_reminder',
-                    'data' => (isset($options['data']['abandoned_cart'])) ? $options['data']['abandoned_cart'] : false,
                 ]
             );
 
 
 
             $builder->add(
-                'segment_on_AddCartAddition',
-                'leadlist_choices',
+                'abandoned_cart_campaign',
+                'campaign_list',
                 [
-                    'label'      => 'mautic.plugin.extendee.segment.on.add_cart_addition',
+                    'label'      => 'mautic.recombee.campaign.abandoned.cart',
                     'label_attr' => ['class' => 'control-label'],
                     'attr'       => [
                         'class'   => 'form-control',
-                        'tooltip' => 'mautic.plugin.extendee.segment.on.add_cart_addition.tooltip',
+                        'tooltip' => 'mautic.recombee.campaign.abandoned.cart.tooltip',
                         'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
 
-                    ],
-                    'multiple'   => false,
-                    'expanded'   => false,
-                ]
-            );
-
-            $builder->add(
-                'segment_on_AddPurchase',
-                'leadlist_choices',
-                [
-                    'label'      => 'mautic.plugin.extendee.segment.on.add_purchase',
-                    'label_attr' => ['class' => 'control-label'],
-                    'attr'       => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
                     ],
                     'multiple'   => false,
                     'expanded'   => false,

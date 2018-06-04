@@ -54,7 +54,7 @@ class RecombeeTokenFinder
     /**
      * @return array
      */
-    public function getRecombeeTokens(): array
+    public function getRecombeeTokens()
     {
         return $this->recombeeTokens;
     }

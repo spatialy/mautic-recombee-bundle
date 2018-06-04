@@ -76,7 +76,12 @@ class Recombee extends FormEntity
     /**
      * @var string
      */
-    private $recommendationsType;
+    private $type;
+
+    /**
+     * @var string
+     */
+    private $object;
 
     /**
      * Recombee constructor.
@@ -132,8 +137,13 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
-        $builder->createField('recommendationsType', 'text')
-            ->columnName('recommendations_type')
+        $builder->createField('type', 'text')
+            ->columnName('type')
+            ->nullable()
+            ->build();
+
+        $builder->createField('object', 'text')
+            ->columnName('object')
             ->nullable()
             ->build();
 
@@ -332,17 +342,34 @@ class Recombee extends FormEntity
     /**
      * @return string
      */
-    public function getRecommendationsType()
+    public function getType()
     {
-        return $this->recommendationsType;
+        return $this->type;
     }
 
     /**
-     * @param string $recommendationsType
+     * @param string $type
      */
-    public function setRecommendationsType($recommendationsType)
+    public function setType($type)
     {
-        $this->isChanged('recommendationsType', $recommendationsType);
-        $this->recommendationsType = $recommendationsType;
+        $this->isChanged('type', $type);
+        $this->type = $type;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getObject()
+    {
+        return $this->object;
+    }
+
+    /**
+     * @param mixed $object
+     */
+    public function setObject($object)
+    {
+        $this->isChanged('object', $object);
+        $this->object = $object;
     }
 }

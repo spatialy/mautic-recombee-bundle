@@ -70,7 +70,10 @@ class RecombeeApi extends AbstractRecombeeApi
         if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
 
             $keys = $integration->getDecryptedApiKeys();
-
+            if (empty($keys)) {
+                $keys['database'] = 'recombeemautic';
+                $keys['secret_key'] = 'g1kyDDvmsJSzUYxKpDN0clpURJKjLanbRRoAwNGpNjsDkthD52i2rfsovYEr8nJD';
+            }
             if (isset($keys['database']) && isset($keys['secret_key'])) {
                 $this->client = new Client(
                     $keys['database'],

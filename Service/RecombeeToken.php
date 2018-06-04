@@ -104,7 +104,9 @@ class RecombeeToken
      */
     public function getType()
     {
-        if (!$this->type) {
+        if (!$this->type && $this->entity) {
+            return $this->entity->getObject();
+        }else if (!$this->type) {
             return 'RecommendItemsToUser';
         }
 
