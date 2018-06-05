@@ -149,7 +149,7 @@ class CampaignSubscriber extends CommonSubscriber
      *
      * @return CampaignExecutionEvent|null
      */
-    public function onCampaignTriggerActionSendEmailToContact(CampaignExecutionEvent $event)
+    public function onCampaignTriggerActionSendAbandonedEmail(CampaignExecutionEvent $event)
     {
         if (!$event->checkContext('abandoned.email.send')) {
             return;

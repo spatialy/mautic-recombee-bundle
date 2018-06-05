@@ -12,6 +12,7 @@
 namespace MauticPlugin\MauticRecombeeBundle\Api\Service;
 
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken;
 use Psr\Log\LoggerInterface;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
@@ -76,7 +77,7 @@ class ApiCommands
         $options                   = array_keys($options);
         $interactionRequiredParams = $this->getInteractionRequiredParam($apiRequest);
         if (!isset($interactionRequiredParams['userId'])) {
-            $interactionRequiredParams = array_merge(['userId'],$interactionRequiredParams);
+            $interactionRequiredParams = array_merge(['userId'], $interactionRequiredParams);
         }
         //required params no contains from input
         if (count(array_intersect($options, $interactionRequiredParams)) != count($interactionRequiredParams)) {
@@ -100,14 +101,14 @@ class ApiCommands
     public function callCommand($apiRequest, array $batchOptions)
     {
         if (false === $this->optionsChecker($apiRequest, $batchOptions)) {
-         //   return false;
+            //   return false;
         }
         // not batch
         if (!isset($batchOptions[0])) {
             $batchOptions = [$batchOptions];
         }
-        $command        = 'Recombee\RecommApi\Requests\\'.$apiRequest;
-        $requests       = [];
+        $command  = 'Recombee\RecommApi\Requests\\'.$apiRequest;
+        $requests = [];
         foreach ($batchOptions as $options) {
             $userId = $options['userId'];
             unset($options['userId']);
@@ -145,13 +146,15 @@ class ApiCommands
                     );
 
                     break;
-                    case "RecommendItemsToUser":
-                                $requests[] = new $command(
-                                    $userId,
-                                    5,
-                                    $options
-                                );
-                        break;
+                case "RecommendItemsToUser":
+                    $limit = $options['limit'];
+                    unset($options['limit']);
+                    $requests[] = new $command(
+                        $userId,
+                        $limit,
+                        $options
+                    );
+                    break;
             }
             //$this->segmentMapping->map($apiRequest, $userId);
         }
@@ -178,11 +181,6 @@ class ApiCommands
         }
     }
 
-    public function import($items)
-    {
-
-    }
-
     public function ImportUser($items)
     {
         $processedData = new ProcessData($items, 'AddUserProperty', 'SetUserValues');
@@ -195,6 +193,37 @@ class ApiCommands
         $processedData = new ProcessData($items, 'AddItemProperty', 'SetItemValues');
         $this->callApi($processedData->getRequestsPropertyName());
         $this->callApi($processedData->getRequestsPropertyValues());
+    }
+
+    public function getAbandonedCart(RecombeeToken $recombeeToken, $cartMinAge, $cartMaxAge)
+    {
+        $options = [
+            "expertSettings" => [
+                "algorithmSettings" => [
+                    "evaluator" => [
+                        "name" => "reql",
+                    ],
+                    "model"     => [
+                        "name"     => "reminder",
+                        "settings" => [
+                            "parameters" => [
+                                "interaction-types"        => [
+                                    "cart-addition" => [
+                                        "enabled" => true,
+                                        "weight"  => 1.0,
+                                        "min-age" => $cartMinAge,
+                                        "max-age" => $cartMaxAge,
+                                    ],
+                                ],
+                                "filter-purchased-max-age" => $cartMaxAge,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
+        $recombeeToken->setAddOptions($options);
+        $this->callCommand('RecommendItemsToUser', $recombeeToken->getOptions(true));
     }
 
     public function callApi($requests)
@@ -215,12 +244,12 @@ class ApiCommands
             }
         } catch (Ex\ResponseException $e) {
             throw new \Exception($e->getMessage());
-           /* $this->logger->error(
-                $this->translator->trans(
-                    'mautic.plugin.recombee.api.error',
-                    ['%error' => $e->getMessage()]
-                )
-            );*/
+            /* $this->logger->error(
+                 $this->translator->trans(
+                     'mautic.plugin.recombee.api.error',
+                     ['%error' => $e->getMessage()]
+                 )
+             );*/
         }
     }
 
@@ -286,8 +315,11 @@ class ApiCommands
      * @param array  $results
      * @param string $title
      */
-    private function displayCmdTextFromResult(array $results, $title = '', OutputInterface $output)
-    {
+    private function displayCmdTextFromResult(
+        array $results,
+        $title = '',
+        OutputInterface $output
+    ) {
         $errors = [];
         foreach ($results as $result) {
             if (!empty($result['json']['error'])) {

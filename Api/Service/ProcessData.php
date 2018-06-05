@@ -25,6 +25,20 @@ class ProcessData
     private $requestsPropertyValues = [];
 
     /**
+     * @param $items
+     *
+     * @return array
+     */
+    public function itemsToMultiArray($items)
+    {
+        if (is_array(end($items))) {
+            return $items;
+        } else {
+            return [$items];
+        }
+    }
+
+    /**
      * ProcessData constructor.
      *
      * @param array $items
@@ -35,9 +49,7 @@ class ProcessData
     {
         $funcProperty = 'Recombee\RecommApi\Requests\\'.$funcProperty;
         $funcValue    = 'Recombee\RecommApi\Requests\\'.$funcValue;
-        if (!isset($items[0])) {
-            $items = [$items];
-        }
+        $items        = $this->itemsToMultiArray($items);
         $uniqueParams = [];
         foreach ($items as $item) {
             /** @todo  check */
@@ -71,20 +83,22 @@ class ProcessData
         foreach ($uniqueParams as $key => $value) {
             if (is_array($value)) {
                 $this->requestsPropertyName[] = new $funcProperty($key, 'set');
-            }else if (in_array(pathinfo($value, PATHINFO_EXTENSION), $allowedImagesFileTypes)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'image');
-            } elseif (is_int($value)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'int');
-            } elseif (is_double($value)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'double');
-            } elseif (is_double($value)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'double');
-            } elseif (is_bool($value)) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'boolean');
-            } elseif ((bool) strtotime($value) === true) {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'timestamp');
             } else {
-                $this->requestsPropertyName[] = new $funcProperty($key, 'string');
+                if (in_array(pathinfo($value, PATHINFO_EXTENSION), $allowedImagesFileTypes)) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'image');
+                } elseif (is_int($value)) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'int');
+                } elseif (is_double($value)) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'double');
+                } elseif (is_double($value)) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'double');
+                } elseif (is_bool($value)) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'boolean');
+                } elseif ((bool) strtotime($value) === true) {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'timestamp');
+                } else {
+                    $this->requestsPropertyName[] = new $funcProperty($key, 'string');
+                }
             }
         }
     }

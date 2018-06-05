@@ -14,6 +14,7 @@ namespace MauticPlugin\MauticRecombeeBundle\Service;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
+use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 use Recombee\RecommApi\Exceptions as Ex;
@@ -44,18 +45,35 @@ class RecombeeGenerator
      */
     private $twig;
 
+    /**
+     * @var ApiCommands
+     */
+    private $apiCommands;
+
+    /**
+     * RecombeeGenerator constructor.
+     *
+     * @param RecombeeModel     $recombeeModel
+     * @param RecombeeApi       $recombeeApi
+     * @param ContactTracker    $contactTracker
+     * @param LeadModel         $leadModel
+     * @param \Twig_Environment $twig
+     * @param ApiCommands       $apiCommands
+     */
     public function __construct(
         RecombeeModel $recombeeModel,
         RecombeeApi $recombeeApi,
         ContactTracker $contactTracker,
         LeadModel $leadModel,
-        \Twig_Environment $twig
+        \Twig_Environment $twig,
+        ApiCommands $apiCommands
     ) {
         $this->recombeeApi    = $recombeeApi;
         $this->recombeeModel  = $recombeeModel;
         $this->contactTracker = $contactTracker;
         $this->leadModel      = $leadModel;
         $this->twig           = $twig;
+        $this->apiCommands = $apiCommands;
     }
 
     /**
@@ -85,34 +103,29 @@ class RecombeeGenerator
                                         "enabled" => true,
                                         "weight"  => 1.0,
                                         "min-age" => 3600,
-                                        "max-age" => 3600*48,
+                                        "max-age" => 3600 * 48,
                                     ],
                                 ],
-                                "filter-purchased-max-age" => 3600*72,
+                                "filter-purchased-max-age" => 3600 * 72,
                             ],
                         ],
                     ],
                 ],
             ],
         ];
-
-        $options['filter']= $recombee->getFilter();
-        $options['booster']= $recombee->getBoost();
-        $options['returnProperties']= true;
+        $options['filter']           = $recombee->getFilter();
+        $options['booster']          = $recombee->getBoost();
+        $options['returnProperties'] = true;
+        $recombeeToken->setAddOptions($options);
 
         try {
             switch ($recombeeToken->getType()) {
                 case "RecommendItemsToUser":
-                    $items = $this->recombeeApi->getClient()->send(
-                        new Reqs\RecommendItemsToUser(
-                            $recombeeToken->getUserId(),
-                            $recombeeToken->getLimit(),
-                            $options
-                        )
-                    );
+                    $this->apiCommands($recombeeToken->getType(), $recombeeToken->getOptions());
+                    $items = $this->apiCommands->getCommandOutput();
                     break;
             }
-            die(print_r($items));
+
             return $items['recomms'];
 
         } catch (Ex\ApiTimeoutException $e) {

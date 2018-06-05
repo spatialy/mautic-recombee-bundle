@@ -16,10 +16,18 @@ use Recombee\RecommApi\Exceptions as Ex;
 
 class AbandonedCartSync extends ApiCommands
 {
+
+
+    public function getCart()
+    {
+
+    }
+
+
+
     public function sync($apiRequest, array $options)
     {
         if ($apiRequest == 'AddPurchase') {
-
         }
 // vlozim do kosika - cakam 18 hod
         // odosielam email
@@ -29,9 +37,9 @@ class AbandonedCartSync extends ApiCommands
 
         // If purchase
         // Remove All
-      //  $this->callCommand('ListUserCartAdditions', ['user'])
-         ///   $client->send(new DeleteCartAddition($user_id, $item_id, [ //optional parameters:
-            //            'timestamp' => <number>
+        //  $this->callCommand('ListUserCartAdditions', ['user'])
+        ///   $client->send(new DeleteCartAddition($user_id, $item_id, [ //optional parameters:
+        //            'timestamp' => <number>
 //]));
 
     }

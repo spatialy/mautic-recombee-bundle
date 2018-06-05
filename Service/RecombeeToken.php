@@ -47,6 +47,11 @@ class RecombeeToken
      */
     private $contactTracker;
 
+    /**
+     * @var array
+     */
+    private $addOptions = [];
+
 
     /**
      * RecombeeToken constructor.
@@ -63,7 +68,7 @@ class RecombeeToken
 
     public function setToken($values)
     {
-        $this->setIsToken(true);
+        $this->setIsToken(TRUE);
         foreach ($values as $key => $value) {
             $setter = 'set'.ucfirst($key);
             if (method_exists($this, $setter)) {
@@ -106,8 +111,10 @@ class RecombeeToken
     {
         if (!$this->type && $this->entity) {
             return $this->entity->getObject();
-        }else if (!$this->type) {
-            return 'RecommendItemsToUser';
+        } else {
+            if (!$this->type) {
+                return 'RecommendItemsToUser';
+            }
         }
 
         return $this->type;
@@ -221,7 +228,7 @@ class RecombeeToken
     /**
      * @param boolean $isToken
      */
-    public function setIsToken(bool $isToken)
+    public function setIsToken($isToken)
     {
         $this->isToken = $isToken;
     }
@@ -240,6 +247,39 @@ class RecombeeToken
     public function setEntity($entity)
     {
         $this->entity = $entity;
+    }
+
+    public function getOptions($addKeys = [])
+    {
+        // use default set of keys
+        if ($addKeys === true) {
+            $addKeys = ['itemsId', 'userId', 'limit',];
+        }
+        $tokenOptions = [];
+
+        foreach ($addKeys as $key) {
+            $getter = 'get'.ucfirst($key);
+            if (method_exists($this, $getter)) {
+                $tokenOptions[$key] = $this->$getter();
+            }
+        }
+        return array_merge($tokenOptions, $this->getAddOptions());
+    }
+
+    /**
+     * @return array
+     */
+    public function getAddOptions()
+    {
+        return $this->addOptions;
+    }
+
+    /**
+     * @param array $addOptions
+     */
+    public function setAddOptions(array $addOptions)
+    {
+        $this->addOptions = $addOptions;
     }
 
 
