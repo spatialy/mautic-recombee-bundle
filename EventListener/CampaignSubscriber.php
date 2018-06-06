@@ -14,23 +14,16 @@ namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
+use Mautic\CampaignBundle\Model\CampaignModel;
 use Mautic\CampaignBundle\Model\EventModel;
 use Mautic\ChannelBundle\Model\MessageQueueModel;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
-use Mautic\EmailBundle\EmailEvents;
-use Mautic\EmailBundle\Entity\Email;
-use Mautic\EmailBundle\Event\EmailOpenEvent;
-use Mautic\EmailBundle\Event\EmailReplyEvent;
 use Mautic\EmailBundle\Exception\EmailCouldNotBeSentException;
-use Mautic\EmailBundle\Helper\UrlMatcher;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
 use Mautic\LeadBundle\Model\LeadModel;
-use Mautic\PageBundle\Entity\Hit;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\RecombeeEvents;
-use MauticPlugin\MauticRecombeeBundle\Service\RecombeeGenerator;
-use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenFinder;
 
 /**
  * Class CampaignSubscriber.
@@ -68,14 +61,9 @@ class CampaignSubscriber extends CommonSubscriber
     private $apiCommands;
 
     /**
-     * @var RecombeeTokenFinder
+     * @var CampaignModel
      */
-    private $recombeeTokenFinder;
-
-    /**
-     * @var RecombeeGenerator
-     */
-    private $recombeeGenerator;
+    private $campaignModel;
 
     /**
      * @param LeadModel           $leadModel
@@ -84,8 +72,7 @@ class CampaignSubscriber extends CommonSubscriber
      * @param MessageQueueModel   $messageQueueModel
      * @param SendEmailToUser     $sendEmailToUser
      * @param ApiCommands         $apiCommands
-     * @param RecombeeTokenFinder $recombeeTokenFinder
-     * @param RecombeeGenerator   $recombeeGenerator
+     * @param CampaignModel       $campaignModel
      */
     public function __construct(
         LeadModel $leadModel,
@@ -94,8 +81,7 @@ class CampaignSubscriber extends CommonSubscriber
         MessageQueueModel $messageQueueModel,
         SendEmailToUser $sendEmailToUser,
         ApiCommands $apiCommands,
-        RecombeeTokenFinder $recombeeTokenFinder,
-        RecombeeGenerator $recombeeGenerator
+        CampaignModel $campaignModel
     ) {
         $this->leadModel           = $leadModel;
         $this->emailModel          = $emailModel;
@@ -103,8 +89,7 @@ class CampaignSubscriber extends CommonSubscriber
         $this->messageQueueModel   = $messageQueueModel;
         $this->sendEmailToUser     = $sendEmailToUser;
         $this->apiCommands         = $apiCommands;
-        $this->recombeeTokenFinder = $recombeeTokenFinder;
-        $this->recombeeGenerator   = $recombeeGenerator;
+        $this->campaignModel       = $campaignModel;
     }
 
     /**
@@ -151,9 +136,11 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignTriggerActionSendAbandonedEmail(CampaignExecutionEvent $event)
     {
+
         if (!$event->checkContext('abandoned.email.send')) {
             return;
         }
+
 
         $leadCredentials = $event->getLeadFields();
 
@@ -161,13 +148,26 @@ class CampaignSubscriber extends CommonSubscriber
             return $event->setFailed('Contact does not have an email');
         }
 
-        $config  = $event->getConfig();
-        $emailId = (int) $config['email'];
-        $email   = $this->emailModel->getEntity($emailId);
+        $config     = $event->getConfig();
+        $emailId    = (int) $config['email'];
+        $email      = $this->emailModel->getEntity($emailId);
+        $campaignId = $event->getEvent()['campaign']['id'];
+        $leadId     = $event->getLead()->getId();
 
         if (!$email || !$email->isPublished()) {
             return $event->setFailed('Email not found or published');
         }
+
+        $leadCampaignRepo    = $this->campaignModel->getCampaignLeadRepository();
+        $leadsCampaignDetail = $leadCampaignRepo->getLeadDetails($campaignId, [$leadId]);
+
+        if (empty($leadsCampaignDetail[$leadId])) {
+            return $event->setFailed('Contact does not exist in campaign. Details empty');
+        }
+
+        $leadsCampaignDetail = end($leadsCampaignDetail[$leadId]);
+        $seconds             = (new \DateTime('now'))->getTimestamp() - $leadsCampaignDetail['dateAdded']->getTimestamp(
+            );
 
         $options = [
             'source'        => ['campaign.event', $event->getEvent()['id']],
@@ -177,49 +177,15 @@ class CampaignSubscriber extends CommonSubscriber
 
         $event->setChannel('email', $emailId);
 
-        $recombeeOptions = [
-            "expertSettings" => [
-                "algorithmSettings" => [
-                    "evaluator" => [
-                        "name" => "reql",
-                    ],
-                    "model"     => [
-                        "name"     => "reminder",
-                        "settings" => [
-                            "parameters" => [
-                                "interaction-types"        => [
-                                    "cart-addition" => [
-                                        "enabled" => true,
-                                        "weight"  => 1.0,
-                                        "min-age" => 00,
-                                        "max-age" => 64800.0,
-                                    ],
-                                ],
-                                "filter-purchased-max-age" => 1209600,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
 
         $content  = $email->getContent();
-        $tokens   = $this->recombeeTokenFinder->findTokens($content);
-        $hasItems = false;
-        if (!empty($tokens)) {
-            foreach ($tokens as $key => $token) {
-                $items = $this->recombeeGenerator->getResultByToken($token, $recombeeOptions);
-                if (!empty($items)) {
-                    $hasItems = true;
-                }
-            }
-        }
-        // check if cart has some
+        $hasItems = $this->apiCommands->hasAbandonedCart($content, 1, $seconds);
+
+        // check if cart has some items
         if (!$hasItems) {
             return $event->setFailed(
                 'No recombee results for this contact #'.$leadCredentials['id'].' and  email #'.$email->getId()
             );
-
         }
 
         $emailSent = $this->emailModel->sendEmail($email, $leadCredentials, $options);

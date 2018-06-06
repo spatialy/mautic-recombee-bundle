@@ -253,7 +253,7 @@ class RecombeeToken
     {
         // use default set of keys
         if ($addKeys === true) {
-            $addKeys = ['itemsId', 'userId', 'limit',];
+            $addKeys = ['itemsId', 'userId', 'limit'];
         }
         $tokenOptions = [];
 

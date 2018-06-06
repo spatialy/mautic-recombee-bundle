@@ -47,7 +47,6 @@ class RecombeeeTest extends AbstractMauticTestCase
         parent::setUp();
         $this->leadModel     = $this->container->get('mautic.lead.model.lead');
         $this->apiCommand    = $this->container->get('mautic.recombee.service.api.commands');
-        $this->procesData    = $this->container->get('mautic.recombee.service.api.commands');
         $this->recombeeToken = $this->container->get('mautic.recombee.service.token');
     }
 
@@ -63,9 +62,9 @@ class RecombeeeTest extends AbstractMauticTestCase
 
         $this->apiCommand->ImportItems($this->getItems()[0]);
         $this->assertForSingleApiCall();
+
         $this->apiCommand->ImportItems($this->getItems());
         $this->assertForMultipleApiCall();
-
 
         $this->apiCommand->callCommand(
             'AddDetailView',
@@ -97,7 +96,6 @@ class RecombeeeTest extends AbstractMauticTestCase
         // token userId = 1 itemId = 1, limit = 9
         $this->recombeeToken->setToken(['id' => 1, 'userId' => $this->leadInTest->getId(), 'limit' => 9]);
 
-
         // check for any items
         $this->apiCommand->callCommand(
             'RecommendItemsToUser',
@@ -112,7 +110,7 @@ class RecombeeeTest extends AbstractMauticTestCase
         //check for abandoned cart empty
         $this->apiCommand->getAbandonedCart($this->recombeeToken, 0, 0);
         $this->assertTrue(empty($this->apiCommand->getCommandOutput()['recomms']));
-
+sleep(5);
         $this->apiCommand->callCommand(
             'AddPurchase',
             $this->getItemsToEvent(['id', 'amount', 'price', 'profit'], true)
@@ -124,10 +122,10 @@ class RecombeeeTest extends AbstractMauticTestCase
             'AddPurchase',
             $this->getItemsToEvent(['id', 'amount', 'price', 'profit'])
         );
-
         $this->assertForMultipleApiCall();
 
-        $this->apiCommand->getAbandonedCart($this->recombeeToken, 0, 3600 * 12);
+        $this->apiCommand->getAbandonedCart($this->recombeeToken, 1, 3600 * 12);
+
         $this->assertTrue(empty($this->apiCommand->getCommandOutput()['recomms']));
 
     }
@@ -147,7 +145,7 @@ class RecombeeeTest extends AbstractMauticTestCase
 
     private function createLead()
     {
-        $leadEmail = 'rafoxesi5@loketa.com';
+        $leadEmail = 'rafoxesi8@loketa.com';
         $firstname = 'Testname';
         $lastname  = 'Testlastname';
 

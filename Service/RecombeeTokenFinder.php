@@ -24,7 +24,7 @@ class RecombeeTokenFinder
     private $recombeeRegex = '{Recombee=(.*?)}';
 
     /**
-     * @var \MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken
+     * @var RecombeeToken
      */
     private $recombeeToken;
 
@@ -50,6 +50,7 @@ class RecombeeTokenFinder
         }
         return $this->recombeeTokens;
     }
+
 
     /**
      * @return array

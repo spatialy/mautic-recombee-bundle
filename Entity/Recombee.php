@@ -65,23 +65,17 @@ class Recombee extends FormEntity
     /**
      * @var string
      */
-    private $pageTemplate;
-
-
-    /**
-     * @var string
-     */
-    private $emailTemplate;
-
-    /**
-     * @var string
-     */
     private $type;
 
     /**
      * @var string
      */
     private $object;
+
+    /**
+     * @var html
+     */
+    private $template;
 
     /**
      * Recombee constructor.
@@ -127,13 +121,8 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
-        $builder->createField('pageTemplate', 'array')
-            ->columnName('page_template')
-            ->nullable()
-            ->build();
-
-        $builder->createField('emailTemplate', 'array')
-            ->columnName('email_template')
+        $builder->createField('template', 'array')
+            ->columnName('template')
             ->nullable()
             ->build();
 
@@ -175,8 +164,7 @@ class Recombee extends FormEntity
                 'filter',
                 'boost',
                 'boost',
-                'pageTemplate',
-                'htmlTemplate',
+                'template',
             ])
             ->build();
     }
@@ -305,39 +293,6 @@ class Recombee extends FormEntity
         $this->numberOfItems = $numberOfItems;
     }
 
-    /**
-     * @return string
-     */
-    public function getPageTemplate()
-    {
-        return $this->pageTemplate;
-    }
-
-    /**
-     * @param string $pageTemplate
-     */
-    public function setPageTemplate($pageTemplate)
-    {
-        $this->isChanged('pageTemplate', $pageTemplate);
-        $this->pageTemplate = $pageTemplate;
-    }
-
-    /**
-     * @return string
-     */
-    public function getEmailTemplate()
-    {
-        return $this->emailTemplate;
-    }
-
-    /**
-     * @param string $emailTemplate
-     */
-    public function setEmailTemplate($emailTemplate)
-    {
-        $this->isChanged('emailTemplate', $emailTemplate);
-        $this->emailTemplate = $emailTemplate;
-    }
 
     /**
      * @return string
@@ -371,5 +326,22 @@ class Recombee extends FormEntity
     {
         $this->isChanged('object', $object);
         $this->object = $object;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    /**
+     * @param mixed $template
+     */
+    public function setTemplate($template)
+    {
+        $this->isChanged('template', $template);
+        $this->template = $template;
     }
 }

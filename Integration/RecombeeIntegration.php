@@ -4,7 +4,6 @@ namespace MauticPlugin\MauticRecombeeBundle\Integration;
 
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
-use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -14,22 +13,6 @@ use Symfony\Component\Validator\Context\ExecutionContextInterface;
 
 class RecombeeIntegration extends AbstractIntegration
 {
-    /**
-     * @var RecombeeHelper
-     */
-    protected $recombeeHelper;
-
-    /**
-     * RecombeeIntegration constructor.
-     *
-     * @param RecombeeHelper $recombeeHelper
-     */
-    public function __construct(RecombeeHelper $recombeeHelper)
-    {
-        $this->recombeeHelper = $recombeeHelper;
-
-        parent::__construct();
-    }
 
     /**
      * {@inheritdoc}
@@ -138,17 +121,15 @@ class RecombeeIntegration extends AbstractIntegration
                         new Callback(
                             function ($validateMe, ExecutionContextInterface $context) {
                                 try {
-                                    $response = $this->recombeeHelper->getClient()->send(
-                                        new Reqs\AddUserProperty('name', 'string')
-                                    );
+
                                 } catch (Ex\ApiException $e) {
-                                    $response = json_decode($e->getMessage(), true);
+                                    //$response = json_decode($e->getMessage(), true);
 
                                 }
 
-                                if (is_array($response) && !empty($response['error'])) {
+                             /*   if (is_array($response) && !empty($response['error'])) {
                                     $context->buildViolation($response['error'])->addViolation();
-                                }
+                                }*/
 
                             }
                         ),

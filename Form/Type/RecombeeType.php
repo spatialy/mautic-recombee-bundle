@@ -127,22 +127,11 @@ class RecombeeType extends AbstractType
         );
 
         $builder->add(
-            'pageTemplate',
+            'template',
             RecombeeTemplateType::class,
             [
-                'label' => 'mautic.plugin.recombee.page.template',
+                'label' => 'mautic.plugin.recombee.template',
             ]
-        );
-
-
-        $builder->add(
-            $builder->create(
-                'emailTemplate',
-                RecombeeTemplateType::class,
-                [
-                    'label' => 'mautic.plugin.recombee.email.template',
-                ]
-            )
         );
 
 

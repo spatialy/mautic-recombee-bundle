@@ -41,25 +41,15 @@ class RecombeeTokenReplacer
         $this->recombeeGenerator   = $recombeeGenerator;
     }
 
-    public function replacePageTokens($content)
-    {
-        return $this->replaceTokensFromContent($content, 'pageTemplate');
-    }
-
-    public function replaceEmailTokens($content)
-    {
-        return $this->replaceTokensFromContent($content, 'emailTemplate');
-    }
-
     /**
      * @param string $content
      */
-    public function replaceTokensFromContent($content, $template)
+    public function replaceTokensFromContent($content)
     {
         $tokens = $this->recombeeTokenFinder->findTokens($content);
         if (!empty($tokens)) {
             foreach ($tokens as $key => $token) {
-                $tokenContent = $this->recombeeGenerator->getContentByToken($token, $template);
+                $tokenContent = $this->recombeeGenerator->getContentByToken($token);
                 $content      = str_replace($key, $tokenContent, $content);
             }
         }

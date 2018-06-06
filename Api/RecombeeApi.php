@@ -66,15 +66,20 @@ class RecombeeApi extends AbstractRecombeeApi
         $this->logger = $logger;
 
         $integration = $integrationHelper->getIntegrationObject('Recombee');
-
-        if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
+        if (($integration && $integration->getIntegrationSettings()->getIsPublished()) || isset($_POST['integration_details'])) {
 
             $keys = $integration->getDecryptedApiKeys();
-            if (empty($keys)) {
-                $keys['database'] = 'recombeemautic';
-                $keys['secret_key'] = 'g1kyDDvmsJSzUYxKpDN0clpURJKjLanbRRoAwNGpNjsDkthD52i2rfsovYEr8nJD';
+
+            if (!empty($_POST['integration_details']['apiKeys'])) {
+                $keys = $_POST['integration_details']['apiKeys'];
             }
-            if (isset($keys['database']) && isset($keys['secret_key'])) {
+
+            if (empty($keys['database']) && empty($keys['secret_key'])) {
+                $keys['database']   = trim(getenv('d'));
+                $keys['secret_key'] = trim(getenv('s'));
+            }
+
+            if (!empty($keys['database']) && !empty($keys['secret_key'])) {
                 $this->client = new Client(
                     $keys['database'],
                     $keys['secret_key'],

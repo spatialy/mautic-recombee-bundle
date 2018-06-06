@@ -57,7 +57,7 @@ class AjaxController extends CommonAjaxController
         /** @var RecombeeToken $recombeeToken */
         $recombeeToken = $this->get('mautic.recombee.service.token');
         $recombeeToken->setToken($this->request->query->all());
-        $content       = $recombeeGenerator->getContentByToken($recombeeToken, 'pageTemplate');
+        $content       = $recombeeGenerator->getContentByToken($recombeeToken);
         $trackedDevice = $deviceTrackingService->getTrackedDevice();
         $deviceId      = ($trackedDevice === null ? null : $trackedDevice->getTrackingId());
 

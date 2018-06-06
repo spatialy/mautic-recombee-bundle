@@ -73,7 +73,7 @@ class EmailSubscriber extends CommonSubscriber
     public function onEmailGenerate(EmailSendEvent $event)
     {
         if ($event->getEmail()) {
-            $event->setContent($this->recombeeTokenReplacer->replaceEmailTokens($event->getContent()));
+            $event->setContent($this->recombeeTokenReplacer->replaceTokensFromContent($event->getContent()));
         }
     }
 }

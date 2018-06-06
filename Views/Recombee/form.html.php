@@ -29,46 +29,45 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
     </div>
 </div>
 <div class="row">
-    <div class="col-md-6">
-        <?php echo $view['form']->label($form['pageTemplate']); ?>
-    </div>
-    <div class="col-md-6">
-        <?php echo $view['form']->label($form['emailTemplate']); ?>
+    <div class="col-md-12">
+        <?php echo $view['form']->label($form['template']); ?>
     </div>
 </div>
 
 <div class="row">
-    <div class="col-md-6">
+    <div class="col-md-12">
         <div class="form-control-custom">
             <?php
-            echo $view['form']->widget($form['pageTemplate']['header']);
+            echo $view['form']->widget($form['template']['header']);
             ?>
             <div class="form-control-custom-disabled">{% for item in items %}</div>
             <?php
-            echo $view['form']->widget($form['pageTemplate']['body']);
+            echo $view['form']->widget($form['template']['body']);
             ?>
             <div class="form-control-custom-disabled">{% endfor %}</div>
             <?php
-            echo $view['form']->widget($form['pageTemplate']['footer']);
+            echo $view['form']->widget($form['template']['footer']);
             ?>
         </div>
     </div>
-    <div class="col-md-6">
-        <div class="form-control-custom">
-            <?php
-            echo $view['form']->widget($form['emailTemplate']['header']);
-            echo $view['form']->errors($form['emailTemplate']['header']);
-            ?>
-            <div class="form-control-custom-disabled">{% for item in items %}</div>
-            <?php
-            echo $view['form']->widget($form['emailTemplate']['body']);
-            ?>
-            <div class="form-control-custom-disabled">{% endfor %}</div>
-            <?php
-            echo $view['form']->widget($form['emailTemplate']['footer']);
-            ?>
-        </div>
+</div>
+<div class="row">
+    <div class="col-xs-12">
+        <hr />
+        <h5><?php echo $view['translator']->trans('mautic.plugin.recombee.template.tags'); ?></h5>
+        <br>
     </div>
+</div>
+<div class="row">
+    <?php
+    $body = '';
+    foreach ($properties as $property) {
+        $body .= '<div class="col-sm-4">';
+        $body .= '{{ '.$property['name'].' }}';
+        $body .= '</div>';
+    }
+    echo $body;
+    ?>
 </div>
 
 
@@ -84,21 +83,6 @@ echo $view['assets']->includeStylesheet('plugins/MauticRecombeeBundle/Assets/css
 <?php echo $view['form']->row($form['isPublished']); ?>
 <?php echo $view['form']->row($form['object']); ?>
 
-
-<hr />
-<h5><?php echo $view['translator']->trans('mautic.plugin.recombee.template.tags'); ?></h5>
-<br />
-<?php
-
-$body = '<div class="row">';
-foreach ($properties as $property) {
-    $body .= '<div class="col-sm-6">';
-    $body .= '{{ '.$property['name'].' }}';
-    $body .= '</div>';
-}
-$body .= '</div>';
-echo $body;
-?>
 <div class="ide">
     <?php echo $view['form']->rest($form); ?>
 </div>

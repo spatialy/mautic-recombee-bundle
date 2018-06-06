@@ -110,7 +110,7 @@ class PageSubscriber extends CommonSubscriber
     public function onPageDisplay(Events\PageDisplayEvent $event)
     {
         if ($event->getPage()) {
-            $event->setContent($this->recombeeTokenReplacer->replacePageTokens($event->getContent()));
+            $event->setContent($this->recombeeTokenReplacer->replaceTokensFromContent($event->getContent()));
         }
     }
 }

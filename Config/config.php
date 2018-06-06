@@ -25,8 +25,7 @@ return [
                     'mautic.channel.model.queue',
                     'mautic.email.model.send_email_to_user',
                     'mautic.recombee.service.api.commands',
-                    'mautic.recombee.service.token.finder',
-                    'mautic.recombee.service.token.generator'
+                    'mautic.campaign.model.campaign'
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [
@@ -103,7 +102,8 @@ return [
                     'mautic.recombee.api.recombee',
                     'monolog.logger.mautic',
                     'translator',
-                    'mautic.recombee.service.api.segment.mapping'
+                    'mautic.recombee.service.api.segment.mapping',
+                    'mautic.recombee.service.token.finder',
                 ],
             ],
             'mautic.recombee.service.api.segment.mapping' => [
@@ -157,7 +157,6 @@ return [
             'mautic.integration.recombee' => [
                 'class'     => \MauticPlugin\MauticRecombeeBundle\Integration\RecombeeIntegration::class,
                 'arguments' => [
-                    'mautic.recombee.helper',
                 ],
             ],
         ],

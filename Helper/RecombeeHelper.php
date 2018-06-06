@@ -218,6 +218,7 @@ class RecombeeHelper
             } else {
                 $apiKeys = $integration->getKeys();
             }
+
             $database   = $apiKeys['database'];
             $secret_key = $apiKeys['secret_key'];
 

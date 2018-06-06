@@ -13,6 +13,7 @@ namespace MauticPlugin\MauticRecombeeBundle\Api\Service;
 
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenFinder;
 use Psr\Log\LoggerInterface;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
@@ -29,7 +30,15 @@ class ApiCommands
         'SetViewPortion'  => ['itemId', 'portion'],
     ];
 
-    private $commandOutput;
+    /**
+     * @var array
+     */
+    private $commandOutput = [];
+
+    /**
+     * @var md5
+     */
+    private $cacheId;
 
     /**
      * @var RecombeeApi
@@ -52,24 +61,32 @@ class ApiCommands
     protected $segmentMapping;
 
     /**
+     * @var RecombeeTokenFinder
+     */
+    private $recombeeTokenFinder;
+
+    /**
      * ApiCommands constructor.
      *
      * @param RecombeeApi         $recombeeApi
      * @param LoggerInterface     $logger
      * @param TranslatorInterface $translator
      * @param SegmentMapping      $segmentMapping
+     * @param RecombeeTokenFinder $recombeeTokenFinder
      */
     public function __construct(
         RecombeeApi $recombeeApi,
         LoggerInterface $logger,
         TranslatorInterface $translator,
-        SegmentMapping $segmentMapping
+        SegmentMapping $segmentMapping,
+        RecombeeTokenFinder $recombeeTokenFinder
     ) {
 
-        $this->recombeeApi    = $recombeeApi;
-        $this->logger         = $logger;
-        $this->translator     = $translator;
-        $this->segmentMapping = $segmentMapping;
+        $this->recombeeApi         = $recombeeApi;
+        $this->logger              = $logger;
+        $this->translator          = $translator;
+        $this->segmentMapping      = $segmentMapping;
+        $this->recombeeTokenFinder = $recombeeTokenFinder;
     }
 
     private function optionsChecker($apiRequest, $options)
@@ -100,9 +117,6 @@ class ApiCommands
      */
     public function callCommand($apiRequest, array $batchOptions)
     {
-        if (false === $this->optionsChecker($apiRequest, $batchOptions)) {
-            //   return false;
-        }
         // not batch
         if (!isset($batchOptions[0])) {
             $batchOptions = [$batchOptions];
@@ -112,23 +126,25 @@ class ApiCommands
         foreach ($batchOptions as $options) {
             $userId = $options['userId'];
             unset($options['userId']);
-            $itemId = $options['itemId'];
-            unset($options['itemId']);
+            if (isset($options['itemId'])) {
+                $itemId = $options['itemId'];
+                unset($options['itemId']);
+            }
+            $req = '';
             switch ($apiRequest) {
                 case "AddDetailView":
                 case "AddPurchase":
                 case "AddCartAddition":
                 case "AddBookmark":
-                    $requests[] = new $command(
+                    $req = new $command(
                         $userId,
-                        $itemId,
-                        $options
+                        $itemId
                     );
                     break;
                 case "AddRating":
                     $rating = $options['rating'];
                     unset($options['rating']);
-                    $requests[] = new $command(
+                    $req = new $command(
                         $userId,
                         $itemId,
                         $rating,
@@ -138,7 +154,7 @@ class ApiCommands
                 case "SetViewPortion":
                     $portion = $options['portion'];
                     unset($options['portion']);
-                    $requests[] = new $command(
+                    $req = new $command(
                         $userId,
                         $itemId,
                         $portion,
@@ -149,18 +165,26 @@ class ApiCommands
                 case "RecommendItemsToUser":
                     $limit = $options['limit'];
                     unset($options['limit']);
-                    $requests[] = new $command(
+                    $req = new $command(
                         $userId,
                         $limit,
                         $options
                     );
                     break;
             }
+            if ($req) {
+                $req->setTimeout(3000);
+                $requests[] = $req;
+            }
             //$this->segmentMapping->map($apiRequest, $userId);
         }
 
 
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
+        $this->setCacheId($requests);
+        if ($this->hasCommandOutput()) {
+            return $this->getCommandOutput();
+        }
         try {
             //batch processing
             if (count($requests) > 1) {
@@ -195,6 +219,25 @@ class ApiCommands
         $this->callApi($processedData->getRequestsPropertyValues());
     }
 
+    /**
+     * @param                                                          $content
+     * @param int                                                      $minAge
+     * @param int                                                      $maxAge
+     */
+    public function hasAbandonedCart($content, int $minAge, int $maxAge)
+    {
+        $tokens = $this->findTokens($content);
+        if (!empty($tokens)) {
+            foreach ($tokens as $key => $token) {
+                $this->getAbandonedCart($token, $minAge, $maxAge);
+                $items = $this->getcommandoutput();
+                if (!empty($items)) {
+                    return true;
+                }
+            }
+        }
+    }
+
     public function getAbandonedCart(RecombeeToken $recombeeToken, $cartMinAge, $cartMaxAge)
     {
         $options = [
@@ -224,6 +267,11 @@ class ApiCommands
         ];
         $recombeeToken->setAddOptions($options);
         $this->callCommand('RecommendItemsToUser', $recombeeToken->getOptions(true));
+        if (!empty($this->getCommandOutput()['recomms'])) {
+            return $this->getCommandOutput()['recomms'];
+        }
+
+        return [];
     }
 
     public function callApi($requests)
@@ -234,6 +282,11 @@ class ApiCommands
 
         if (!isset($requests[0])) {
             $requests = [$requests];
+        }
+        $this->setCacheId($requests);
+
+        if ($this->hasCommandOutput()) {
+            return $this->getCommandOutput();
         }
         try {
             //batch processing
@@ -258,7 +311,7 @@ class ApiCommands
      */
     public function getCommandOutput()
     {
-        return $this->commandOutput;
+        return $this->commandOutput[$this->getCacheId()];
     }
 
     /**
@@ -266,7 +319,7 @@ class ApiCommands
      */
     public function hasCommandOutput()
     {
-        if (!empty($this->commandOutput)) {
+        if (!empty($this->commandOutput[$this->getCacheId()])) {
             return true;
         }
 
@@ -279,7 +332,7 @@ class ApiCommands
     public function setCommandOutput(
         $commandOutput
     ) {
-        $this->commandOutput = $commandOutput;
+        $this->commandOutput[$this->getCacheId()] = $commandOutput;
     }
 
     /**
@@ -307,6 +360,22 @@ class ApiCommands
         }
 
         return true;
+    }
+
+    /**
+     * @return
+     */
+    public function getCacheId()
+    {
+        return $this->cacheId;
+    }
+
+    /**
+     * @param  $cacheId
+     */
+    public function setCacheId($cacheId)
+    {
+        $this->cacheId = serialize($cacheId);
     }
 
     /**

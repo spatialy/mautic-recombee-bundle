@@ -87,41 +87,20 @@ class RecombeeGenerator
         if (!$recombee instanceof Recombee) {
             return;
         }
-        $recombeeToken->setUserId(1);
-        $options = [
-            "expertSettings" => [
-                "algorithmSettings" => [
-                    "evaluator" => [
-                        "name" => "reql",
-                    ],
-                    "model"     => [
-                        "name"     => "reminder",
-                        "settings" => [
-                            "parameters" => [
-                                "interaction-types"        => [
-                                    "cart-addition" => [
-                                        "enabled" => true,
-                                        "weight"  => 1.0,
-                                        "min-age" => 3600,
-                                        "max-age" => 3600 * 48,
-                                    ],
-                                ],
-                                "filter-purchased-max-age" => 3600 * 72,
-                            ],
-                        ],
-                    ],
-                ],
-            ],
-        ];
+
         $options['filter']           = $recombee->getFilter();
         $options['booster']          = $recombee->getBoost();
         $options['returnProperties'] = true;
         $recombeeToken->setAddOptions($options);
-
+        $recombeeToken->setUserId(288);
         try {
             switch ($recombeeToken->getType()) {
                 case "RecommendItemsToUser":
-                    $this->apiCommands($recombeeToken->getType(), $recombeeToken->getOptions());
+                    $this->apiCommands->callCommand($recombeeToken->getType(), $recombeeToken->getOptions([ 'userId', 'limit']));
+                    $items = $this->apiCommands->getCommandOutput();
+                    break;
+                case "ListUserCartAdditions":
+                    $this->apiCommands->getAbandonedCart($recombeeToken, 0, 12);
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
@@ -141,7 +120,7 @@ class RecombeeGenerator
     }
 
 
-    public function getContentByToken(RecombeeToken $recombeeToken, $template)
+    public function getContentByToken(RecombeeToken $recombeeToken)
     {
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
 
@@ -149,11 +128,7 @@ class RecombeeGenerator
             return;
         }
 
-        $templateContent = implode('', $recombee->getPageTemplate());
-        if ('emailTemplate' === $template) {
-            $templateContent = implode('', $recombee->getEmailTemplate());
-        }
-
+        $templateContent = implode('', $recombee->getTemplate());
         $items = $this->getResultByToken($recombeeToken);
 
         if (!empty($items)) {
