@@ -136,82 +136,11 @@ class RecombeeType extends AbstractType
 
 
 
-        $builder->add(
-            'object',
-            'choice',
-            [
-                'choices'     => [
-                    'RecommendItemsToUser' => 'mautic.plugin.recombee.form.recommendations.items_to_user',
-                    'ListUserCartAdditions' => 'mautic.plugin.recombee.form.recommendations.user_cart_additions',
-                ],
-                'expanded'    => false,
-                'multiple'    => false,
-                'label'       => 'mautic.plugin.recombee.form.recommendations.object',
-                'label_attr'  => ['class' => ''],
-                'empty_value' => false,
-                'required'    => true,
-                'constraints' => [
-                    new NotBlank(
-                        [
-                            'message' => 'mautic.core.value.required',
-                        ]
-                    ),
-                ],
-            ]
-        );
-
-        $builder->add(
-            'type',
-            'choice',
-            [
-                'choices'     => [
-                    'items' => 'mautic.plugin.recombee.form.recommendations.items',
-                    'users' => 'mautic.plugin.recombee.form.recommendations.users',
-                ],
-                'expanded'    => false,
-                'multiple'    => false,
-                'label'       => 'mautic.plugin.recombee.form.recommendations.type',
-                'label_attr'  => ['class' => ''],
-                'empty_value' => false,
-                'required'    => true,
-                'constraints' => [
-                    new NotBlank(
-                        [
-                            'message' => 'mautic.core.value.required',
-                        ]
-                    ),
-                ],
-            ]
-        );
-
-
         $builder->add('isPublished', 'yesno_button_group');
 
         $builder->add(
             'buttons',
             'form_buttons'
-        /*[
-            'post_extra_buttons' => [
-                [
-                    'name'  => 'example',
-                    'label' => 'mautic.plugin.recombee.example',
-                    'attr'  => [
-                        'class'       => 'btn btn-default btn-dnd',
-                        'icon'        => 'fa fa-building',
-                        'data-toggle' => 'ajaxmodal',
-                        'data-target' => '#MauticSharedModal',
-                        'data-header' => $this->translator->trans('mautic.plugin.recombee.example'),
-                        'href'        => $this->router->generate(
-                            'mautic_recombee_action',
-                            [
-                                'objectId'     => $options['data']->getId(),
-                                'objectAction' => 'example',
-                            ]
-                        ),
-                    ],
-                ],
-            ],
-        ]*/
         );
 
         if (!empty($options['action'])) {

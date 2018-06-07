@@ -173,7 +173,7 @@ class ApiCommands
                     break;
             }
             if ($req) {
-                $req->setTimeout(3000);
+                $req->setTimeout(5000);
                 $requests[] = $req;
             }
             //$this->segmentMapping->map($apiRequest, $userId);
@@ -224,9 +224,9 @@ class ApiCommands
      * @param int                                                      $minAge
      * @param int                                                      $maxAge
      */
-    public function hasAbandonedCart($content, int $minAge, int $maxAge)
+    public function hasAbandonedCart($content, $minAge, $maxAge)
     {
-        $tokens = $this->findTokens($content);
+        $tokens = $this->recombeeTokenFinder->findTokens($content);
         if (!empty($tokens)) {
             foreach ($tokens as $key => $token) {
                 $this->getAbandonedCart($token, $minAge, $maxAge);

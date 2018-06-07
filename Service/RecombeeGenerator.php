@@ -88,19 +88,14 @@ class RecombeeGenerator
             return;
         }
 
-        $options['filter']           = $recombee->getFilter();
-        $options['booster']          = $recombee->getBoost();
+        //$options['filter']           = $recombee->getFilter();
+        //$options['booster']          = $recombee->getBoost();
         $options['returnProperties'] = true;
         $recombeeToken->setAddOptions($options);
-        $recombeeToken->setUserId(288);
         try {
             switch ($recombeeToken->getType()) {
                 case "RecommendItemsToUser":
-                    $this->apiCommands->callCommand($recombeeToken->getType(), $recombeeToken->getOptions([ 'userId', 'limit']));
-                    $items = $this->apiCommands->getCommandOutput();
-                    break;
-                case "ListUserCartAdditions":
-                    $this->apiCommands->getAbandonedCart($recombeeToken, 0, 12);
+                $this->apiCommands->callCommand('RecommendItemsToUser', $recombeeToken->getOptions([ 'userId', 'limit']));
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
@@ -127,7 +122,6 @@ class RecombeeGenerator
         if (!$recombee instanceof Recombee) {
             return;
         }
-
         $templateContent = implode('', $recombee->getTemplate());
         $items = $this->getResultByToken($recombeeToken);
 
@@ -138,7 +132,6 @@ class RecombeeGenerator
                 // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
                 $output .= $template->render($item['values']);
             }
-
             return $output;
         }
     }

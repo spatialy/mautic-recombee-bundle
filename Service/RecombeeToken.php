@@ -11,9 +11,11 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
+use Mautic\CampaignBundle\Entity\LeadRepository;
+use Mautic\CampaignBundle\Event\CampaignEvent;
+use Mautic\CampaignBundle\Model\CampaignModel;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Tracker\ContactTracker;
-use Mautic\LeadBundle\Tracker\Service\DeviceTrackingService\DeviceTrackingService;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 
@@ -52,17 +54,34 @@ class RecombeeToken
      */
     private $addOptions = [];
 
+    /**
+     * @var
+     */
+    private $event;
+
+    /**
+     * @var CampaignModel
+     */
+    private $campaignModel;
+
+    /**
+     * @var
+     */
+    private $minAge;
+
 
     /**
      * RecombeeToken constructor.
      *
      * @param RecombeeModel  $recombeeModel
      * @param ContactTracker $contactTracker
+     * @param CampaignModel  $campaignModel
      */
-    public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker)
+    public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker, CampaignModel $campaignModel)
     {
         $this->recombeeModel  = $recombeeModel;
         $this->contactTracker = $contactTracker;
+        $this->campaignModel = $campaignModel;
     }
 
 
@@ -76,7 +95,6 @@ class RecombeeToken
             }
         }
     }
-
 
     /**
      * @param $tokenValue
@@ -109,12 +127,9 @@ class RecombeeToken
      */
     public function getType()
     {
-        if (!$this->type && $this->entity) {
-            return $this->entity->getObject();
-        } else {
-            if (!$this->type) {
-                return 'RecommendItemsToUser';
-            }
+        // default type
+        if (!$this->type) {
+            return 'RecommendItemsToUser';
         }
 
         return $this->type;
@@ -279,8 +294,41 @@ class RecombeeToken
      */
     public function setAddOptions(array $addOptions)
     {
-        $this->addOptions = $addOptions;
+        $this->addOptions = array_merge($this->addOptions, $addOptions);
     }
+
+    /**
+     * @return mixed
+     */
+    public function getEvent()
+    {
+        return $this->event;
+    }
+
+    /**
+     * @param mixed $event
+     */
+    public function setEvent($event)
+    {
+        $this->event = $event;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMinAge()
+    {
+        return $this->minAge;
+    }
+
+    /**
+     * @param mixed $minAge
+     */
+    public function setMinAge($minAge)
+    {
+        $this->minAge = $minAge;
+    }
+
 
 
 }

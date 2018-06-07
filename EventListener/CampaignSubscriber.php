@@ -22,8 +22,8 @@ use Mautic\EmailBundle\Exception\EmailCouldNotBeSentException;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
 use Mautic\LeadBundle\Model\LeadModel;
-use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\RecombeeEvents;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 
 /**
  * Class CampaignSubscriber.
@@ -56,23 +56,19 @@ class CampaignSubscriber extends CommonSubscriber
     private $sendEmailToUser;
 
     /**
-     * @var ApiCommands
+     * @var RecombeeTokenReplacer
      */
-    private $apiCommands;
+    private $recombeeTokenReplacer;
+
 
     /**
-     * @var CampaignModel
-     */
-    private $campaignModel;
-
-    /**
-     * @param LeadModel           $leadModel
-     * @param EmailModel          $emailModel
-     * @param EventModel          $eventModel
-     * @param MessageQueueModel   $messageQueueModel
-     * @param SendEmailToUser     $sendEmailToUser
-     * @param ApiCommands         $apiCommands
-     * @param CampaignModel       $campaignModel
+     * @param LeadModel             $leadModel
+     * @param EmailModel            $emailModel
+     * @param EventModel            $eventModel
+     * @param MessageQueueModel     $messageQueueModel
+     * @param SendEmailToUser       $sendEmailToUser
+     * @param RecombeeTokenReplacer $recombeeTokenReplacer
+     * @param CampaignModel         $campaignModel
      */
     public function __construct(
         LeadModel $leadModel,
@@ -80,7 +76,7 @@ class CampaignSubscriber extends CommonSubscriber
         EventModel $eventModel,
         MessageQueueModel $messageQueueModel,
         SendEmailToUser $sendEmailToUser,
-        ApiCommands $apiCommands,
+        RecombeeTokenReplacer $recombeeTokenReplacer,
         CampaignModel $campaignModel
     ) {
         $this->leadModel           = $leadModel;
@@ -88,8 +84,8 @@ class CampaignSubscriber extends CommonSubscriber
         $this->campaignEventModel  = $eventModel;
         $this->messageQueueModel   = $messageQueueModel;
         $this->sendEmailToUser     = $sendEmailToUser;
-        $this->apiCommands         = $apiCommands;
         $this->campaignModel       = $campaignModel;
+        $this->recombeeTokenReplacer = $recombeeTokenReplacer;
     }
 
     /**
@@ -177,19 +173,16 @@ class CampaignSubscriber extends CommonSubscriber
 
         $event->setChannel('email', $emailId);
 
-
-        $content  = $email->getContent();
-        $hasItems = $this->apiCommands->hasAbandonedCart($content, 1, $seconds);
+        $email->setCustomHtml($this->recombeeTokenReplacer->replaceTokensFromContent($email->getCustomHtml(), $this->getAbandonedCartOptions(1, $seconds)));
 
         // check if cart has some items
-        if (!$hasItems) {
+        if (!$this->recombeeTokenReplacer->isHasItems()) {
             return $event->setFailed(
                 'No recombee results for this contact #'.$leadCredentials['id'].' and  email #'.$email->getId()
             );
         }
 
         $emailSent = $this->emailModel->sendEmail($email, $leadCredentials, $options);
-
         if (is_array($emailSent)) {
             $errors = implode('<br />', $emailSent);
 
@@ -206,6 +199,41 @@ class CampaignSubscriber extends CommonSubscriber
         }
 
         return $event->setResult($emailSent);
+    }
+
+    /**
+     * @param $cartMinAge
+     * @param $cartMaxAge
+     *
+     * @return array
+     */
+    private function getAbandonedCartOptions($cartMinAge, $cartMaxAge)
+    {
+        return [
+            "expertSettings" => [
+                "algorithmSettings" => [
+                    "evaluator" => [
+                        "name" => "reql",
+                    ],
+                    "model"     => [
+                        "name"     => "reminder",
+                        "settings" => [
+                            "parameters" => [
+                                "interaction-types"        => [
+                                    "cart-addition" => [
+                                        "enabled" => true,
+                                        "weight"  => 1.0,
+                                        "min-age" => $cartMinAge,
+                                        "max-age" => $cartMaxAge,
+                                    ],
+                                ],
+                                "filter-purchased-max-age" => $cartMaxAge,
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 
     /**

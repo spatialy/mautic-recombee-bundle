@@ -63,16 +63,6 @@ class Recombee extends FormEntity
     private $numberOfItems = 9;
 
     /**
-     * @var string
-     */
-    private $type;
-
-    /**
-     * @var string
-     */
-    private $object;
-
-    /**
      * @var html
      */
     private $template;
@@ -125,17 +115,6 @@ class Recombee extends FormEntity
             ->columnName('template')
             ->nullable()
             ->build();
-
-        $builder->createField('type', 'text')
-            ->columnName('type')
-            ->nullable()
-            ->build();
-
-        $builder->createField('object', 'text')
-            ->columnName('object')
-            ->nullable()
-            ->build();
-
     }
 
     /**
@@ -293,40 +272,6 @@ class Recombee extends FormEntity
         $this->numberOfItems = $numberOfItems;
     }
 
-
-    /**
-     * @return string
-     */
-    public function getType()
-    {
-        return $this->type;
-    }
-
-    /**
-     * @param string $type
-     */
-    public function setType($type)
-    {
-        $this->isChanged('type', $type);
-        $this->type = $type;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getObject()
-    {
-        return $this->object;
-    }
-
-    /**
-     * @param mixed $object
-     */
-    public function setObject($object)
-    {
-        $this->isChanged('object', $object);
-        $this->object = $object;
-    }
 
     /**
      * @return mixed

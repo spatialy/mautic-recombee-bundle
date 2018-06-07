@@ -110,7 +110,7 @@ class RecombeeeTest extends AbstractMauticTestCase
         //check for abandoned cart empty
         $this->apiCommand->getAbandonedCart($this->recombeeToken, 0, 0);
         $this->assertTrue(empty($this->apiCommand->getCommandOutput()['recomms']));
-sleep(5);
+        return;
         $this->apiCommand->callCommand(
             'AddPurchase',
             $this->getItemsToEvent(['id', 'amount', 'price', 'profit'], true)
@@ -145,7 +145,7 @@ sleep(5);
 
     private function createLead()
     {
-        $leadEmail = 'rafoxesi8@loketa.com';
+        $leadEmail = 'kuzmany@gmail.com';
         $firstname = 'Testname';
         $lastname  = 'Testlastname';
 

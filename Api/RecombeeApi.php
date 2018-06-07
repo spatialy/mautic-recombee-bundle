@@ -73,7 +73,6 @@ class RecombeeApi extends AbstractRecombeeApi
             if (!empty($_POST['integration_details']['apiKeys'])) {
                 $keys = $_POST['integration_details']['apiKeys'];
             }
-
             if (empty($keys['database']) && empty($keys['secret_key'])) {
                 $keys['database']   = trim(getenv('d'));
                 $keys['secret_key'] = trim(getenv('s'));

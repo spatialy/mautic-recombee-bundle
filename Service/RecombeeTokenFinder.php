@@ -34,7 +34,6 @@ class RecombeeTokenFinder
         $this->recombeeToken = $recombeeToken;
     }
 
-
     public function findTokens($content)
     {
         $regex   = '/'.$this->recombeeRegex.'/i';

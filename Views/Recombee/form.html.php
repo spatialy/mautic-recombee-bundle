@@ -22,7 +22,6 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
         <?php echo $view['form']->row($form['numberOfItems']); ?>
 
         <div style="display:none">
-            <?php echo $view['form']->row($form['type']); ?>
             <?php echo $view['form']->row($form['filter']); ?>
             <?php echo $view['form']->row($form['boost']); ?>
         </div>
@@ -60,20 +59,19 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
 </div>
 <div class="row">
     <?php
-    $body = '';
+    /*$body = '';
     foreach ($properties as $property) {
         $body .= '<div class="col-sm-4">';
         $body .= '{{ '.$property['name'].' }}';
         $body .= '</div>';
     }
-    echo $body;
+    echo $body;*/
     ?>
 </div>
 
 
 <?php
 
-echo $view['assets']->includeScript('plugins/MauticRecombeeBundle/Assets/js/recombee.js');
 echo $view['assets']->includeStylesheet('plugins/MauticRecombeeBundle/Assets/css/recombee.css');
 ?>
 <br>
@@ -81,7 +79,6 @@ echo $view['assets']->includeStylesheet('plugins/MauticRecombeeBundle/Assets/css
 
 <?php $view['slots']->start('rightFormContent'); ?>
 <?php echo $view['form']->row($form['isPublished']); ?>
-<?php echo $view['form']->row($form['object']); ?>
 
 <div class="ide">
     <?php echo $view['form']->rest($form); ?>

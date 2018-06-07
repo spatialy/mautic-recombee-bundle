@@ -24,8 +24,8 @@ return [
                     'mautic.campaign.model.event',
                     'mautic.channel.model.queue',
                     'mautic.email.model.send_email_to_user',
-                    'mautic.recombee.service.api.commands',
-                    'mautic.campaign.model.campaign'
+                    'mautic.recombee.service.replacer',
+                    'mautic.campaign.model.campaign',
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [
@@ -63,11 +63,6 @@ return [
                     'translator',
                 ],
             ],
-            'mautic.form.type.recombee.example' => [
-                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeExampleType::class,
-                'alias' => 'recombee_example',
-            ],
-
             'mautic.form.type.recombee.types'             => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeTypesType::class,
                 'alias' => 'recombee_types',
@@ -118,6 +113,7 @@ return [
                 'arguments' => [
                     'mautic.recombee.model.recombee',
                     'mautic.tracker.contact',
+                    'mautic.campaign.model.campaign',
                 ],
             ],
             'mautic.recombee.service.token.finder'        => [
