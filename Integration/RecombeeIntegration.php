@@ -149,16 +149,15 @@ class RecombeeIntegration extends AbstractIntegration
 
 
             $builder->add(
-                'abandoned_cart_campaign',
-                'campaign_list',
+                'abandoned_cart_segment',
+                'leadlist_choices',
                 [
-                    'label'      => 'mautic.recombee.campaign.abandoned.cart',
+                    'label'      => 'mautic.recombee.segment.abandoned.cart',
                     'label_attr' => ['class' => 'control-label'],
                     'attr'       => [
-                        'class'   => 'form-control',
-                        'tooltip' => 'mautic.recombee.campaign.abandoned.cart.tooltip',
+                        'class' => 'form-control',
+                        'tooltip'=> 'mautic.recombee.segment.abandoned.cart.tooltip',
                         'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
-
                     ],
                     'multiple'   => false,
                     'expanded'   => false,

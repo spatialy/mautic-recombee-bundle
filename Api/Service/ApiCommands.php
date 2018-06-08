@@ -176,7 +176,7 @@ class ApiCommands
                 $req->setTimeout(5000);
                 $requests[] = $req;
             }
-            //$this->segmentMapping->map($apiRequest, $userId);
+            $this->segmentMapping->map($apiRequest, $userId);
         }
 
 

@@ -32,8 +32,6 @@ class SegmentMapping
      */
     private $integrationHelper;
 
-    private $integrationPrefix = 'segment_on_';
-
     /**
      * ApiCommands constructor.
      *
@@ -59,38 +57,24 @@ class SegmentMapping
         $settings   = $this->integrationHelper->getIntegrationObject('Recombee')->getIntegrationSettings(
         )->getFeatureSettings();
 
-        if (empty($settings['abandoned_cart'])) {
+        if (empty($settings['abandoned_cart']) || empty($settings['abandoned_cart_segment'])) {
             return;
         }
+
         if (!in_array($apiRequest, ['AddCartAddition', 'AddPurchase'])) {
             return;
         }
 
-        if (!empty($settings[$this->integrationPrefix.'AddCartAddition'])) {
-            $segmentAddCartAddition = $settings[$this->integrationPrefix.'AddCartAddition'];
-            if ($segmentAddCartAddition) {
-                switch ($apiRequest) {
-                    case "AddCartAddition":
-                        $this->listModel->addLead($lead, [$segmentAddCartAddition]);
-                        break;
-                    case "AddPurchase":
-                        $this->listModel->removeLead($lead, [$segmentAddCartAddition]);
-                        break;
-                }
-            }
-        }
+        switch ($apiRequest) {
+            case "AddCartAddition":
+                $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
 
-        if (!empty($settings[$this->integrationPrefix.'AddPurchase'])) {
-            $segmentAddPurchase = $settings[$this->integrationPrefix.'AddPurchase'];
-            if ($segmentAddPurchase) {
-                switch ($apiRequest) {
-                    case "AddPurchase":
-                        $this->listModel->addLead($lead, [$segmentAddPurchase]);
-                        break;
-                }
-            }
-        }
+                break;
+            case "AddPurchase":
+                $this->listModel->removeLead($lead, [$settings['abandoned_cart_segment']]);
+                break;
 
+        }
     }
 }
 
