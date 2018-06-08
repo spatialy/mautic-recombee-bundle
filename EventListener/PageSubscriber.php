@@ -96,6 +96,7 @@ class PageSubscriber extends CommonSubscriber
         if (!empty($request->get('Recombee'))) {
             $commands = \GuzzleHttp\json_decode($request->get('Recombee'), true);
             foreach ($commands as $apiRequest => $options) {
+                // try get userId If not set directly from tracking code
                 if (!isset($options['userId'])) {
                     $options['userId'] = $event->getLead()->getId();
                 }
