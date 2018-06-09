@@ -14,6 +14,7 @@ namespace MauticPlugin\MauticRecombeeBundle\Controller;
 use Mautic\CoreBundle\Exception as MauticException;
 use Mautic\CoreBundle\Controller\AbstractStandardFormController;
 use Mautic\PageBundle\Event\PageDisplayEvent;
+use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
@@ -144,20 +145,14 @@ class RecombeeController extends AbstractStandardFormController
      */
     protected function getViewArguments(array $args, $action)
     {
-        /** @var RecombeeHelper $recombeeHelper */
-        $recombeeHelper = $this->get('mautic.recombee.helper');
+        /** @var ApiCommands $apiCommands */
+        $apiCommands = $this->get('mautic.recombee.service.api.commands');
         $viewParameters = [];
         switch ($action) {
             case 'new':
             case 'edit':
-         /*       $entity = $args['entity'];
-
-                $params = $recombeeHelper->getRecombeeKeysFromEntity($entity);
-                $viewParameters['params'] = $params;
-                $properties = $recombeeHelper->getClient()->send(new $params['listPropertyClass']());;
-                $viewParameters['properties'] = $properties;
-*/
-                break;
+              $viewParameters['properties'] = $apiCommands->callCommand('ListItemProperties');
+            break;
         }
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
 

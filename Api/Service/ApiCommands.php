@@ -115,7 +115,7 @@ class ApiCommands
      * @param       $apiRequest
      * @param array $batchOptions
      */
-    public function callCommand($apiRequest, array $batchOptions)
+    public function callCommand($apiRequest, array $batchOptions = [])
     {
         // not batch
         if (!isset($batchOptions[0])) {
@@ -124,14 +124,22 @@ class ApiCommands
         $command  = 'Recombee\RecommApi\Requests\\'.$apiRequest;
         $requests = [];
         foreach ($batchOptions as $options) {
-            $userId = $options['userId'];
-            unset($options['userId']);
+            $userId = null;
+            if (isset($options['userId'])) {
+                $userId = $options['userId'];
+                unset($options['userId']);
+            }
+            $itemId = null;
             if (isset($options['itemId'])) {
                 $itemId = $options['itemId'];
                 unset($options['itemId']);
             }
             $req = '';
             switch ($apiRequest) {
+                case "ListItemProperties":
+                case "ListUserProperties":
+                    $req = new $command();
+                    break;
                 case "AddDetailView":
                 case "AddPurchase":
                 case "AddCartAddition":
@@ -176,15 +184,13 @@ class ApiCommands
                 $req->setTimeout(5000);
                 $requests[] = $req;
             }
+
             $this->segmentMapping->map($apiRequest, $userId);
         }
 
 
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
         $this->setCacheId($requests);
-        if ($this->hasCommandOutput()) {
-            return $this->getCommandOutput();
-        }
         try {
             //batch processing
             if (count($requests) > 1) {
@@ -192,7 +198,9 @@ class ApiCommands
             } elseif (count($requests) == 1) {
                 $this->setCommandOutput($this->recombeeApi->getClient()->send(end($requests)));
             }
-            //$this->logger->debug('Recombee results:'.var_dump($this->getCommandOutput()));
+            if ($this->hasCommandOutput()) {
+                return $this->getCommandOutput();
+            }
         } catch (Ex\ResponseException $e) {
 
             die($e->getMessage());

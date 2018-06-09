@@ -59,13 +59,15 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
 </div>
 <div class="row">
     <?php
-    /*$body = '';
-    foreach ($properties as $property) {
-        $body .= '<div class="col-sm-4">';
-        $body .= '{{ '.$property['name'].' }}';
-        $body .= '</div>';
+    $body = '';
+    if (!empty($properties)) {
+        foreach ($properties as $property) {
+            $body .= '<div class="col-sm-4">';
+            $body .= '{{ '.$property['name'].' }}';
+            $body .= '</div>';
+        }
     }
-    echo $body;*/
+    echo $body;
     ?>
 </div>
 
