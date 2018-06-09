@@ -202,7 +202,6 @@ class ApiCommands
                 return $this->getCommandOutput();
             }
         } catch (Ex\ResponseException $e) {
-
             die($e->getMessage());
             $this->logger->error(
                 $this->translator->trans(
