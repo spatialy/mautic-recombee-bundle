@@ -215,15 +215,23 @@ class ApiCommands
     public function ImportUser($items)
     {
         $processedData = new ProcessData($items, 'AddUserProperty', 'SetUserValues');
-        $this->callApi($processedData->getRequestsPropertyName());
-        $this->callApi($processedData->getRequestsPropertyValues());
+        try {
+            $this->callApi($processedData->getRequestsPropertyName());
+            $this->callApi($processedData->getRequestsPropertyValues());
+        } catch (\Exception $exception) {
+
+        }
     }
 
     public function ImportItems($items)
     {
         $processedData = new ProcessData($items, 'AddItemProperty', 'SetItemValues');
-        $this->callApi($processedData->getRequestsPropertyName());
-        $this->callApi($processedData->getRequestsPropertyValues());
+        try {
+            $this->callApi($processedData->getRequestsPropertyName());
+            $this->callApi($processedData->getRequestsPropertyValues());
+        } catch (\Exception $exception) {
+
+        }
     }
 
     /**
