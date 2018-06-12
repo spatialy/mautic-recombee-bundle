@@ -78,15 +78,24 @@ class RecombeeApi extends AbstractRecombeeApi
                 $keys['secret_key'] = trim(getenv('s'));
             }
 
-            if (!empty($keys['database']) && !empty($keys['secret_key'])) {
-                $this->client = new Client(
-                    $keys['database'],
-                    $keys['secret_key'],
-                    'https',
-                    ['serviceName' => 'Mautic '.$versionHelper->getVersion()]
-                );
-            }
         }
+
+        $database = '';
+        if (!empty($keys['database'])) {
+            $database = $keys['database'];
+        }
+
+        $secretKey = '';
+        if (!empty($keys['secret_key'])) {
+            $secretKey = $keys['secret_key'];
+        }
+
+        $this->client = new Client(
+            $database,
+            $secretKey,
+            'https',
+            ['serviceName' => 'Mautic '.$versionHelper->getVersion()]
+        );
         parent::__construct($pageTrackableModel);
         $this->integrationHelper = $integrationHelper;
         $this->versionHelper = $versionHelper;

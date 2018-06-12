@@ -141,14 +141,21 @@ class ApiCommands
                     $req = new $command();
                     break;
                 case "AddDetailView":
-                case "AddPurchase":
-                case "AddCartAddition":
+                case "DeleteCartAddition":
                 case "AddBookmark":
                     $req = new $command(
                         $userId,
                         $itemId
                     );
                     break;
+                case "AddCartAddition":
+                case "AddPurchase":
+                $req = new $command(
+                    $userId,
+                    $itemId,
+                    $options
+                );
+                break;
                 case "AddRating":
                     $rating = $options['rating'];
                     unset($options['rating']);

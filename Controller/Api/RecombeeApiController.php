@@ -30,10 +30,6 @@ class RecombeeApiController extends CommonApiController
      */
     protected $recombeeHelper;
 
-    private $components = ['CartAddition', 'Purchase', 'Rating', 'Bookmark', 'DetailView'];
-
-    private $actions = ['Add', 'Delete'];
-
     /**
      * @param FilterControllerEvent $event
      */
