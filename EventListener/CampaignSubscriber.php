@@ -170,9 +170,7 @@ class CampaignSubscriber extends CommonSubscriber
             'return_errors' => true,
             'dnc_as_error'  => true,
         ];
-
-        $event->setChannel('email', $emailId);
-
+        $event->setChannel('recombee-abandoned-email', $emailId);
         $email->setCustomHtml($this->recombeeTokenReplacer->replaceTokensFromContent($email->getCustomHtml(), $this->getAbandonedCartOptions(1, $seconds)));
 
         // check if cart has some items
