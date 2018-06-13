@@ -112,7 +112,7 @@ return [
                 'class'     => MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken::class,
                 'arguments' => [
                     'mautic.recombee.model.recombee',
-                    'mautic.tracker.contact',
+                    'mautic.lead.model.lead',
                     'mautic.campaign.model.campaign',
                 ],
             ],
@@ -135,7 +135,6 @@ return [
                 'arguments' => [
                     'mautic.recombee.model.recombee',
                     'mautic.recombee.api.recombee',
-                    'mautic.tracker.contact',
                     'mautic.lead.model.lead',
                     'twig',
                     'mautic.recombee.service.api.commands'

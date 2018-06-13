@@ -11,11 +11,8 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
-use Mautic\CampaignBundle\Entity\LeadRepository;
-use Mautic\CampaignBundle\Event\CampaignEvent;
 use Mautic\CampaignBundle\Model\CampaignModel;
-use Mautic\LeadBundle\Entity\Lead;
-use Mautic\LeadBundle\Tracker\ContactTracker;
+use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 
@@ -69,19 +66,24 @@ class RecombeeToken
      */
     private $minAge;
 
+    /**
+     * @var LeadModel
+     */
+    private $leadModel;
+
 
     /**
      * RecombeeToken constructor.
      *
-     * @param RecombeeModel  $recombeeModel
-     * @param ContactTracker $contactTracker
-     * @param CampaignModel  $campaignModel
+     * @param RecombeeModel $recombeeModel
+     * @param LeadModel     $leadModel
+     * @param CampaignModel $campaignModel
      */
-    public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker, CampaignModel $campaignModel)
+    public function __construct(RecombeeModel $recombeeModel, LeadModel $leadModel, CampaignModel $campaignModel)
     {
         $this->recombeeModel  = $recombeeModel;
-        $this->contactTracker = $contactTracker;
         $this->campaignModel = $campaignModel;
+        $this->leadModel = $leadModel;
     }
 
 
@@ -149,7 +151,7 @@ class RecombeeToken
     public function getUserId()
     {
         if (!$this->userId) {
-            if ($lead = $this->contactTracker->getContact()) {
+            if ($lead = $this->leadModel->getCurrentLead()) {
                 return $lead->getId();
             }
         }

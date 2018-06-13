@@ -12,7 +12,6 @@
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
 use Mautic\LeadBundle\Model\LeadModel;
-use Mautic\LeadBundle\Tracker\ContactTracker;
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
@@ -29,12 +28,6 @@ class RecombeeGenerator
      * @var RecombeeModel
      */
     private $recombeeModel;
-
-    /**
-     * @var ContactTracker
-     */
-    private $contactTracker;
-
     /**
      * @var LeadModel
      */
@@ -55,7 +48,6 @@ class RecombeeGenerator
      *
      * @param RecombeeModel     $recombeeModel
      * @param RecombeeApi       $recombeeApi
-     * @param ContactTracker    $contactTracker
      * @param LeadModel         $leadModel
      * @param \Twig_Environment $twig
      * @param ApiCommands       $apiCommands
@@ -63,14 +55,12 @@ class RecombeeGenerator
     public function __construct(
         RecombeeModel $recombeeModel,
         RecombeeApi $recombeeApi,
-        ContactTracker $contactTracker,
         LeadModel $leadModel,
         \Twig_Environment $twig,
         ApiCommands $apiCommands
     ) {
         $this->recombeeApi    = $recombeeApi;
         $this->recombeeModel  = $recombeeModel;
-        $this->contactTracker = $contactTracker;
         $this->leadModel      = $leadModel;
         $this->twig           = $twig;
         $this->apiCommands = $apiCommands;
@@ -99,7 +89,6 @@ class RecombeeGenerator
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
-
             return $items['recomms'];
 
         } catch (Ex\ApiTimeoutException $e) {
