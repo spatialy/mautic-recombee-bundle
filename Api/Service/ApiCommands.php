@@ -134,6 +134,7 @@ class ApiCommands
                 $itemId = $options['itemId'];
                 unset($options['itemId']);
             }
+            $options['cascadeCreate'] = true;
             $req = '';
             switch ($apiRequest) {
                 case "ListItemProperties":
@@ -194,8 +195,6 @@ class ApiCommands
 
             $this->segmentMapping->map($apiRequest, $userId);
         }
-
-
         //$this->logger->debug('Recombee requests:'.var_dump($batchOptions));
         $this->setCacheId($requests);
         try {

@@ -167,7 +167,7 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
                 $leadModel = $this->getContainer()->get('mautic.lead.model.lead');
                 $leads     = $leadModel->getEntities(
                     [
-                        'limit'              => 990,
+                        'limit'              => 2000,
                         'orderBy'            => 'l.id',
                         'orderByDir'         => 'asc',
                         'withPrimaryCompany' => true,
