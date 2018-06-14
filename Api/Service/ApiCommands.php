@@ -272,6 +272,9 @@ class ApiCommands
                         "settings" => [
                             "parameters" => [
                                 "interaction-types"        => [
+                                    "detail-view" => [
+                                        "enabled" => false
+                                    ],
                                     "cart-addition" => [
                                         "enabled" => true,
                                         "weight"  => 1.0,
