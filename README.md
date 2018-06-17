@@ -16,10 +16,7 @@ Recombee combine data about items and user and related data between both.
 Then before start working with Recombee we need import items (required) and contacts (optional).  
 Items import
 
--   [Import items](#recombee-import-items)
--   [Import contacts](#recombee-import-contacts)
-
-Import items
+### Import items
 
 Items are parsed from your external JSON file. This command should run initial, but also you can update your items one time per 24/48 hours.
 
@@ -30,7 +27,7 @@ Results from command
 
 ![](https://docs.mtcextendee.com/assets/images/image02.jpg?v13024233387251)
 
-Import contacts
+### Import contacts
 
 Contacts are imported from Mautic contacts.  
 If you are working on new Mautic installation, then you can skip this step. Contacts import is initial and you should run it first time. Then Mautic will send data about contacts realtime.  
