@@ -2,11 +2,6 @@
 
 Increase your customer satisfaction and spending with Amazon and Netflix-like AI powered recommendations. Applicable to your home page, product detail, emailing campaigns and much more. Quick and Easy Integration into Your Environment.
 
--   [1. Create Recombee account](#recombee-create)
--   [2. Import data (items, users)](#recombee-import-items)
--   [3. Send data realtime by API](#recombee-setup-api)
--   [4. Send data realtime by Mautic pixel](#recombee-setup-pixel)
-
 ## Create Recombee account for free
 
 1. Go to  [www.recombee.com](https://www.recombee.com/?utm_source=madesimple.cloud&utm_medium=link&utm_campaign=docs)  and create account.  
@@ -16,8 +11,6 @@ Increase your customer satisfaction and spending with Amazon and Netflix-like AI
 ![](https://docs.mtcextendee.com/assets/images/image03.jpg?v13024233387251)
 
 ## Import data (items, users)
-
--   [top](#recombee-top)
 
 Recombee combine data about items and user and related data between both.  
 Then before start working with Recombee we need import items (required) and contacts (optional).  
@@ -103,8 +96,6 @@ Adds a detail view of a given item made by a given user.
 `$apiRequest->makeRequest('recombee/'.$component, $options, 'POST');`
 
 ## Send data realtime by Mautic pixel
-
--   [top](#recombee-top)
 
 Add Mautic tracking code to website
 
