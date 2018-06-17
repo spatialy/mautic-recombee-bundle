@@ -4,7 +4,7 @@ Increase your customer satisfaction and spending with Amazon and Netflix-like AI
 
 ## Create Recombee account for free
 
-1. Go to  [www.recombee.com](https://www.recombee.com/?utm_source=madesimple.cloud&utm_medium=link&utm_campaign=docs)  and create account.  
+1. Go to  [www.recombee.com](https://www.recombee.com)  and create account.  
 2. Free plan up to 100 000 recommendation requests is good choice.  
 3. Then go to Accounts > Organizations > your organization > edit database and copy API credits
 
