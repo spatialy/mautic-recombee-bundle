@@ -2,6 +2,8 @@
 
 Increase your customer satisfaction and spending with Amazon and Netflix-like AI powered recommendations. Applicable to your home page, product detail, emailing campaigns and much more. Quick and Easy Integration into Your Environment.
 
+Plugin under preview mode.
+
 ## Create Recombee account for free
 
 1. Go to  [www.recombee.com](https://www.recombee.com)  and create account.  
@@ -41,6 +43,8 @@ Results from command
 ![](https://docs.mtcextendee.com/assets/images/image01.jpg?v13024233387251)
 
 ## Send data realtime by API
+
+Plugin for Woocommerce https://github.com/kuzmany/woo-mautic-recombee
 
 You can send based interactions between items/user by API.  
 You have to setup  [Mautic API](https://github.com/mautic/api-library).  
