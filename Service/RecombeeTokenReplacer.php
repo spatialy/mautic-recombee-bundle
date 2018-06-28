@@ -31,7 +31,7 @@ class RecombeeTokenReplacer
      */
     private $recombeeGenerator;
 
-    private $hasItems = false;
+    private $replacedTokens;
 
     public function __construct(
         RecombeeToken $recombeeToken,
@@ -62,8 +62,8 @@ class RecombeeTokenReplacer
                 $token->setAddOptions($options);
                 $tokenContent = $this->recombeeGenerator->getContentByToken($token);
                 if (!empty($tokenContent)) {
-                    $this->setHasItems(true);
                     $content      = str_replace($key, $tokenContent, $content);
+                    $this->replacedTokens[$key] = $tokenContent;
                 }else{
                     // no content, no token
                     $content      = str_replace($key, '', $content);
@@ -77,17 +77,29 @@ class RecombeeTokenReplacer
     /**
      * @return boolean
      */
-    public function isHasItems()
+    public function hasItems()
     {
-        return $this->hasItems;
+        if (!empty($this->replacedTokens)) {
+            return true;
+        }
+
+        return false;
     }
 
     /**
-     * @param boolean $hasItems
+     * @return mixed
      */
-    public function setHasItems($hasItems)
+    public function getReplacedTokens()
     {
-        $this->hasItems = $hasItems;
+        return $this->replacedTokens;
+    }
+
+    /**
+     * @param mixed $replacedTokens
+     */
+    public function setReplacedTokens($replacedTokens)
+    {
+        $this->replacedTokens = $replacedTokens;
     }
 
 }

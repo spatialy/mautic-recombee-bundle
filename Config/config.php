@@ -25,7 +25,10 @@ return [
                     'mautic.channel.model.queue',
                     'mautic.email.model.send_email_to_user',
                     'mautic.recombee.service.replacer',
-                    'mautic.campaign.model.campaign',
+                    'mautic.recombee.service.campaign.lead.details',
+                    'mautic.page.helper.tracking',
+                    'mautic.focus.model.focus',
+                    'session'
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [
@@ -45,6 +48,12 @@ return [
             'mautic.recombee.buildjs.subscriber'     => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
                 'arguments' => [
+                ],
+            ],
+            'mautic.recombee.focus.subscriber'     => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\FocusSubscriber::class,
+                'arguments' => [
+                    'session'
                 ],
             ],
         ],
@@ -147,6 +156,12 @@ return [
                     'mautic.recombee.service.token',
                 ],
             ],
+            'mautic.recombee.service.campaign.lead.details' => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\Service\CampaignLeadDetails::class,
+                'arguments' => [
+                    'mautic.campaign.model.campaign',
+                ],
+            ],
         ],
         'integrations' => [
             'mautic.integration.recombee' => [
@@ -175,6 +190,10 @@ return [
             'mautic_recombee_tests' => [
                 'path'       => '/recombee/tests',
                 'controller' => 'MauticRecombeeBundle:Tests:run',
+            ],
+            'mautic_recombee_js_generate_focus' => [
+                'path'       => '/recombee/focus/{focusId}.js',
+                'controller' => 'MauticRecombeeBundle:Js:generate',
             ],
         ],
         'api'    => [
