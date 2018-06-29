@@ -20,6 +20,7 @@ use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
+use Symfony\Component\HttpFoundation\Response;
 
 class RecombeeController extends AbstractStandardFormController
 {
@@ -157,6 +158,34 @@ class RecombeeController extends AbstractStandardFormController
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
 
         return $args;
+    }
+
+    /**
+     * @param $id
+     *
+     * @return array|\Symfony\Component\HttpFoundation\JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse|Response
+     */
+    public function generateAction($id)
+    {
+        // Don't store a visitor with this request
+        defined('MAUTIC_NON_TRACKABLE_REQUEST') || define('MAUTIC_NON_TRACKABLE_REQUEST', 1);
+
+        /** @var \MauticPlugin\MauticFocusBundle\Model\FocusModel $model */
+        $model = $this->getModel('focus');
+        $focus = $model->getEntity($id);
+
+        if ($focus) {
+            if (!$focus->isPublished()) {
+                return new Response('', 200, ['Content-Type' => 'application/javascript']);
+            }
+
+            $content  = $model->generateJavascript($focus, false, true);
+            $response = new Response($content, 200, ['Content-Type' => 'application/javascript']);
+
+            return $response;
+        } else {
+            return new Response('', 200, ['Content-Type' => 'application/javascript']);
+        }
     }
 
 }

@@ -43,6 +43,9 @@ class RecombeeGenerator
      */
     private $apiCommands;
 
+    private $header;
+    private $footer;
+
     /**
      * RecombeeGenerator constructor.
      *
@@ -111,7 +114,8 @@ class RecombeeGenerator
         if (!$recombee instanceof Recombee) {
             return;
         }
-        $templateContent = implode('', $recombee->getTemplate());
+
+        $templateContent = $recombee->getTemplate()['body'];
         $items = $this->getResultByToken($recombeeToken);
 
         if (!empty($items)) {
@@ -121,8 +125,24 @@ class RecombeeGenerator
                 // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
                 $output .= $template->render($item['values']);
             }
-            return $output;
+            return $recombee->getTemplate()['header'].$output.$recombee->getTemplate()['footer'];
         }
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getHeader()
+    {
+        return $this->header;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getFooter()
+    {
+        return $this->footer;
     }
 }
 

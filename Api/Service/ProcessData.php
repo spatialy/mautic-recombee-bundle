@@ -56,13 +56,21 @@ class ProcessData
             if (!isset($item['id'])) {
                 throw new \Exception('ID  missing: '.print_r($item, true));
             }
-            $itemId = $item['id'];
+            $itemId =  $item['id'];
+            $item['item-id'] = $itemId;
             unset($item['id']);
             foreach ($item as $key => $value) {
                 if (is_array($value)) {
                     if (count($value) == count($value, COUNT_RECURSIVE)) {
                         $item[$key] = json_encode(array_values($value));
                         unset($item[$key]);
+                    } elseif($key == 'images' && is_array($value)) {
+                        $value = array_shift(array_slice($value, 0, 1));
+                        if (isset($value['src'])) {
+                            $item[$key] = $value['src'];
+                        } else {
+                            continue;
+                        }
                     } else {
                         unset($item[$key]);
                         continue;

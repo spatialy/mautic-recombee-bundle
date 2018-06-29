@@ -80,6 +80,18 @@ return [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeTemplateType::class,
                 'alias' => 'recombee_template',
             ],
+            'mautic.form.type.recombee.focus.type' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeFocusType::class,
+                'alias' => 'recombee_focus_type',
+            ],
+            'mautic.form.type.recombee.email.type' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType::class,
+                'alias' => 'recombee_email_type',
+            ],
+            'mautic.form.type.recombee.options.type' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeOptionsType::class,
+                'alias' => 'recombee_options_type',
+            ],
         ],
         'other'        => [
             'mautic.recombee.helper'                      => [
@@ -192,8 +204,8 @@ return [
                 'controller' => 'MauticRecombeeBundle:Tests:run',
             ],
             'mautic_recombee_js_generate_focus' => [
-                'path'       => '/recombee/focus/{focusId}.js',
-                'controller' => 'MauticRecombeeBundle:Js:generate',
+                'path'       => '/recombee/focus/{id}.js',
+                'controller' => 'MauticRecombeeBundle:Recombee:generate',
             ],
         ],
         'api'    => [

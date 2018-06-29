@@ -48,7 +48,7 @@ class FocusSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', 0],
+            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', 10],
         ];
     }
 
@@ -57,7 +57,7 @@ class FocusSubscriber extends CommonSubscriber
      */
     public function onTokenReplacement(TokenReplacementEvent $event)
     {
-        $sessionName = $this->request->get('recombee');
+        $sessionName       = $this->request->get('recombee');
         $tokensFromSession = $this->session->get($sessionName);
         if (empty($event->getClickthrough()['focus_id']) || !$tokensFromSession) {
             return;
@@ -65,13 +65,14 @@ class FocusSubscriber extends CommonSubscriber
 
         /** @var Lead $lead */
         $content = $event->getContent();
-        $tokens  = unserialize($tokensFromSession);
-        foreach ($tokens as $key => $tokenContent) {
-            $content = str_replace($key, $tokenContent, $content);
+        if ($content) {
+            $tokens = unserialize($tokensFromSession);
+            foreach ($tokens as $key => $tokenContent) {
+                $content = str_replace($key, $tokenContent, $content);
 
+            }
+            $event->setContent($content);
+            $this->session->remove($sessionName);
         }
-        $event->setContent($content);
-
-        $this->session->remove($sessionName);
     }
 }

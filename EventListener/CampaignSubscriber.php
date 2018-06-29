@@ -141,26 +141,23 @@ class CampaignSubscriber extends CommonSubscriber
         $event->addAction(
             'abandoned.email.send',
             [
-                'label'           => 'mautic.recombee.abandoned.email.campaign.event.send',
-                'description'     => 'mautic.recombee.abandoned.email.campaign.event.send.desc',
+                'label'           => 'mautic.recombee.email.campaign.event.send',
+                'description'     => 'mautic.recombee.email.campaign.event.send.desc',
                 'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'        => 'emailsend_list',
+                'formType'        => 'recombee_email_type',
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_email'],
-                'formTheme'       => 'MauticEmailBundle:FormTheme\EmailSendList',
                 'channel'         => 'recombee',
                 'channelIdField'  => 'email',
             ]
         );
 
-
         $event->addAction(
             'abandoned.focus',
             [
-                'label'                  => 'mautic.recombee.abandoned.focus.campaign.event.send',
-                'description'            => 'mautic.recombee.abandoned.focus.campaign.event.send.desc',
+                'label'                  => 'mautic.recombee.focus.campaign.event.send',
+                'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
                 'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'               => 'focusshow_list',
-                'formTheme'              => 'MauticFocusBundle:FormTheme\FocusShowList',
+                'formType'               => 'recombee_focus_type',
                 'formTypeOptions'        => ['update_select' => 'campaignevent_properties_focus'],
                 'connectionRestrictions' => [
                     'anchor' => [
@@ -201,30 +198,22 @@ class CampaignSubscriber extends CommonSubscriber
         $email      = $this->emailModel->getEntity($emailId);
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
+        $type = $config['type'];
 
         if (!$email || !$email->isPublished()) {
             return $event->setFailed('Email not found or published');
         }
-
-        $seconds = $this->campaignLeadDetails->getDiffSecondsFromAddedTime(
-            $campaignId,
-            $leadId
-        );
-
-        if (!$seconds) {
-            return $event->setFailed('Contact does not exist in campaign. Details empty');
-        }
-
         $options = [
             'source'        => ['campaign.event', $event->getEvent()['id']],
             'return_errors' => true,
             'dnc_as_error'  => true,
         ];
+
         $event->setChannel('recombee-abandoned-email', $emailId);
         $email->setCustomHtml(
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $email->getCustomHtml(),
-                $this->getAbandonedCartOptions(1, $seconds)
+                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
             )
         );
 
@@ -260,8 +249,9 @@ class CampaignSubscriber extends CommonSubscriber
     public function onCampaignTriggerActionInjectAbandonedFocus(CampaignExecutionEvent $event)
     {
         $focusId = (int) $event->getConfig()['focus'];
+        $type =  $event->getConfig()['type'];
         if (!$focusId) {
-            return $event->setResult(false);
+            return $event->setResult('Focus ID #'.$focusId.' doesn\'t exist.');
         }
 
         /** @var Focus $focus */
@@ -275,18 +265,19 @@ class CampaignSubscriber extends CommonSubscriber
         $leadId     = $event->getLead()->getId();
 
 
-        $seconds = $this->campaignLeadDetails->getDiffSecondsFromAddedTime($campaignId, $leadId);
         $event->setChannel('recombee-abandoned-focus', $focusId);
+        $focusContent = $this->focusModel->getContent($focus->toArray());
 
         $content =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
-                $focus->getHtml(),
-                $this->getAbandonedCartOptions(1, $seconds)
+                $focusContent['focus'],
+                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
             );
+
         // check if cart has some items
         if (!$this->recombeeTokenReplacer->hasItems()) {
                  return $event->setFailed(
-                   'No recombee results for this contact #'.$leadId.' and  focus  #'.$focusId
+                     'No recombee results for this contact #'.$leadId.' and  focus  #'.$focusId
              );
         }
         $tokens = $this->recombeeTokenReplacer->getReplacedTokens();
@@ -297,7 +288,7 @@ class CampaignSubscriber extends CommonSubscriber
         $values['focus_item'][] = [
             'id' => $focusId,
             'js' => $this->router->generate(
-                'mautic_focus_generate',
+                'mautic_recombee_js_generate_focus',
                 ['id' => $focusId, 'recombee' => $contentHash],
                 true
             ),
@@ -307,6 +298,24 @@ class CampaignSubscriber extends CommonSubscriber
         return $event->setResult(true);
     }
 
+    /**
+     * @param $type
+     * @param int $campaignId
+     * @param int $leadId
+     *
+     * @return array
+     */
+    private function getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+    {
+        $options = [];
+        switch ($type) {
+            case 'abandoned_cart':
+                $seconds = $this->campaignLeadDetails->getDiffSecondsFromAddedTime($campaignId, $leadId);
+                $options = $this->getAbandonedCartOptions(1, $seconds);
+                break;
+        }
+        return $options;
+    }
 
     /**
      * @param $cartMinAge

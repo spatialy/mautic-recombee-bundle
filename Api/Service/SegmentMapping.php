@@ -68,10 +68,10 @@ class SegmentMapping
         switch ($apiRequest) {
             case "AddCartAddition":
                 $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
-
                 break;
             case "AddPurchase":
                 $this->listModel->removeLead($lead, [$settings['abandoned_cart_segment']]);
+                $this->listModel->addLead($lead, [$settings['abandoned_cart_order_segment']]);
                 break;
 
         }
