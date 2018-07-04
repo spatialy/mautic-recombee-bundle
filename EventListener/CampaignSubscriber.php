@@ -126,9 +126,10 @@ class CampaignSubscriber extends CommonSubscriber
         return [
             CampaignEvents::CAMPAIGN_ON_BUILD          => ['onCampaignBuild', 0],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION => [
-                ['onCampaignTriggerActionSendAbandonedEmail', 0],
-                ['onCampaignTriggerActionInjectAbandonedFocus', 1],
+                ['onCampaignTriggerActionSendRecombeeEmail', 0],
+                ['onCampaignTriggerActionInjectRecombeeFocus', 1],
             ],
+            RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
         ];
     }
 
@@ -139,7 +140,7 @@ class CampaignSubscriber extends CommonSubscriber
     {
 
         $event->addAction(
-            'abandoned.email.send',
+            'recombee.email.send',
             [
                 'label'           => 'mautic.recombee.email.campaign.event.send',
                 'description'     => 'mautic.recombee.email.campaign.event.send.desc',
@@ -152,7 +153,7 @@ class CampaignSubscriber extends CommonSubscriber
         );
 
         $event->addAction(
-            'abandoned.focus',
+            'recombee.focus',
             [
                 'label'                  => 'mautic.recombee.focus.campaign.event.send',
                 'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
@@ -180,10 +181,10 @@ class CampaignSubscriber extends CommonSubscriber
      *
      * @return CampaignExecutionEvent|null
      */
-    public function onCampaignTriggerActionSendAbandonedEmail(CampaignExecutionEvent $event)
+    public function onCampaignTriggerActionSendRecombeeEmail(CampaignExecutionEvent $event)
     {
 
-        if (!$event->checkContext('abandoned.email.send')) {
+        if (!$event->checkContext('recombee.email.send')) {
             return;
         }
 
@@ -209,7 +210,7 @@ class CampaignSubscriber extends CommonSubscriber
             'dnc_as_error'  => true,
         ];
 
-        $event->setChannel('recombee-abandoned-email', $emailId);
+        $event->setChannel('recombee-email', $emailId);
         $email->setCustomHtml(
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $email->getCustomHtml(),
@@ -246,10 +247,10 @@ class CampaignSubscriber extends CommonSubscriber
     /**
      * @param CampaignExecutionEvent $event
      */
-    public function onCampaignTriggerActionInjectAbandonedFocus(CampaignExecutionEvent $event)
+    public function onCampaignTriggerActionInjectRecombeeFocus(CampaignExecutionEvent $event)
     {
-        $focusId = (int) $event->getConfig()['focus'];
-        $type =  $event->getConfig()['type'];
+        $focusId = (int) $event->getConfig()['focus']['focus'];
+        $type =  $event->getConfig()['type']['type'];
         if (!$focusId) {
             return $event->setResult('Focus ID #'.$focusId.' doesn\'t exist.');
         }
@@ -265,9 +266,8 @@ class CampaignSubscriber extends CommonSubscriber
         $leadId     = $event->getLead()->getId();
 
 
-        $event->setChannel('recombee-abandoned-focus', $focusId);
+        $event->setChannel('recombee-focus', $focusId);
         $focusContent = $this->focusModel->getContent($focus->toArray());
-
         $content =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $focusContent['focus'],
@@ -353,6 +353,18 @@ class CampaignSubscriber extends CommonSubscriber
                 ],
             ],
         ];
+    }
+
+    /**
+     * @param CampaignExecutionEvent $event
+     */
+    public function onCampaignTriggerCondition(CampaignExecutionEvent $event)
+    {
+        $lead = $event->getLead();
+
+        if (!$lead || !$lead->getId()) {
+            return $event->setResult(false);
+        }
     }
 
 }

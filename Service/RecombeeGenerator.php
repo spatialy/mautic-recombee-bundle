@@ -121,11 +121,16 @@ class RecombeeGenerator
         if (!empty($items)) {
             $template = $this->twig->createTemplate($templateContent);
             $output   = '';
+            $tokens = [];
+            $tokens['keys'] = implode(',', array_column($items, 'id'));
             foreach ($items as $item) {
+                $item['values'] = array_merge($item['values'], $tokens);
                 // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
                 $output .= $template->render($item['values']);
             }
-            return $recombee->getTemplate()['header'].$output.$recombee->getTemplate()['footer'];
+            $headerTemplate = $this->twig->createTemplate($recombee->getTemplate()['header']);
+            $footerTemplate = $this->twig->createTemplate($recombee->getTemplate()['footer']);
+            return $headerTemplate->render($tokens).$output.$footerTemplate->render($tokens);
         }
     }
 

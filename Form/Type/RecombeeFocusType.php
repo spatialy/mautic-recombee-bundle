@@ -27,12 +27,13 @@ class RecombeeFocusType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+
         $builder->add(
             'focus',
             FocusShowType::class,
             [
                 'label' => false,
-                'data' => isset($options['data']['focus'])? $options['data']['focus'] : null,
+                'data' => isset($options['data']['focus']) ? $options['data']['focus']: null,
 
             ]
         );
