@@ -62,7 +62,7 @@ class RecombeeOptionsType extends AbstractType
                     'tooltip'=>'mautic.plugin.recombee.form.type.filter.tooltip',
                     'data-show-on' => '{"campaignevent_properties_type_type":["advanced"]}',
                 ],
-                'required'   => true,
+                'required'   => false,
             ]
         );
 
@@ -78,7 +78,7 @@ class RecombeeOptionsType extends AbstractType
                     'data-show-on' => '{"campaignevent_properties_type_type":["advanced"]}',
 
                 ],
-                'required'   => true,
+                'required'   => false,
             ]
         );
     }

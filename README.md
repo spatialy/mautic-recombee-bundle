@@ -104,8 +104,52 @@ First you have to add Mautic tracking code  [to your website](https://www.mautic
 
 Then edit your tracking pixel on each product page with Recombee code to pageview event. Data send by pixel improve personalization products for your contacts. Example how to add custom parametrs to Mautic pageview event:
 
-AddDetailView
+**AddDetailView**
 
 Adds a detail view of a given item made by a given user.
 
 `mt('send', 'pageview', { Recombee: '{"AddDetailView":{"itemId":1}}' });`
+
+## Delivery recommended items to users
+
+#### 1. Create Recombee template
+ 
+Go to Components > Recombee and create TWIG supported templates. Recombee template use in supported channels. 
+
+Then use in content of support channels tag `{recombee=1}` (replace number with your Recombee template ID)
+
+At the moment Recombee integration support 
+
+- Email
+- Focus
+
+
+#### 2. Create campaign actions
+
+##### Recombee Email
+
+![image](https://user-images.githubusercontent.com/462477/42328412-77398ed8-806e-11e8-9b93-f1137b455120.png)
+
+##### Recombee Focus
+
+![image](https://user-images.githubusercontent.com/462477/42328482-a2630f26-806e-11e8-8877-57b35169cddc.png)
+ 
+ Both campaign action support 3 types of recommendations:
+ 
+ - Recommendations based on interactions
+ - Abandoned cart
+ - Advanced (with [filter and booster](https://docs.recombee.com/reql_filtering_and_boosting.html) support) 
+ 
+ ## How to work recommendations types?
+ 
+ 1. Recommendations
+ 
+Based on user-item interactions.
+ 
+ 2. Abandoned cart
+ 
+ Based on Add cart addition and Add purchase interactions.  Plugin display items based on date added contact to campaign and date added cart addition.  If contact date added cart addition is greather as contact date added to campaign the items  will displayed until purchase. 
+ 
+ 3. Advanced
+ 
+ You can use filter and booster for display recommendations. Read [docs](https://docs.recombee.com/reql_filtering_and_boosting.html)
