@@ -20,11 +20,6 @@ $view->extend('MauticCoreBundle:FormTheme:form_simple.html.php');
     </div>
     <div class="col-md-6">
         <?php echo $view['form']->row($form['numberOfItems']); ?>
-
-        <div style="display:none">
-            <?php echo $view['form']->row($form['filter']); ?>
-            <?php echo $view['form']->row($form['boost']); ?>
-        </div>
     </div>
 </div>
 <div class="row">

@@ -46,17 +46,6 @@ class Recombee extends FormEntity
      * @var \DateTime
      */
     private $publishDown;
-
-    /**
-     * @var string
-     */
-    private $filter;
-
-    /**
-     * @var string
-     */
-    private $boost;
-
     /**
      * @var int
      */
@@ -103,14 +92,6 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
-        $builder->createField('filter', 'text')
-            ->nullable()
-            ->build();
-
-        $builder->createField('boost', 'text')
-            ->nullable()
-            ->build();
-
         $builder->createField('template', 'array')
             ->columnName('template')
             ->nullable()
@@ -140,9 +121,6 @@ class Recombee extends FormEntity
             ->addProperties([
                 'publishUp',
                 'publishDown',
-                'filter',
-                'boost',
-                'boost',
                 'template',
             ])
             ->build();
@@ -221,39 +199,6 @@ class Recombee extends FormEntity
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getBoost()
-    {
-        return $this->boost;
-    }
-
-    /**
-     * @param string $boost
-     */
-    public function setBoost($boost)
-    {
-        $this->isChanged('boost', $boost);
-        $this->boost = $boost;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilter()
-    {
-        return $this->filter;
-    }
-
-    /**
-     * @param string $filter
-     */
-    public function setFilter($filter)
-    {
-        $this->isChanged('filter', $filter);
-        $this->filter = $filter;
-    }
 
     /**
      * @return int

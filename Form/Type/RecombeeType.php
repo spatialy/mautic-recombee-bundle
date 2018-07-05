@@ -100,33 +100,6 @@ class RecombeeType extends AbstractType
         );
 
         $builder->add(
-            'filter',
-            'textarea',
-            [
-                'label'    => 'mautic.plugin.recombee.form.filter',
-                'required' => false,
-                'attr'     => [
-                    'class'   => 'form-control',
-                    'tooltip' => 'mautic.plugin.recombee.form.filter.tooltip',
-
-                ],
-            ]
-        );
-
-        $builder->add(
-            'boost',
-            'textarea',
-            [
-                'label'    => 'mautic.plugin.recombee.form.boost',
-                'required' => false,
-                'attr'     => [
-                    'class'   => 'form-control',
-                    'tooltip' => 'mautic.plugin.recombee.form.boost.tooltip',
-                ],
-            ]
-        );
-
-        $builder->add(
             'template',
             RecombeeTemplateType::class,
             [

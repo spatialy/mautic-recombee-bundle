@@ -199,7 +199,6 @@ class CampaignSubscriber extends CommonSubscriber
         $email      = $this->emailModel->getEntity($emailId);
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
-        $type = $config['type'];
 
         if (!$email || !$email->isPublished()) {
             return $event->setFailed('Email not found or published');
@@ -214,7 +213,7 @@ class CampaignSubscriber extends CommonSubscriber
         $email->setCustomHtml(
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $email->getCustomHtml(),
-                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+                $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId)
             )
         );
 
@@ -250,7 +249,6 @@ class CampaignSubscriber extends CommonSubscriber
     public function onCampaignTriggerActionInjectRecombeeFocus(CampaignExecutionEvent $event)
     {
         $focusId = (int) $event->getConfig()['focus']['focus'];
-        $type =  $event->getConfig()['type']['type'];
         if (!$focusId) {
             return $event->setResult('Focus ID #'.$focusId.' doesn\'t exist.');
         }
@@ -271,7 +269,7 @@ class CampaignSubscriber extends CommonSubscriber
         $content =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $focusContent['focus'],
-                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+                $this->getOptionsBasedOnRecommendationsType($event->getConfig()['type'], $campaignId, $leadId)
             );
 
         // check if cart has some items
@@ -299,19 +297,30 @@ class CampaignSubscriber extends CommonSubscriber
     }
 
     /**
-     * @param $type
+     * @param $config
      * @param int $campaignId
      * @param int $leadId
      *
      * @return array
      */
-    private function getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+    private function getOptionsBasedOnRecommendationsType(array $config, $campaignId, $leadId)
     {
         $options = [];
+
+        $type = $config['type'];
+
         switch ($type) {
             case 'abandoned_cart':
                 $seconds = $this->campaignLeadDetails->getDiffSecondsFromAddedTime($campaignId, $leadId);
                 $options = $this->getAbandonedCartOptions(1, $seconds);
+                break;
+            case 'advanced':
+                if (!empty($config['filter'])) {
+                    $options['filter'] = $config['filter'];
+                }
+                if (!empty($config['booster'])) {
+                    $options['booster'] = $config['booster'];
+                }
                 break;
         }
         return $options;

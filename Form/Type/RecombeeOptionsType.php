@@ -33,6 +33,7 @@ class RecombeeOptionsType extends AbstractType
                 'choices'     => [
                     'recommendations' => 'mautic.plugin.recombee.form.type.recommendations',
                     'abandoned_cart'  => 'mautic.plugin.recombee.form.type.abandoned_cart',
+                    'advanced'        => 'mautic.plugin.recombee.form.type.advanced',
                 ],
                 'expanded'    => false,
                 'multiple'    => false,
@@ -47,6 +48,37 @@ class RecombeeOptionsType extends AbstractType
                         ]
                     ),
                 ],
+            ]
+        );
+
+        $builder->add(
+            'filter',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.form.type.filter',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class' => 'form-control',
+                    'tooltip'=>'mautic.plugin.recombee.form.type.filter.tooltip',
+                    'data-show-on' => '{"campaignevent_properties_type_type":["advanced"]}',
+                ],
+                'required'   => true,
+            ]
+        );
+
+        $builder->add(
+            'booster',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.form.type.booster',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class' => 'form-control',
+                    'tooltip'=>'mautic.plugin.recombee.form.type.booster.tooltip',
+                    'data-show-on' => '{"campaignevent_properties_type_type":["advanced"]}',
+
+                ],
+                'required'   => true,
             ]
         );
     }
