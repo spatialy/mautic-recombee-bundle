@@ -2,7 +2,26 @@
 
 Increase your customer satisfaction and spending with Amazon and Netflix-like AI powered recommendations. Applicable to your home page, product detail, emailing campaigns and much more. Quick and Easy Integration into Your Environment.
 
-Plugin under preview mode.
+Sign in for news: [mtcrecombee.com](https://mtcrecombee.com/)
+
+## What plugin do?
+
+- Recommendations items based on contact interactions
+- Abandoned cart
+- Frequently bought together
+- Customers who viewed this item also viewed
+- Special offers and product promotions
+- Related to this item
+- Customers who bought items in your cart also bought
+- Recently viewed items and featured recommendations
+- Category best sellers
+- Most wished products
+
+## What plugin support?
+
+- Emails
+- Focus (popups)
+- Dynamic content
 
 ## Create Recombee account for free
 
