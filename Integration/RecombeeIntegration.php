@@ -179,6 +179,21 @@ class RecombeeIntegration extends AbstractIntegration
                     'expanded'   => false,
                 ]
             );
+
+            $builder->add(
+                'abandoned_cart_order_segment_remove',
+                'leadlist_choices',
+                [
+                    'label'      => 'mautic.recombee.segment.abandoned.cart.order.cart',
+                    'label_attr' => ['class' => 'control-label'],
+                    'attr'       => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
+                    ],
+                    'multiple'   => false,
+                    'expanded'   => false,
+                ]
+            );
         }
     }
 }

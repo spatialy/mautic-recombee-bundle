@@ -57,7 +57,8 @@ class SegmentMapping
         $settings   = $this->integrationHelper->getIntegrationObject('Recombee')->getIntegrationSettings(
         )->getFeatureSettings();
 
-        if (empty($settings['abandoned_cart']) || empty($settings['abandoned_cart_segment'])) {
+
+        if (empty($settings['abandoned_cart'])) {
             return;
         }
 
@@ -67,11 +68,17 @@ class SegmentMapping
 
         switch ($apiRequest) {
             case "AddCartAddition":
-                $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
+                if (!empty($settings['abandoned_cart_segment'])) {
+                    $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
+                }
                 break;
             case "AddPurchase":
-                $this->listModel->removeLead($lead, [$settings['abandoned_cart_segment']]);
-                $this->listModel->addLead($lead, [$settings['abandoned_cart_order_segment']]);
+                if (!empty($settings['abandoned_cart_order_segment'])) {
+                    $this->listModel->addLead($lead, [$settings['abandoned_cart_order_segment']]);
+                }
+                if (!empty($settings['abandoned_cart_order_segment_remove'])) {
+                    $this->listModel->removeLead($lead, [$settings['abandoned_cart_order_segment_remove']]);
+                }
                 break;
 
         }

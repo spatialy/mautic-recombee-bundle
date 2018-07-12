@@ -17,7 +17,7 @@ Sign in for news: [mtcrecombee.com](https://mtcrecombee.com/)
 - Category best sellers
 - Most wished products
 
-## What plugin support?
+## Which channels do you support?
 
 - Emails
 - Focus (popups)
