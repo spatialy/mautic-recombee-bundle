@@ -22,14 +22,14 @@ return [
                     'mautic.lead.model.lead',
                     'mautic.email.model.email',
                     'mautic.campaign.model.event',
-                    'mautic.channel.model.queue',
                     'mautic.email.model.send_email_to_user',
                     'mautic.recombee.service.replacer',
                     'mautic.recombee.service.campaign.lead.details',
                     'mautic.page.helper.tracking',
                     'mautic.focus.model.focus',
                     'session',
-                    'mautic.helper.integration'
+                    'mautic.helper.integration',
+                    'mautic.dynamicContent.model.dynamicContent'
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [
@@ -88,6 +88,10 @@ return [
             'mautic.form.type.recombee.email.type' => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType::class,
                 'alias' => 'recombee_email_type',
+            ],
+            'mautic.form.type.recombee.dynamic_content.type' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentType::class,
+                'alias' => 'recombee_dynamic_content_type',
             ],
             'mautic.form.type.recombee.options.type' => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeOptionsType::class,

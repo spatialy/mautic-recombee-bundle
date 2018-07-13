@@ -12,8 +12,10 @@
 namespace MauticPlugin\MauticRecombeeBundle\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Validator\Constraints\NotBlank;
+use Symfony\Component\Validator\Constraints\Range;
 
 /**
  * Class RecombeeOptionsType.
@@ -26,6 +28,7 @@ class RecombeeOptionsType extends AbstractType
      */
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
+
         $builder->add(
             'type',
             'choice',
@@ -50,6 +53,27 @@ class RecombeeOptionsType extends AbstractType
                 ],
             ]
         );
+
+       /* $builder->add(
+            'numberOfItems',
+            NumberType::class,
+            [
+                'label'       => 'mautic.plugin.recombee.form.number_of_items',
+                'label_attr'  => ['class' => 'control-label'],
+                'attr'        => [
+                    'class'   => 'form-control',
+                    'tooltip' => 'mautic.plugin.recombee.form.number_of_items.tooltip',
+                ],
+                'required'    => false,
+                'constraints' => [
+                    new Range(
+                        [
+                            'min' => 1,
+                        ]
+                    ),
+                ],
+            ]
+        );*/
 
         $builder->add(
             'filter',

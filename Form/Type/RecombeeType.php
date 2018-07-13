@@ -11,7 +11,6 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Form\Type;
 
-use Mautic\CoreBundle\Form\EventListener\CleanFormSubscriber;
 use Mautic\CoreBundle\Security\Permissions\CorePermissions;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
@@ -76,7 +75,7 @@ class RecombeeType extends AbstractType
             'numberOfItems',
             NumberType::class,
             [
-                'label'       => 'mautic.plugin.recombee.form.number_of_items',
+                'label'       => 'mautic.plugin.recombee.form.number_of_items.default',
                 'label_attr'  => ['class' => 'control-label'],
                 'attr'        => [
                     'class'   => 'form-control',
