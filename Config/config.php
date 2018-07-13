@@ -28,7 +28,8 @@ return [
                     'mautic.recombee.service.campaign.lead.details',
                     'mautic.page.helper.tracking',
                     'mautic.focus.model.focus',
-                    'session'
+                    'session',
+                    'mautic.helper.integration'
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [

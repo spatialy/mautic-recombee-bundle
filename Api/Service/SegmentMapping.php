@@ -80,7 +80,6 @@ class SegmentMapping
                     $this->listModel->removeLead($lead, [$settings['abandoned_cart_order_segment_remove']]);
                 }
                 break;
-
         }
     }
 }

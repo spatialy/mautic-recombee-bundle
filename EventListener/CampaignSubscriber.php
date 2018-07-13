@@ -14,18 +14,21 @@ namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
-use Mautic\CampaignBundle\Model\CampaignModel;
 use Mautic\CampaignBundle\Model\EventModel;
 use Mautic\ChannelBundle\Model\MessageQueueModel;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
-use Mautic\EmailBundle\Exception\EmailCouldNotBeSentException;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\NotificationBundle\Form\Type\MobileNotificationSendType;
+use Mautic\NotificationBundle\Form\Type\NotificationSendType;
 use Mautic\PageBundle\Helper\TrackingHelper;
+use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticFocusBundle\Entity\Focus;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
 use MauticPlugin\MauticRecombeeBundle\EventListener\Service\CampaignLeadDetails;
+use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType;
+use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeFocusType;
 use MauticPlugin\MauticRecombeeBundle\RecombeeEvents;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -81,6 +84,11 @@ class CampaignSubscriber extends CommonSubscriber
      */
     private $session;
 
+    /**
+     * @var IntegrationHelper
+     */
+    private $integrationHelper;
+
 
     /**
      * @param LeadModel             $leadModel
@@ -93,6 +101,7 @@ class CampaignSubscriber extends CommonSubscriber
      * @param TrackingHelper        $trackingHelper
      * @param FocusModel            $focusModel
      * @param Session               $session
+     * @param IntegrationHelper     $integrationHelper
      */
     public function __construct(
         LeadModel $leadModel,
@@ -104,7 +113,8 @@ class CampaignSubscriber extends CommonSubscriber
         CampaignLeadDetails $campaignLeadDetails,
         TrackingHelper $trackingHelper,
         FocusModel $focusModel,
-        Session $session
+        Session $session,
+        IntegrationHelper $integrationHelper
     ) {
         $this->leadModel             = $leadModel;
         $this->emailModel            = $emailModel;
@@ -116,6 +126,7 @@ class CampaignSubscriber extends CommonSubscriber
         $this->trackingHelper        = $trackingHelper;
         $this->focusModel            = $focusModel;
         $this->session               = $session;
+        $this->integrationHelper     = $integrationHelper;
     }
 
     /**
@@ -124,10 +135,11 @@ class CampaignSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            CampaignEvents::CAMPAIGN_ON_BUILD          => ['onCampaignBuild', 0],
-            RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION => [
+            CampaignEvents::CAMPAIGN_ON_BUILD             => ['onCampaignBuild', 0],
+            RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION    => [
                 ['onCampaignTriggerActionSendRecombeeEmail', 0],
                 ['onCampaignTriggerActionInjectRecombeeFocus', 1],
+                ['onCampaignTriggerActionSendNotification', 2],
             ],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
         ];
@@ -145,7 +157,7 @@ class CampaignSubscriber extends CommonSubscriber
                 'label'           => 'mautic.recombee.email.campaign.event.send',
                 'description'     => 'mautic.recombee.email.campaign.event.send.desc',
                 'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'        => 'recombee_email_type',
+                'formType'        => RecombeeEmailSendType::class,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_email'],
                 'channel'         => 'recombee',
                 'channelIdField'  => 'email',
@@ -158,7 +170,7 @@ class CampaignSubscriber extends CommonSubscriber
                 'label'                  => 'mautic.recombee.focus.campaign.event.send',
                 'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
                 'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'               => 'recombee_focus_type',
+                'formType'               => RecombeeFocusType::class,
                 'formTypeOptions'        => ['update_select' => 'campaignevent_properties_focus'],
                 'connectionRestrictions' => [
                     'anchor' => [
@@ -172,6 +184,47 @@ class CampaignSubscriber extends CommonSubscriber
                 ],
             ]
         );
+
+        /*
+         * Notification postpone at the moment
+         *
+         * $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+        if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
+
+            $features = $integration->getSupportedFeatures();
+
+            if (in_array('mobile', $features)) {
+                $event->addAction(
+                    'recombee.send_mobile_notification',
+                    [
+                        'label'            => 'mautic.recombee.notification.mobile.campaign.event.send',
+                        'description'      => 'mautic.recombee.notification.mobile.campaign.event.send.tooltip',
+                        'eventName'        => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
+                        'formType'         => MobileNotificationSendType::class,
+                        'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
+                        'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
+                        'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
+                        'channel'          => 'mobile_notification',
+                        'channelIdField'   => 'mobile_notification',
+                    ]
+                );
+            }
+
+            $event->addAction(
+                'recombee.send_notification',
+                [
+                    'label'            => 'mautic.recombee.notification.campaign.event.send',
+                    'description'      => 'mautic.recombee.notification.campaign.event.send',
+                    'eventName'        => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
+                    'formType'         => NotificationSendType::class,
+                    'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
+                    'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
+                    'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
+                    'channel'          => 'notification',
+                    'channelIdField'   => 'notification',
+                ]
+            );
+        }*/
     }
 
     /**
@@ -266,7 +319,7 @@ class CampaignSubscriber extends CommonSubscriber
 
         $event->setChannel('recombee-focus', $focusId);
         $focusContent = $this->focusModel->getContent($focus->toArray());
-        $content =
+        $content      =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $focusContent['focus'],
                 $this->getOptionsBasedOnRecommendationsType($event->getConfig()['type'], $campaignId, $leadId)
@@ -274,11 +327,11 @@ class CampaignSubscriber extends CommonSubscriber
 
         // check if cart has some items
         if (!$this->recombeeTokenReplacer->hasItems()) {
-                 return $event->setFailed(
-                     'No recombee results for this contact #'.$leadId.' and  focus  #'.$focusId
-             );
+            return $event->setFailed(
+                'No recombee results for this contact #'.$leadId.' and  focus  #'.$focusId
+            );
         }
-        $tokens = $this->recombeeTokenReplacer->getReplacedTokens();
+        $tokens      = $this->recombeeTokenReplacer->getReplacedTokens();
         $contentHash = md5(serialize($tokens));
         $this->session->set($contentHash, serialize($tokens));
 
@@ -297,7 +350,7 @@ class CampaignSubscriber extends CommonSubscriber
     }
 
     /**
-     * @param $config
+     * @param     $config
      * @param int $campaignId
      * @param int $leadId
      *
@@ -323,6 +376,7 @@ class CampaignSubscriber extends CommonSubscriber
                 }
                 break;
         }
+
         return $options;
     }
 
@@ -337,7 +391,7 @@ class CampaignSubscriber extends CommonSubscriber
         return [
             "expertSettings" => [
                 "algorithmSettings" => [
-                     "evaluator" => [
+                    "evaluator" => [
                         "name" => "reql",
                     ],
                     "model"     => [
