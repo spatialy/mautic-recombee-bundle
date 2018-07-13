@@ -396,7 +396,10 @@ class CampaignSubscriber extends CommonSubscriber
         }
 
         $event->setChannel('recombee-dynamic-content', $slot);
-        $result = ['type' => $event->getConfig()['type']];
+        $result = [
+            'type' => $event->getConfig()['type'],
+            'campaignId' => $event->getConfig()['type'],
+        ];
 
         return $event->setResult($result);
     }
@@ -490,13 +493,27 @@ class CampaignSubscriber extends CommonSubscriber
     public function onDynamicContentTokenReplacement(TokenReplacementEvent $event)
     {
         $lead    = $event->getLead();
-        $content = $event->getContent();
         $clickthrough = $event->getClickthrough();
         $metadata = $this->getDynamicOptionsFromLog($clickthrough['slot'], $lead->getId());
-        if (empty($metadata)) {
+        if (empty($metadata['type']) || empty($metadata['campaignId'])) {
             return;
         }
 
+        $type = $metadata['type'];
+        $campaignId = $metadata['campaignId'];
+        $leadId = $lead->getId();
+        $dynamicContentContent = $event->getContent();
+
+        $content      =
+            $this->recombeeTokenReplacer->replaceTokensFromContent(
+                $dynamicContentContent,
+                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+            );
+
+        // check if cart has some items
+        if ($this->recombeeTokenReplacer->hasItems()) {
+            $event->setContent($content);
+        }
     }
 
 
