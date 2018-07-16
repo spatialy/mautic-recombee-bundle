@@ -29,7 +29,8 @@ return [
                     'mautic.focus.model.focus',
                     'session',
                     'mautic.helper.integration',
-                    'mautic.dynamicContent.model.dynamicContent'
+                    'mautic.dynamicContent.model.dynamicContent',
+                    'doctrine.orm.entity_manager'
                 ],
             ],
             'mautic.recombee.leadbundle.subscriber'  => [

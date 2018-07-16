@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 
+use Doctrine\ORM\EntityManager;
 use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
@@ -94,12 +95,16 @@ class CampaignSubscriber extends CommonSubscriber
      */
     private $dynamicContentModel;
 
+    /**
+     * @var EntityManager
+     */
+    private $entityManager;
+
 
     /**
      * @param LeadModel             $leadModel
      * @param EmailModel            $emailModel
      * @param EventModel            $eventModel
-     * @param MessageQueueModel     $messageQueueModel
      * @param SendEmailToUser       $sendEmailToUser
      * @param RecombeeTokenReplacer $recombeeTokenReplacer
      * @param CampaignLeadDetails   $campaignLeadDetails
@@ -108,6 +113,9 @@ class CampaignSubscriber extends CommonSubscriber
      * @param Session               $session
      * @param IntegrationHelper     $integrationHelper
      * @param DynamicContentModel   $dynamicContentModel
+     * @param EntityManager         $entityManager
+     *
+     * @internal param MessageQueueModel $messageQueueModel
      */
     public function __construct(
         LeadModel $leadModel,
@@ -120,7 +128,8 @@ class CampaignSubscriber extends CommonSubscriber
         FocusModel $focusModel,
         Session $session,
         IntegrationHelper $integrationHelper,
-        DynamicContentModel $dynamicContentModel
+        DynamicContentModel $dynamicContentModel,
+        EntityManager $entityManager
     ) {
         $this->leadModel             = $leadModel;
         $this->emailModel            = $emailModel;
@@ -134,6 +143,7 @@ class CampaignSubscriber extends CommonSubscriber
         $this->integrationHelper     = $integrationHelper;
 
         $this->dynamicContentModel = $dynamicContentModel;
+        $this->entityManager = $entityManager;
     }
 
     /**
@@ -146,7 +156,7 @@ class CampaignSubscriber extends CommonSubscriber
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION    => [
                 ['onCampaignTriggerActionSendRecombeeEmail', 0],
                 ['onCampaignTriggerActionInjectRecombeeFocus', 1],
-                ['onCampaignTriggerActionSendNotification', 2],
+                //['onCampaignTriggerActionSendNotification', 2],
                 ['onCampaignTriggerActionDynamiContent', 3],
             ],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
@@ -196,7 +206,7 @@ class CampaignSubscriber extends CommonSubscriber
         );
 
         $event->addAction(
-            'recombee.dwc.push_content',
+            'recombee.dynamic.content',
             [
                 'label'                  => 'mautic.recombee.dynamic.content.campaign.event',
                 'description'            => 'mautic.recombee.dynamic.content.campaign.event.desc',
@@ -328,6 +338,11 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignTriggerActionInjectRecombeeFocus(CampaignExecutionEvent $event)
     {
+
+        if (!$event->checkContext('recombee.focus')) {
+            return;
+        }
+
         $focusId = (int) $event->getConfig()['focus']['focus'];
         if (!$focusId) {
             return $event->setResult('Focus ID #'.$focusId.' doesn\'t exist.');
@@ -382,26 +397,42 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignTriggerActionDynamiContent(CampaignExecutionEvent $event)
     {
+
+        if (!$event->checkContext('recombee.dynamic.content')) {
+            return;
+        }
+
         $slot = $event->getConfig()['slot'];
         $dynamicContentId = (int) $event->getConfig()['dynamic_content'];
+        $lead = $event->getLead();
+
         if (!$dynamicContentId) {
             return $event->setResult('Dynamic COntent ID #'.$dynamicContentId.' doesn\'t exist.');
         }
 
-        /** @var DynamicContent $dynamicContent */
-        $dynamicContent = $this->dynamicContentModel->getEntity($dynamicContentId);;
+        /** @var DynamicContent $dwc */
+        $dwc = $this->dynamicContentModel->getEntity($dynamicContentId);;
 
-        if (!$dynamicContent) {
-            return $event->setResult(false);
+        if ($dwc instanceof DynamicContent) {
+            // Use translation if available
+            list($ignore, $dwc) = $this->dynamicContentModel->getTranslatedEntity($dwc, $lead);
+
+            if ($slot) {
+                $this->dynamicContentModel->setSlotContentForLead($dwc, $lead, $slot);
+            }
+
+            $this->dynamicContentModel->createStatEntry($dwc, $lead, $slot);
+            $event->setChannel('recombee-dynamic-content', $dynamicContentId);
+            $result = [
+                'type'       => $event->getConfig()['type'],
+                'campaignId' => $event->getConfig()['type'],
+                'slot'       => $slot,
+            ];
+
+            return $event->setResult($result);
         }
 
-        $event->setChannel('recombee-dynamic-content', $slot);
-        $result = [
-            'type' => $event->getConfig()['type'],
-            'campaignId' => $event->getConfig()['type'],
-        ];
-
-        return $event->setResult($result);
+        return $event->setResult(false);
     }
 
     /**
@@ -492,16 +523,16 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onDynamicContentTokenReplacement(TokenReplacementEvent $event)
     {
-        $lead    = $event->getLead();
         $clickthrough = $event->getClickthrough();
-        $metadata = $this->getDynamicOptionsFromLog($clickthrough['slot'], $lead->getId());
-        if (empty($metadata['type']) || empty($metadata['campaignId'])) {
+        $slot = $clickthrough['slot'];
+        $leadId = $clickthrough['lead'];
+        $metadata = $this->getDynamicOptionsFromLog($slot, $clickthrough['dynamic_content_id'], $leadId );
+        if (empty($metadata['type']) || empty($metadata['campaignId']) || empty($metadata['slot'])) {
             return;
         }
 
         $type = $metadata['type'];
         $campaignId = $metadata['campaignId'];
-        $leadId = $lead->getId();
         $dynamicContentContent = $event->getContent();
 
         $content      =
@@ -521,23 +552,33 @@ class CampaignSubscriber extends CommonSubscriber
      * @param $slot
      * @param $contactId
      */
-    private function getDynamicOptionsFromLog($slot, $contactId)
+    private function getDynamicOptionsFromLog($slot, $channelId, $contactId)
     {
-        $q = $this->campaignEventModel->getRepository()->getEntityManager()->getConnection()->createQueryBuilder();
+        $q = $this->em->getConnection()->createQueryBuilder();
 
-        $q->select('e.metadata')
+        $q->select('e.id, e.metadata')
             ->from(MAUTIC_TABLE_PREFIX.'campaign_lead_event_log', 'e')
             ->where(
-                $q->expr()->eq('e.channel', 'recombee-dynamic-content'),
+                $q->expr()->eq('e.channel', ':channel'),
                 $q->expr()->eq('e.channel_id', ':channel_id'),
                 $q->expr()->eq('e.lead_id', ':lead_id')
             )
+            ->setParameter('channel', 'recombee-dynamic-content')
+            ->setParameter('channel_id', $channelId)
+            ->setParameter('lead_id', $contactId)
             ->orderBy('e.id', 'DESC')
-            ->setMaxResult(1)
-            ->setParameter('channel_id', $slot)
-            ->setParameter('lead_id', $contactId);
+            ->getMaxResults(999);
 
-        return unserialize($q->execute()->fetchColumn());
+        if ($results = $q->execute()->fetchAll()) {
+            foreach ($results as $result) {
+                $metadata = unserialize($result['metadata']);
+                if (!empty($metadata['slot']) && $metadata['slot'] == $slot) {
+                    return $metadata;
+                }
+            }
+        }
+
+        return false;
     }
 
 }
