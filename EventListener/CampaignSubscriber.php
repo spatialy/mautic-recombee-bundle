@@ -143,7 +143,7 @@ class CampaignSubscriber extends CommonSubscriber
         $this->integrationHelper     = $integrationHelper;
 
         $this->dynamicContentModel = $dynamicContentModel;
-        $this->entityManager = $entityManager;
+        $this->entityManager       = $entityManager;
     }
 
     /**
@@ -208,13 +208,13 @@ class CampaignSubscriber extends CommonSubscriber
         $event->addAction(
             'recombee.dynamic.content',
             [
-                'label'                  => 'mautic.recombee.dynamic.content.campaign.event',
-                'description'            => 'mautic.recombee.dynamic.content.campaign.event.desc',
-                'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'               => RecombeeDynamicContentType::class,
-                'formTypeOptions'        => ['update_select' => 'campaignevent_properties_dynamicContent'],
-                'channel'        => 'dynamicContent',
-                'channelIdField' => 'dwc_slot_name',
+                'label'           => 'mautic.recombee.dynamic.content.campaign.event',
+                'description'     => 'mautic.recombee.dynamic.content.campaign.event.desc',
+                'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
+                'formType'        => RecombeeDynamicContentType::class,
+                'formTypeOptions' => ['update_select' => 'campaignevent_properties_dynamicContent'],
+                'channel'         => 'dynamicContent',
+                'channelIdField'  => 'dwc_slot_name',
             ]
         );
 
@@ -402,9 +402,9 @@ class CampaignSubscriber extends CommonSubscriber
             return;
         }
 
-        $slot = $event->getConfig()['slot'];
+        $slot             = $event->getConfig()['slot'];
         $dynamicContentId = (int) $event->getConfig()['dynamic_content'];
-        $lead = $event->getLead();
+        $lead             = $event->getLead();
 
         if (!$dynamicContentId) {
             return $event->setResult('Dynamic COntent ID #'.$dynamicContentId.' doesn\'t exist.');
@@ -425,7 +425,7 @@ class CampaignSubscriber extends CommonSubscriber
             $event->setChannel('recombee-dynamic-content', $dynamicContentId);
             $result = [
                 'type'       => $event->getConfig()['type'],
-                'campaignId' => $event->getConfig()['type'],
+                'campaignId' => $event->getEvent()['campaign']['id'],
                 'slot'       => $slot,
             ];
 
@@ -524,27 +524,22 @@ class CampaignSubscriber extends CommonSubscriber
     public function onDynamicContentTokenReplacement(TokenReplacementEvent $event)
     {
         $clickthrough = $event->getClickthrough();
-        $slot = $clickthrough['slot'];
-        $leadId = $clickthrough['lead'];
-        $metadata = $this->getDynamicOptionsFromLog($slot, $clickthrough['dynamic_content_id'], $leadId );
+        $slot         = $clickthrough['slot'];
+        $leadId       = $clickthrough['lead'];
+        $metadata     = $this->getDynamicOptionsFromLog($slot, $clickthrough['dynamic_content_id'], $leadId);
         if (empty($metadata['type']) || empty($metadata['campaignId']) || empty($metadata['slot'])) {
             return;
         }
-
-        $type = $metadata['type'];
-        $campaignId = $metadata['campaignId'];
+        $type                  = $metadata['type'];
+        $campaignId            = $metadata['campaignId'];
         $dynamicContentContent = $event->getContent();
-
-        $content      =
+        $content               =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $dynamicContentContent,
                 $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
             );
 
-        // check if cart has some items
-        if ($this->recombeeTokenReplacer->hasItems()) {
-            $event->setContent($content);
-        }
+        $event->setContent($content);
     }
 
 
