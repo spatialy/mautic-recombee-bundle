@@ -47,11 +47,6 @@ return [
                     'mautic.recombee.service.replacer',
                 ],
             ],
-            'mautic.recombee.buildjs.subscriber'     => [
-                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
-                'arguments' => [
-                ],
-            ],
             'mautic.recombee.focus.subscriber'     => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\FocusSubscriber::class,
                 'arguments' => [
@@ -201,14 +196,6 @@ return [
             ],
         ],
         'public' => [
-            'mautic_recombee_api_content' => [
-                'path'       => '/recombee/dwc',
-                'controller' => 'MauticRecombeeBundle:Ajax:get',
-            ],
-            'mautic_recombee_tests' => [
-                'path'       => '/recombee/tests',
-                'controller' => 'MauticRecombeeBundle:Tests:run',
-            ],
             'mautic_recombee_js_generate_focus' => [
                 'path'       => '/recombee/focus/{id}.js',
                 'controller' => 'MauticRecombeeBundle:Recombee:generate',
