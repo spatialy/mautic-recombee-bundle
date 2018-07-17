@@ -141,17 +141,22 @@ At the moment Recombee integration support
 
 - Email
 - Focus
-
+- Dynamic Content
+- Push notifications
 
 #### 2. Create campaign actions
 
 ##### Recombee Email
 
-![image](https://user-images.githubusercontent.com/462477/42328412-77398ed8-806e-11e8-9b93-f1137b455120.png)
+<a href="https://user-images.githubusercontent.com/462477/42328412-77398ed8-806e-11e8-9b93-f1137b455120.png" target="_blank"><img alt="Recombee Email" width="400" src="https://user-images.githubusercontent.com/462477/42328412-77398ed8-806e-11e8-9b93-f1137b455120.png"></a>
 
 ##### Recombee Focus
 
-![image](https://user-images.githubusercontent.com/462477/42328482-a2630f26-806e-11e8-8877-57b35169cddc.png)
+<a href="https://user-images.githubusercontent.com/462477/42328482-a2630f26-806e-11e8-8877-57b35169cddc.png" target="_blank"><img alt="Recombee Focus" width="400" src="https://user-images.githubusercontent.com/462477/42328482-a2630f26-806e-11e8-8877-57b35169cddc.png"></a>
+
+##### Recombee Dynamic Content
+
+<a href="https://user-images.githubusercontent.com/462477/42802343-f02d632c-89a2-11e8-824f-9d6c77e87626.png" target="_blank"><img alt="Recombee Dynamic Content" width="400" src="https://user-images.githubusercontent.com/462477/42802343-f02d632c-89a2-11e8-824f-9d6c77e87626.png"></a>
  
  Both campaign action support 3 types of recommendations:
  
