@@ -89,6 +89,10 @@ return [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentType::class,
                 'alias' => 'recombee_dynamic_content_type',
             ],
+            'mautic.form.type.recombee.dynamic_content.remove.type' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentRemoveType::class,
+                'alias' => 'recombee_dynamic_content_remove_type',
+            ],
             'mautic.form.type.recombee.options.type' => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeOptionsType::class,
                 'alias' => 'recombee_options_type',

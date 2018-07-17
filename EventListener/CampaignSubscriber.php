@@ -16,7 +16,6 @@ use Mautic\CampaignBundle\CampaignEvents;
 use Mautic\CampaignBundle\Event\CampaignBuilderEvent;
 use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\CampaignBundle\Model\EventModel;
-use Mautic\ChannelBundle\Model\MessageQueueModel;
 use Mautic\CoreBundle\Event\TokenReplacementEvent;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\DynamicContentBundle\DynamicContentEvents;
@@ -24,6 +23,7 @@ use Mautic\DynamicContentBundle\Entity\DynamicContent;
 use Mautic\DynamicContentBundle\Model\DynamicContentModel;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
+use Mautic\LeadBundle\Entity\DoNotContact;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\NotificationBundle\Form\Type\MobileNotificationSendType;
 use Mautic\NotificationBundle\Form\Type\NotificationSendType;
@@ -32,6 +32,7 @@ use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticFocusBundle\Entity\Focus;
 use MauticPlugin\MauticFocusBundle\Model\FocusModel;
 use MauticPlugin\MauticRecombeeBundle\EventListener\Service\CampaignLeadDetails;
+use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentRemoveType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeFocusType;
@@ -156,8 +157,9 @@ class CampaignSubscriber extends CommonSubscriber
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION    => [
                 ['onCampaignTriggerActionSendRecombeeEmail', 0],
                 ['onCampaignTriggerActionInjectRecombeeFocus', 1],
-                //['onCampaignTriggerActionSendNotification', 2],
+              //  ['onCampaignTriggerActionSendNotification', 2],
                 ['onCampaignTriggerActionDynamiContent', 3],
+                ['onCampaignTriggerActionDynamiContentRemove', 4],
             ],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
             DynamicContentEvents::TOKEN_REPLACEMENT       => ['onDynamicContentTokenReplacement', 10],
@@ -213,15 +215,25 @@ class CampaignSubscriber extends CommonSubscriber
                 'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
                 'formType'        => RecombeeDynamicContentType::class,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_dynamicContent'],
-                'channel'         => 'dynamicContent',
-                'channelIdField'  => 'dwc_slot_name',
+            ]
+        );
+
+
+        $event->addAction(
+            'recombee.dynamic.content.remove',
+            [
+                'label'           => 'mautic.recombee.dynamic.content.remove.campaign.event',
+                'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
+                'formType'        => RecombeeDynamicContentRemoveType::class,
             ]
         );
 
         /*
          * Notification postpone at the moment
          *
-         * $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+         *
+         */
+        $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
         if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
 
             $features = $integration->getSupportedFeatures();
@@ -237,8 +249,6 @@ class CampaignSubscriber extends CommonSubscriber
                         'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
                         'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
                         'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
-                        'channel'          => 'mobile_notification',
-                        'channelIdField'   => 'mobile_notification',
                     ]
                 );
             }
@@ -253,11 +263,9 @@ class CampaignSubscriber extends CommonSubscriber
                     'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
                     'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
                     'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
-                    'channel'          => 'notification',
-                    'channelIdField'   => 'notification',
                 ]
             );
-        }*/
+        }
     }
 
     /**
@@ -436,6 +444,38 @@ class CampaignSubscriber extends CommonSubscriber
     }
 
     /**
+     * @param CampaignExecutionEvent $event
+     */
+    public function onCampaignTriggerActionDynamiContentRemove(CampaignExecutionEvent $event)
+    {
+
+        if (!$event->checkContext('recombee.dynamic.content.remove')) {
+            return;
+        }
+
+        $slot             = $event->getConfig()['slot'];
+        $lead             = $event->getLead();
+
+        $qb = $this->em->getConnection()->createQueryBuilder();
+        $qb->delete(MAUTIC_TABLE_PREFIX.'dynamic_content_lead_data')
+            ->andWhere($qb->expr()->eq('slot', ':slot'))
+            ->andWhere($qb->expr()->eq('lead_id', ':lead_id'))
+            ->setParameter('slot', $slot)
+            ->setParameter('lead_id', $lead->getId())
+            ->execute();
+
+        $event->setChannel('recombee-dynamic-content');
+
+        $result = [
+            'type'       => $event->getConfig()['type'],
+            'campaignId' => $event->getEvent()['campaign']['id'],
+            'slot'       => $slot,
+        ];
+
+        return $event->setResult($result);
+    }
+
+    /**
      * @param     $config
      * @param int $campaignId
      * @param int $leadId
@@ -526,7 +566,8 @@ class CampaignSubscriber extends CommonSubscriber
         $clickthrough = $event->getClickthrough();
         $slot         = $clickthrough['slot'];
         $leadId       = $clickthrough['lead'];
-        $metadata     = $this->getDynamicOptionsFromLog($slot, $clickthrough['dynamic_content_id'], $leadId);
+        // Find last added campaign metadata for slot
+        $metadata     = $this->getDynamicOptionsFromLog($slot, $leadId);
         if (empty($metadata['type']) || empty($metadata['campaignId']) || empty($metadata['slot'])) {
             return;
         }
@@ -547,7 +588,7 @@ class CampaignSubscriber extends CommonSubscriber
      * @param $slot
      * @param $contactId
      */
-    private function getDynamicOptionsFromLog($slot, $channelId, $contactId)
+    private function getDynamicOptionsFromLog($slot, $contactId)
     {
         $q = $this->em->getConnection()->createQueryBuilder();
 
@@ -559,10 +600,9 @@ class CampaignSubscriber extends CommonSubscriber
                 $q->expr()->eq('e.lead_id', ':lead_id')
             )
             ->setParameter('channel', 'recombee-dynamic-content')
-            ->setParameter('channel_id', $channelId)
             ->setParameter('lead_id', $contactId)
             ->orderBy('e.id', 'DESC')
-            ->getMaxResults(999);
+            ->getMaxResults(99);
 
         if ($results = $q->execute()->fetchAll()) {
             foreach ($results as $result) {
@@ -574,6 +614,116 @@ class CampaignSubscriber extends CommonSubscriber
         }
 
         return false;
+    }
+
+    /**
+     * @param CampaignExecutionEvent $event
+     *
+     * @return CampaignExecutionEvent
+     */
+    public function onCampaignTriggerAction(CampaignExecutionEvent $event)
+    {
+        $lead = $event->getLead();
+
+        if ($this->leadModel->isContactable($lead, 'notification') !== DoNotContact::IS_CONTACTABLE) {
+            return $event->setFailed('mautic.notification.campaign.failed.not_contactable');
+        }
+
+        $notificationId = (int) $event->getConfig()['notification'];
+
+        /** @var \Mautic\NotificationBundle\Entity\Notification $notification */
+        $notification = $this->notificationModel->getEntity($notificationId);
+
+        if ($notification->getId() !== $notificationId) {
+            return $event->setFailed('mautic.notification.campaign.failed.missing_entity');
+        }
+
+        if (!$notification->getIsPublished()) {
+            return $event->setFailed('mautic.notification.campaign.failed.unpublished');
+        }
+
+        // If lead has subscribed on multiple devices, get all of them.
+        /** @var \Mautic\NotificationBundle\Entity\PushID[] $pushIDs */
+        $pushIDs = $lead->getPushIDs();
+
+        $playerID = [];
+
+        foreach ($pushIDs as $pushID) {
+            // Skip non-mobile PushIDs if this is a mobile event
+            if ($event->checkContext('notification.send_mobile_notification') && $pushID->isMobile() == false) {
+                continue;
+            }
+
+            // Skip mobile PushIDs if this is a non-mobile event
+            if ($event->checkContext('notification.send_notification') && $pushID->isMobile() == true) {
+                continue;
+            }
+
+            $playerID[] = $pushID->getPushID();
+        }
+
+        if (empty($playerID)) {
+            return $event->setFailed('mautic.notification.campaign.failed.not_subscribed');
+        }
+
+        if ($url = $notification->getUrl()) {
+            $url = $this->notificationApi->convertToTrackedUrl(
+                $url,
+                [
+                    'notification' => $notification->getId(),
+                    'lead'         => $lead->getId(),
+                ],
+                $notification
+            );
+        }
+
+        /** @var TokenReplacementEvent $tokenEvent */
+        $tokenEvent = $this->dispatcher->dispatch(
+            NotificationEvents::TOKEN_REPLACEMENT,
+            new TokenReplacementEvent(
+                $notification->getMessage(),
+                $lead,
+                ['channel' => ['notification', $notification->getId()]]
+            )
+        );
+
+        /** @var NotificationSendEvent $sendEvent */
+        $sendEvent = $this->dispatcher->dispatch(
+            NotificationEvents::NOTIFICATION_ON_SEND,
+            new NotificationSendEvent($tokenEvent->getContent(), $notification->getHeading(), $lead)
+        );
+
+        // prevent rewrite notification entity
+        $sendNotification = clone $notification;
+        $sendNotification->setUrl($url);
+        $sendNotification->setMessage($sendEvent->getMessage());
+        $sendNotification->setHeading($sendEvent->getHeading());
+
+        $response = $this->notificationApi->sendNotification(
+            $playerID,
+            $sendNotification
+        );
+
+        $event->setChannel('notification', $notification->getId());
+
+        // If for some reason the call failed, tell mautic to try again by return false
+        if ($response->code !== 200) {
+            return $event->setResult(false);
+        }
+
+        $this->notificationModel->createStatEntry($notification, $lead, 'campaign.event', $event->getEvent()['id']);
+        $this->notificationModel->getRepository()->upCount($notificationId);
+
+        $result = [
+            'status'  => 'mautic.notification.timeline.status.delivered',
+            'type'    => 'mautic.notification.notification',
+            'id'      => $notification->getId(),
+            'name'    => $notification->getName(),
+            'heading' => $sendEvent->getHeading(),
+            'content' => $sendEvent->getMessage(),
+        ];
+
+        $event->setResult($result);
     }
 
 }
