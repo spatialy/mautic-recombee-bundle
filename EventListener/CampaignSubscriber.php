@@ -396,7 +396,7 @@ class CampaignSubscriber extends CommonSubscriber
         ];
         $this->trackingHelper->updateSession($values);
 
-        return $event->setResult(true);
+        return $this->setResults($event);
     }
 
 
@@ -440,7 +440,8 @@ class CampaignSubscriber extends CommonSubscriber
             return $event->setResult($result);
         }
 
-        return $event->setResult(false);
+        $this->setResults($event);
+        return $event->setResult(array_merge($event->getResult(), ['slot'=> $slot]));
     }
 
     /**
@@ -465,14 +466,18 @@ class CampaignSubscriber extends CommonSubscriber
             ->execute();
 
         $event->setChannel('recombee-dynamic-content');
+        return $this->setResults($event);
+    }
 
-        $result = [
+    /**
+     * @param CampaignExecutionEvent $event
+     */
+    private function setResults(CampaignExecutionEvent $event)
+    {
+       return $event->setResult([
             'type'       => $event->getConfig()['type'],
             'campaignId' => $event->getEvent()['campaign']['id'],
-            'slot'       => $slot,
-        ];
-
-        return $event->setResult($result);
+        ]);
     }
 
     /**
@@ -557,64 +562,6 @@ class CampaignSubscriber extends CommonSubscriber
 
     }
 
-
-    /**
-     * @param TokenReplacementEvent $event
-     */
-    public function onDynamicContentTokenReplacement(TokenReplacementEvent $event)
-    {
-        $clickthrough = $event->getClickthrough();
-        $slot         = $clickthrough['slot'];
-        $leadId       = $clickthrough['lead'];
-        // Find last added campaign metadata for slot
-        $metadata     = $this->getDynamicOptionsFromLog($slot, $leadId);
-        if (empty($metadata['type']) || empty($metadata['campaignId']) || empty($metadata['slot'])) {
-            return;
-        }
-        $type                  = $metadata['type'];
-        $campaignId            = $metadata['campaignId'];
-        $dynamicContentContent = $event->getContent();
-        $content               =
-            $this->recombeeTokenReplacer->replaceTokensFromContent(
-                $dynamicContentContent,
-                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
-            );
-
-        $event->setContent($content);
-    }
-
-
-    /**
-     * @param $slot
-     * @param $contactId
-     */
-    private function getDynamicOptionsFromLog($slot, $contactId)
-    {
-        $q = $this->em->getConnection()->createQueryBuilder();
-
-        $q->select('e.id, e.metadata')
-            ->from(MAUTIC_TABLE_PREFIX.'campaign_lead_event_log', 'e')
-            ->where(
-                $q->expr()->eq('e.channel', ':channel'),
-                $q->expr()->eq('e.channel_id', ':channel_id'),
-                $q->expr()->eq('e.lead_id', ':lead_id')
-            )
-            ->setParameter('channel', 'recombee-dynamic-content')
-            ->setParameter('lead_id', $contactId)
-            ->orderBy('e.id', 'DESC')
-            ->getMaxResults(99);
-
-        if ($results = $q->execute()->fetchAll()) {
-            foreach ($results as $result) {
-                $metadata = unserialize($result['metadata']);
-                if (!empty($metadata['slot']) && $metadata['slot'] == $slot) {
-                    return $metadata;
-                }
-            }
-        }
-
-        return false;
-    }
 
     /**
      * @param CampaignExecutionEvent $event

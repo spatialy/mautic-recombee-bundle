@@ -33,6 +33,14 @@ return [
                     'doctrine.orm.entity_manager'
                 ],
             ],
+            'mautic.recombee.token.subscriber'  => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\TokenSubscriber::class,
+                'arguments' => [
+                    'mautic.recombee.service.replacer',
+                    'doctrine.orm.entity_manager',
+                    'mautic.recombee.service.campaign.lead.details'
+                ],
+            ],
             'mautic.recombee.leadbundle.subscriber'  => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\LeadSubscriber::class,
                 'arguments' => [
