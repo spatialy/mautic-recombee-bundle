@@ -182,7 +182,8 @@ return [
                     'mautic.recombee.api.recombee',
                     'mautic.lead.model.lead',
                     'twig',
-                    'mautic.recombee.service.api.commands'
+                    'mautic.recombee.service.api.commands',
+                    'mautic.helper.templating'
                 ],
             ],
             'mautic.recombee.service.token.html.replacer' => [

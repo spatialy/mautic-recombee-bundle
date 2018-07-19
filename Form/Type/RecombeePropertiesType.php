@@ -115,6 +115,60 @@ class RecombeePropertiesType extends AbstractType
         );
 
         $builder->add(
+            'style',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'colBackground',
+            'text',
+            [
+                'label'      => 'mautic.recombee.form.background.color',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                    'data-toggle' => 'color',
+                    'onchange'    => 'Mautic.recombeeUpdatePreview()',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'colPadding',
+            'text',
+            [
+                'label'      => 'mautic.recombee.form.padding',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'colStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
             'itemName',
             RecombeeTagsType::class,
             [
@@ -169,6 +223,19 @@ class RecombeePropertiesType extends AbstractType
             ]
         );
 
+        $builder->add(
+            'itemNameStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
 
         $builder->add(
             'itemImage',
@@ -179,6 +246,19 @@ class RecombeePropertiesType extends AbstractType
                 'attr'       => [
                     'class'       => 'form-control',
                     //'onchange'    => 'Mautic.recombeeUpdatePreview()',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'itemImageStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
                 ],
                 'required'   => false,
             ]
@@ -197,6 +277,20 @@ class RecombeePropertiesType extends AbstractType
                 'required'   => false,
             ]
         );
+
+        $builder->add(
+            'itemShortDescriptionStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
 
 
         $builder->add(
@@ -293,13 +387,6 @@ class RecombeePropertiesType extends AbstractType
                     'class'       => 'form-control',
                 ],
                 'required'   => false,
-                'constraints' => [
-                    new Range(
-                        [
-                            'min' => 0,
-                        ]
-                    ),
-                ],
             ]
         );
 
@@ -316,6 +403,18 @@ class RecombeePropertiesType extends AbstractType
             ]
         );
 
+        $builder->add(
+            'itemActionStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
 
         $builder->add(
             'itemPrice',
@@ -373,6 +472,32 @@ class RecombeePropertiesType extends AbstractType
         );
 
         $builder->add(
+            'itemPriceBold',
+            'yesno_button_group',
+            [
+                'label' => 'mautic.plugin.recombee.bold',
+                'attr'  => [
+                ],
+                'data'        => isset($options['data']['itemPriceBold']) ? :false,
+
+            ]
+        );
+
+        $builder->add(
+            'itemPriceStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
+
+        $builder->add(
             'itemOldPrice',
             RecombeeTagsType::class,
             [
@@ -381,6 +506,48 @@ class RecombeePropertiesType extends AbstractType
                 'attr'       => [
                     'class'       => 'form-control',
                     //'onchange'    => 'Mautic.recombeeUpdatePreview()',
+                ],
+                'required'   => false,
+            ]
+        );
+
+
+        $builder->add(
+            'itemOldPriceColor',
+            'text',
+            [
+                'label'      => 'mautic.recombee.form.color',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                    'data-toggle' => 'color',
+                ],
+                'required'   => false,
+            ]
+        );
+
+
+        $builder->add(
+            'itemOldPriceSize',
+            'text',
+            [
+                'label'      => 'mautic.recombee.form.font.size',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
+                ],
+                'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'itemOldPriceStyle',
+            'text',
+            [
+                'label'      => 'mautic.plugin.recombee.style',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'       => 'form-control',
                 ],
                 'required'   => false,
             ]

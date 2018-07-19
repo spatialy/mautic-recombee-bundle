@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
+use Mautic\CoreBundle\Helper\TemplatingHelper;
 use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
@@ -28,6 +29,7 @@ class RecombeeGenerator
      * @var RecombeeModel
      */
     private $recombeeModel;
+
     /**
      * @var LeadModel
      */
@@ -44,7 +46,13 @@ class RecombeeGenerator
     private $apiCommands;
 
     private $header;
+
     private $footer;
+
+    /**
+     * @var TemplatingHelper
+     */
+    private $templatingHelper;
 
     /**
      * RecombeeGenerator constructor.
@@ -54,19 +62,22 @@ class RecombeeGenerator
      * @param LeadModel         $leadModel
      * @param \Twig_Environment $twig
      * @param ApiCommands       $apiCommands
+     * @param TemplatingHelper  $templatingHelper
      */
     public function __construct(
         RecombeeModel $recombeeModel,
         RecombeeApi $recombeeApi,
         LeadModel $leadModel,
         \Twig_Environment $twig,
-        ApiCommands $apiCommands
+        ApiCommands $apiCommands,
+        TemplatingHelper $templatingHelper
     ) {
-        $this->recombeeApi    = $recombeeApi;
-        $this->recombeeModel  = $recombeeModel;
-        $this->leadModel      = $leadModel;
-        $this->twig           = $twig;
-        $this->apiCommands = $apiCommands;
+        $this->recombeeApi      = $recombeeApi;
+        $this->recombeeModel    = $recombeeModel;
+        $this->leadModel        = $leadModel;
+        $this->twig             = $twig;
+        $this->apiCommands      = $apiCommands;
+        $this->templatingHelper = $templatingHelper;
     }
 
     /**
@@ -88,10 +99,14 @@ class RecombeeGenerator
         try {
             switch ($recombeeToken->getType()) {
                 case "RecommendItemsToUser":
-                $this->apiCommands->callCommand('RecommendItemsToUser', $recombeeToken->getOptions([ 'userId', 'limit']));
+                    $this->apiCommands->callCommand(
+                        'RecommendItemsToUser',
+                        $recombeeToken->getOptions(['userId', 'limit'])
+                    );
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
+
             return $items['recomms'];
 
         } catch (Ex\ApiTimeoutException $e) {
@@ -109,30 +124,67 @@ class RecombeeGenerator
 
     public function getContentByToken(RecombeeToken $recombeeToken)
     {
+        /** @var Recombee $recombee */
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
 
         if (!$recombee instanceof Recombee) {
             return;
         }
 
-        $templateContent = $recombee->getTemplate()['body'];
         $items = $this->getResultByToken($recombeeToken);
+        if (empty($items)) {
+            return;
+        }
 
-        if (!empty($items)) {
-            $template = $this->twig->createTemplate($templateContent);
-            $output   = '';
-            $tokens = [];
-            $tokens['keys'] = implode(',', array_column($items, 'id'));
-            foreach ($items as $item) {
-                $item['values'] = array_merge($item['values'], $tokens);
-                // preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', $templateContent , $matches);
-                $output .= $template->render($item['values']);
-            }
+        if ($recombee->getTemplateType() == 'basic') {
+            $headerTemplate = $this->templateHelper->getTemplating()->render(
+                'MauticRecombeeBundle:Recombee:generator-header.html.php',
+                [
+                    'recombee' => $recombee,
+                ]
+            );
+            $footerTemplate = $this->templateHelper->getTemplating()->render(
+                'MauticRecombeeBundle:Recombee:generator-footer.html.php',
+                [
+                    'recombee' => $recombee,
+                ]
+            );
+            $bodyTemplate   = $this->templateHelper->getTemplating()->render(
+                'MauticRecombeeBundle:Recombee:generator-body.html.php',
+                [
+                    'recombee' => $recombee,
+                ]
+            );
+
+        } else {
             $headerTemplate = $this->twig->createTemplate($recombee->getTemplate()['header']);
             $footerTemplate = $this->twig->createTemplate($recombee->getTemplate()['footer']);
-            return $headerTemplate->render($tokens).$output.$footerTemplate->render($tokens);
+            $bodyTemplate   = $this->twig->createTemplate($recombee->getTemplate()['body']);
         }
+
+        return $this->getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate, $items);
+
+
     }
+
+    /**
+     *
+     * @return string
+     */
+    private function getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate, array $items)
+    {
+        $output = '';
+        $tokens = [];
+        // create comma separated IDs parameter named by keys
+        $tokens['keys'] = implode(',', array_column($items, 'id'));
+        foreach ($items as $item) {
+            $item['values'] = array_merge($item['values'], $tokens);
+            $output .= $bodyTemplate->render($item['values']);
+        }
+
+        return $headerTemplate->render($tokens).$output.$footerTemplate->render($tokens);
+    }
+
 
     /**
      * @return mixed

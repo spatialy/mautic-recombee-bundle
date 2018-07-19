@@ -22,14 +22,17 @@ echo $view['assets']->includeScript('plugins/MauticRecombeeBundle/Assets/js/reco
 $recombee = $entity;
 ?>
 <div class="row">
-    <div class="col-md-5">
+    <div class="col-md-4">
         <?php echo $view['form']->row($form['name']); ?>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-3">
         <?php echo $view['form']->row($form['numberOfItems']); ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <?php echo $view['form']->row($form['isPublished']); ?>
+    </div>
+    <div class="col-md-3">
+        <?php echo $view['form']->row($form['templateType']); ?>
     </div>
 </div>
 
@@ -40,7 +43,7 @@ $recombee = $entity;
                 <div id="recombee_properties_1"
                      data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
 
-                    <h3>Preview</h3>
+                    <h3><?php echo $view['translator']->trans('mautic.plugin.recombee.preview'); ?></h3>
 
                     <?php
                     echo $view->render(
@@ -83,7 +86,6 @@ $recombee = $entity;
 <?php $view['slots']->stop(); ?>
 
 <?php $view['slots']->start('rightFormContent'); ?>
-<?php echo $view['form']->row($form['templateType']); ?>
 
 
 <div class="row">
@@ -95,13 +97,13 @@ $recombee = $entity;
                     <div class="panel-heading" role="tab" id="headingOne">
                         <h4 class="panel-title">
                             <a role="button" data-toggle="collapse" data-parent="#accordion" href="#collapseOne"
-                               aria-expanded="true" aria-controls="collapseOne">
+                               aria-expanded="false" aria-controls="collapseOne">
                                 <i class="fa fa-check text-success"></i>
-                                <?php echo $view['translator']->trans('mautic.plugin.recombee.settings'); ?>
+                                <?php echo $view['translator']->trans('mautic.plugin.recombee.container'); ?>
                             </a>
                         </h4>
                     </div>
-                    <div id="collapseOne" class="panel-collapse collapse in" role="tabpanel"
+                    <div id="collapseOne" class="panel-collapse collapse" role="tabpanel"
                          aria-labelledby="headingOne">
                         <div class="panel-body">
                             <?php
@@ -109,6 +111,28 @@ $recombee = $entity;
                             echo $view['form']->row($form['properties']['background']);
                             echo $view['form']->row($form['properties']['font']);
                             echo $view['form']->row($form['properties']['padding']);
+                            echo $view['form']->row($form['properties']['style']);
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="itemColHead">
+                        <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                               href="#itemCol" aria-expanded="false" aria-controls="itemCol">
+                                <i class="fa fa-check text-success"></i> <?php echo $view['translator']->trans(
+                                    'mautic.plugin.recombee.column'
+                                ); ?>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="itemCol" class="panel-collapse collapse" role="tabpanel" aria-labelledby="itemColHead">
+                        <div class="panel-body">
+                            <?php
+                            echo $view['form']->row($form['properties']['colPadding']);
+                            echo $view['form']->row($form['properties']['colBackground']);
+                            echo $view['form']->row($form['properties']['colStyle']);
                             ?>
                         </div>
                     </div>
@@ -132,6 +156,7 @@ $recombee = $entity;
                             echo $view['form']->row($form['properties']['itemNameColor']);
                             echo $view['form']->row($form['properties']['itemNameSize']);
                             echo $view['form']->row($form['properties']['itemNamePadding']);
+                            echo $view['form']->row($form['properties']['itemNameStyle']);
                             ?>
                         </div>
                     </div>
@@ -152,6 +177,7 @@ $recombee = $entity;
                         <div class="panel-body">
                             <?php
                             echo $view['form']->widget($form['properties']['itemImage']);
+                            echo $view['form']->row($form['properties']['itemImageStyle']);
                             ?>
                         </div>
                     </div>
@@ -174,6 +200,7 @@ $recombee = $entity;
                         <div class="panel-body">
                             <?php
                             echo $view['form']->widget($form['properties']['itemShortDescription']);
+                            echo $view['form']->row($form['properties']['itemShortDescriptionStyle']);
                             ?>
                         </div>
                     </div>
@@ -216,6 +243,7 @@ $recombee = $entity;
                             ?>
                             <?php
                             echo $view['form']->row($form['properties']['itemActionPadding']);
+                            echo $view['form']->row($form['properties']['itemActionStyle']);
                             ?>
                         </div>
                     </div>
@@ -239,7 +267,31 @@ $recombee = $entity;
                             echo $view['form']->row($form['properties']['itemPriceColor']);
                             echo $view['form']->row($form['properties']['itemPriceSize']);
                             echo $view['form']->row($form['properties']['itemPricePadding']);
+                            echo $view['form']->row($form['properties']['itemPriceBold']);
+                            echo $view['form']->row($form['properties']['itemPriceStyle']);
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="itemOldPriceHead">
+                        <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                               href="#itemOldPrice" aria-expanded="false" aria-controls="itemOldPrice">
+                                <i class="fa fa-check <?php if (!empty($recombee->getProperties()['itemOldPrice'])
+                                ): echo 'text-success'; endif; ?>"></i> <?php echo $view['translator']->trans(
+                                    'mautic.plugin.recombee.item.old.price'
+                                ); ?>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="itemOldPrice" class="panel-collapse collapse" role="tabpanel" aria-labelledby="itemOldPriceHead">
+                        <div class="panel-body">
+                            <?php
                             echo $view['form']->row($form['properties']['itemOldPrice']);
+                            echo $view['form']->row($form['properties']['itemOldPriceColor']);
+                            echo $view['form']->row($form['properties']['itemOldPriceSize']);
+                            echo $view['form']->row($form['properties']['itemOldPriceStyle']);
                             ?>
                         </div>
                     </div>
@@ -256,7 +308,6 @@ $recombee = $entity;
 
             <div class="row">
                 <div class="col-xs-12">
-                    <hr>
                     <h5><?php echo $view['translator']->trans('mautic.plugin.recombee.template.tags'); ?></h5>
                     <br>
                 </div>

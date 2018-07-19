@@ -34,7 +34,7 @@ class RecombeeTemplateType extends AbstractType
                 'required' => false,
                 'attr'     => [
                     'class' => 'recombee-template',
-                    'rows'  => 5,
+                    'rows'  => 3,
                 ],
             ]
         );
@@ -47,7 +47,7 @@ class RecombeeTemplateType extends AbstractType
                 'required'    => true,
                 'attr'        => [
                     'class' => 'recombee-template',
-                    'rows'  => 10,
+                    'rows'  => 6,
                 ],
             ]
         );
@@ -60,7 +60,7 @@ class RecombeeTemplateType extends AbstractType
                 'required' => false,
                 'attr'     => [
                     'class' => 'recombee-template',
-                    'rows'  => 5,
+                    'rows'  => 3,
                 ],
             ]
         );
