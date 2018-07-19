@@ -233,7 +233,7 @@ class CampaignSubscriber extends CommonSubscriber
          *
          *
          */
-        $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+        /*$integration = $this->integrationHelper->getIntegrationObject('OneSignal');
         if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
 
             $features = $integration->getSupportedFeatures();
@@ -265,7 +265,7 @@ class CampaignSubscriber extends CommonSubscriber
                     'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
                 ]
             );
-        }
+        }*/
     }
 
     /**

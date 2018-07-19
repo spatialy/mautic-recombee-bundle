@@ -51,10 +51,19 @@ class Recombee extends FormEntity
      */
     private $numberOfItems = 9;
 
+
+    /** @var  string */
+    private $templateType;
+
     /**
      * @var html
      */
     private $template;
+
+    /**
+     * @var
+     */
+    private $properties;
 
     /**
      * Recombee constructor.
@@ -92,8 +101,18 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
+        $builder->createField('templateType', 'string')
+            ->columnName('template_type')
+            ->nullable()
+            ->build();
+
         $builder->createField('template', 'array')
             ->columnName('template')
+            ->nullable()
+            ->build();
+
+        $builder->createField('properties', 'array')
+            ->columnName('properties')
             ->nullable()
             ->build();
     }
@@ -122,6 +141,7 @@ class Recombee extends FormEntity
                 'publishUp',
                 'publishDown',
                 'template',
+                'properties',
             ])
             ->build();
     }
@@ -233,5 +253,47 @@ class Recombee extends FormEntity
     {
         $this->isChanged('template', $template);
         $this->template = $template;
+    }
+
+    /**
+     * @param mixed $properties
+     *
+     * @return Recombee
+     */
+    public function setProperties($properties)
+    {
+        $this->isChanged('properties', $properties);
+        $this->properties = $properties;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProperties()
+    {
+        return $this->properties;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplateType()
+    {
+        return $this->templateType;
+    }
+
+    /**
+     * @param string $templateType
+     *
+     * @return Recombee
+     */
+    public function setTemplateType(string $templateType)
+    {
+        $this->isChanged('templateType', $templateType);
+        $this->templateType = $templateType;
+
+        return $this;
     }
 }

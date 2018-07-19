@@ -156,8 +156,14 @@ class RecombeeController extends AbstractStandardFormController
             break;
         }
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
-
         return $args;
+    }
+
+    public function templateAction($id)
+    {
+
+
+
     }
 
     /**

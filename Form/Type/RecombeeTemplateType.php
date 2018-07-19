@@ -49,13 +49,6 @@ class RecombeeTemplateType extends AbstractType
                     'class' => 'recombee-template',
                     'rows'  => 10,
                 ],
-                'constraints' => [
-                    new NotBlank(
-                        [
-                            'message' => 'mautic.core.value.required',
-                        ]
-                    ),
-                ],
             ]
         );
 

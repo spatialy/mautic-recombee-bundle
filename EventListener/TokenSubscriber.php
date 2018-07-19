@@ -15,7 +15,6 @@ use Doctrine\ORM\EntityManager;
 use Mautic\CoreBundle\Event\TokenReplacementEvent;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\DynamicContentBundle\DynamicContentEvents;
-use Mautic\NotificationBundle\NotificationEvents;
 use MauticPlugin\MauticRecombeeBundle\EventListener\Service\CampaignLeadDetails;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 
@@ -67,30 +66,7 @@ class TokenSubscriber extends CommonSubscriber
     {
         return [
             DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', 0],
-            NotificationEvents::TOKEN_REPLACEMENT => ['onNotificationTokenReplacement', 0],
         ];
-    }
-
-    /**
-     * @param TokenReplacementEvent $event
-     */
-    public function onNotificationTokenReplacement(TokenReplacementEvent $event)
-    {
-        $clickthrough = $event->getClickthrough();
-        $channel       = $clickthrough['channel'][0];
-        $channelId       = $clickthrough['channel'][1];
-        $leadId          =   $clickthrough['lead'];
-
-        if ($channel != 'recombee-notification') {
-            return;
-        }
-
-        $metadata  = $this->getMetadataFromLog($channel, $channelId, $leadId);
-        if (empty($metadata)) {
-            return;
-        }
-        $metadata = end($metadata);
-        $this->setContentByMetadata($event, $metadata, $leadId);
     }
 
     /**

@@ -99,10 +99,44 @@ class RecombeeType extends AbstractType
         );
 
         $builder->add(
+            'templateType',
+            'button_group',
+            [
+                'label'      => 'mautic.plugin.recombee.form.template_mode',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'    => 'form-control',
+                    'tooltip'  => 'mautic.plugin.recombee.form.template_mode.tooltip',
+                ],
+                'choices' => [
+                    'mautic.plugin.recombee.form.basic'  => 'basic',
+                    'mautic.plugin.recombee.form.html'   => 'html',
+                ],
+                'choices_as_values' => true,
+                'data'=> $options['data']->getTemplateType() ?:'basic'
+            ]
+        );
+
+        $builder->add(
+            'properties',
+            RecombeePropertiesType::class,
+            [
+                'label' => false,
+                'attr'       => [
+                    'data-show-on' => '{"recombee_templateType_0":"checked"}',
+                ],
+                'data'=>$options['data']->getProperties()
+            ]
+        );
+
+        $builder->add(
             'template',
             RecombeeTemplateType::class,
             [
                 'label' => 'mautic.plugin.recombee.template',
+                'attr'       => [
+                    'data-show-on' => '{"recombee_templateType_1":"checked"}',
+                ],
             ]
         );
 
