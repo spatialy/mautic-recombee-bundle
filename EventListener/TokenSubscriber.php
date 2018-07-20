@@ -139,7 +139,6 @@ class TokenSubscriber extends CommonSubscriber
             $q->andWhere($q->expr()->eq('e.channel_id', ':channel_id'))
                 ->setParameter('channel_id', $channelId);
         }
-
         return $q->execute()->fetchAll();
     }
 

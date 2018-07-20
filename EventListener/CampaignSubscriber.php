@@ -162,7 +162,6 @@ class CampaignSubscriber extends CommonSubscriber
                 ['onCampaignTriggerActionDynamiContentRemove', 4],
             ],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
-            DynamicContentEvents::TOKEN_REPLACEMENT       => ['onDynamicContentTokenReplacement', 10],
 
         ];
     }

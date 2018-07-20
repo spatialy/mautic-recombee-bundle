@@ -52,7 +52,7 @@ class RecombeeGenerator
     /**
      * @var TemplatingHelper
      */
-    private $templatingHelper;
+    private $templateHelper;
 
     /**
      * RecombeeGenerator constructor.
@@ -72,12 +72,12 @@ class RecombeeGenerator
         ApiCommands $apiCommands,
         TemplatingHelper $templatingHelper
     ) {
-        $this->recombeeApi      = $recombeeApi;
-        $this->recombeeModel    = $recombeeModel;
-        $this->leadModel        = $leadModel;
-        $this->twig             = $twig;
-        $this->apiCommands      = $apiCommands;
-        $this->templatingHelper = $templatingHelper;
+        $this->recombeeApi    = $recombeeApi;
+        $this->recombeeModel  = $recombeeModel;
+        $this->leadModel      = $leadModel;
+        $this->twig           = $twig;
+        $this->apiCommands    = $apiCommands;
+        $this->templateHelper = $templatingHelper;
     }
 
     /**
@@ -106,7 +106,6 @@ class RecombeeGenerator
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
-
             return $items['recomms'];
 
         } catch (Ex\ApiTimeoutException $e) {
@@ -135,26 +134,28 @@ class RecombeeGenerator
         if (empty($items)) {
             return;
         }
-
         if ($recombee->getTemplateType() == 'basic') {
-            $headerTemplate = $this->templateHelper->getTemplating()->render(
+            $headerTemplateCore = $this->templateHelper->getTemplating()->render(
                 'MauticRecombeeBundle:Recombee:generator-header.html.php',
                 [
                     'recombee' => $recombee,
                 ]
             );
-            $footerTemplate = $this->templateHelper->getTemplating()->render(
+            $footerTemplateCore = $this->templateHelper->getTemplating()->render(
                 'MauticRecombeeBundle:Recombee:generator-footer.html.php',
                 [
                     'recombee' => $recombee,
                 ]
             );
-            $bodyTemplate   = $this->templateHelper->getTemplating()->render(
+            $bodyTemplateCore   = $this->templateHelper->getTemplating()->render(
                 'MauticRecombeeBundle:Recombee:generator-body.html.php',
                 [
                     'recombee' => $recombee,
                 ]
             );
+            $headerTemplate = $this->twig->createTemplate($headerTemplateCore);
+            $footerTemplate = $this->twig->createTemplate($footerTemplateCore);
+            $bodyTemplate   = $this->twig->createTemplate($bodyTemplateCore);
 
         } else {
             $headerTemplate = $this->twig->createTemplate($recombee->getTemplate()['header']);
@@ -179,9 +180,13 @@ class RecombeeGenerator
         $tokens['keys'] = implode(',', array_column($items, 'id'));
         foreach ($items as $item) {
             $item['values'] = array_merge($item['values'], $tokens);
+            foreach ($item['values'] as $key => &$ite) {
+                if (is_array($ite)) {
+                    $ite = implode(', ', $ite);
+                }
+            }
             $output .= $bodyTemplate->render($item['values']);
         }
-
         return $headerTemplate->render($tokens).$output.$footerTemplate->render($tokens);
     }
 

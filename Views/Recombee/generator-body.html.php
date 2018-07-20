@@ -16,7 +16,11 @@
         <?php if (!empty($recombee->getProperties()['itemUrl'])): ?>
             <a  href="<?php echo $recombee->getProperties()['itemUrl']; ?>">
         <?php endif; ?>
-        <img class="recombee-image" src="http://via.placeholder.com/350x250?text=Example" alt="">
+        <?php if (isset($preview) && $preview){ ?>
+            <img class="recombee-image" src="http://via.placeholder.com/350x250?text=Example" alt="">
+        <?php }else{ ?>
+            <img class="recombee-image" src="<?php echo $recombee->getProperties()['itemImage']; ?>" alt="">
+        <?php } ?>
         <?php if (!empty($recombee->getProperties()['itemUrl'])): ?>
             </a>
         <?php endif; ?>

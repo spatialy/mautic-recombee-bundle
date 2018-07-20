@@ -9,10 +9,16 @@
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
 
+if (!isset($preview)) {
+    $preview = false;
+}
+
+
 echo $view->render(
     'MauticRecombeeBundle:Recombee:generator-header.html.php',
     [
         'recombee' => $recombee,
+        'preview' => $preview
     ]
 );
 ?>
@@ -23,6 +29,7 @@ echo $view->render(
         'MauticRecombeeBundle:Recombee:generator-body.html.php',
         [
             'recombee' => $recombee,
+            'preview' => $preview
         ]
     );
     ?>
@@ -32,6 +39,7 @@ echo $view->render(
     'MauticRecombeeBundle:Recombee:generator-footer.html.php',
     [
         'recombee' => $recombee,
+        'preview' => $preview
     ]
 );
 ?>
