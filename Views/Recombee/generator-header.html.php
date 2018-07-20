@@ -36,9 +36,11 @@ $class = 'recombee-template-'.$recombee->getId();
 
     .<?php echo $class ?> .recombee-image {
         display: block;
-        width: 100%;
-        object: fit;
+        max-width: 100%;
     <?php if (!empty($recombee->getProperties()['itemImageStyle'])):    echo $recombee->getProperties()['itemImageStyle'];     endif;     ?>;
+    <?php if (!empty($recombee->getProperties()['columns']) && $recombee->getProperties()['columns'] == 12):    echo 'margin-right: 20px;
+    float: left;
+}';     endif;     ?>;
     }
 
     .<?php echo $class ?> .recombe-short-description {
@@ -86,4 +88,5 @@ $class = 'recombee-template-'.$recombee->getId();
 
 </style>
 <div class="recombee-global-row <?php echo $class ?>">
+    <?php echo $recombee->getProperties()['header']; ?>
     <div class="recombee-row">

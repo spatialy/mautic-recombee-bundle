@@ -89,7 +89,6 @@ $recombee = $entity;
 
 
 <div class="row">
-    <div class="col-md-12">
         <div id="recombee_template_2" data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
 
             <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
@@ -152,10 +151,11 @@ $recombee = $entity;
                     <div id="itemName" class="panel-collapse collapse" role="tabpanel" aria-labelledby="itemNameHead">
                         <div class="panel-body">
                             <?php
-                            echo $view['form']->widget($form['properties']['itemName']);
+                            echo $view['form']->row($form['properties']['itemName']);
                             echo $view['form']->row($form['properties']['itemNameColor']);
                             echo $view['form']->row($form['properties']['itemNameSize']);
                             echo $view['form']->row($form['properties']['itemNamePadding']);
+                            echo $view['form']->row($form['properties']['itemNameBold']);
                             echo $view['form']->row($form['properties']['itemNameStyle']);
                             ?>
                         </div>
@@ -176,7 +176,7 @@ $recombee = $entity;
                     <div id="itemImage" class="panel-collapse collapse" role="tabpanel" aria-labelledby="itemImageHead">
                         <div class="panel-body">
                             <?php
-                            echo $view['form']->widget($form['properties']['itemImage']);
+                            echo $view['form']->row($form['properties']['itemImage']);
                             echo $view['form']->row($form['properties']['itemImageStyle']);
                             ?>
                         </div>
@@ -199,55 +199,14 @@ $recombee = $entity;
                          aria-labelledby="itemShortDescriptionHead">
                         <div class="panel-body">
                             <?php
-                            echo $view['form']->widget($form['properties']['itemShortDescription']);
+                            echo $view['form']->row($form['properties']['itemShortDescription']);
+                            echo $view['form']->row($form['properties']['itemShortDescriptionBold']);
                             echo $view['form']->row($form['properties']['itemShortDescriptionStyle']);
                             ?>
                         </div>
                     </div>
                 </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading" role="tab" id="itemActionHead">
-                        <h4 class="panel-title">
-                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
-                               href="#itemAction" aria-expanded="false" aria-controls="itemAction">
-                                <i class="fa fa-check <?php if (!empty($recombee->getProperties()['itemAction'])
-                                ): echo 'text-success'; endif; ?>"></i> <?php echo $view['translator']->trans(
-                                    'mautic.plugin.recombee.item.action'
-                                ); ?>
-                            </a>
-                        </h4>
-                    </div>
-                    <div id="itemAction" class="panel-collapse collapse" role="tabpanel"
-                         aria-labelledby="itemActionHead">
-                        <div class="panel-body">
-                            <?php
-                            echo $view['form']->widget($form['properties']['itemUrl']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemAction']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionSize']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionBackground']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionHover']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionColor']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionRadius']);
-                            ?>
-                            <?php
-                            echo $view['form']->row($form['properties']['itemActionPadding']);
-                            echo $view['form']->row($form['properties']['itemActionStyle']);
-                            ?>
-                        </div>
-                    </div>
-                </div>
+
                 <div class="panel panel-default">
                     <div class="panel-heading" role="tab" id="itemPriceHead">
                         <h4 class="panel-title">
@@ -291,18 +250,103 @@ $recombee = $entity;
                             echo $view['form']->row($form['properties']['itemOldPrice']);
                             echo $view['form']->row($form['properties']['itemOldPriceColor']);
                             echo $view['form']->row($form['properties']['itemOldPriceSize']);
+                            echo $view['form']->row($form['properties']['itemOldPriceBold']);
                             echo $view['form']->row($form['properties']['itemOldPriceStyle']);
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="itemActionHead">
+                        <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                               href="#itemAction" aria-expanded="false" aria-controls="itemAction">
+                                <i class="fa fa-check <?php if (!empty($recombee->getProperties()['itemAction'])
+                                ): echo 'text-success'; endif; ?>"></i> <?php echo $view['translator']->trans(
+                                    'mautic.plugin.recombee.item.action'
+                                ); ?>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="itemAction" class="panel-collapse collapse" role="tabpanel"
+                         aria-labelledby="itemActionHead">
+                        <div class="panel-body">
+                            <?php
+                            echo $view['form']->row($form['properties']['itemUrl']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemAction']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionSize']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionBackground']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionHover']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionColor']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionRadius']);
+                            ?>
+                            <?php
+                            echo $view['form']->row($form['properties']['itemActionPadding']);
+                            echo $view['form']->row($form['properties']['itemActionBold']);
+                            echo $view['form']->row($form['properties']['itemActionStyle']);
+                            ?>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="headerHead">
+                        <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                               href="#header" aria-expanded="false" aria-controls="header">
+                                <i class="fa fa-check text-success"></i> <?php echo $view['translator']->trans(
+                                    'mautic.plugin.recombee.header'
+                                ); ?>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="header" class="panel-collapse collapse" role="tabpanel"
+                         aria-labelledby="headerHead">
+                        <div class="panel-body">
+                            <?php
+                            echo $view['form']->row($form['properties']['header']);
+                            ?>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading" role="tab" id="footerHead">
+                        <h4 class="panel-title">
+                            <a class="collapsed" role="button" data-toggle="collapse" data-parent="#accordion"
+                               href="#footer" aria-expanded="false" aria-controls="footer">
+                                <i class="fa fa-check text-success"></i> <?php echo $view['translator']->trans(
+                                    'mautic.plugin.recombee.footer'
+                                ); ?>
+                            </a>
+                        </h4>
+                    </div>
+                    <div id="footer" class="panel-collapse collapse" role="tabpanel"
+                         aria-labelledby="footerHead">
+                        <div class="panel-body">
+                            <?php
+                            echo $view['form']->row($form['properties']['footer']);
                             ?>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
 </div>
 
 
-<div class="row">
+<div class="row" style="margin-top:-10px;">
     <div class="col-md-12">
         <div id="recombee_template" data-show-on="{&quot;recombee_templateType_1&quot;:&quot;checked&quot;}">
 

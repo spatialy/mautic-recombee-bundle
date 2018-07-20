@@ -16,7 +16,7 @@
         <?php if (!empty($recombee->getProperties()['itemUrl'])): ?>
             <a  href="<?php echo $recombee->getProperties()['itemUrl']; ?>">
         <?php endif; ?>
-        <img class="recombee-image" src="http://via.placeholder.com/350" alt="">
+        <img class="recombee-image" src="http://via.placeholder.com/350x250?text=Example" alt="">
         <?php if (!empty($recombee->getProperties()['itemUrl'])): ?>
             </a>
         <?php endif; ?>

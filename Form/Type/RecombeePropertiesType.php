@@ -224,6 +224,18 @@ class RecombeePropertiesType extends AbstractType
         );
 
         $builder->add(
+            'itemNameBold',
+            'yesno_button_group',
+            [
+                'label' => 'mautic.plugin.recombee.bold',
+                'attr'  => [
+                ],
+                'data'        => isset($options['data']['itemNameBold']) ? :false,
+
+            ]
+        );
+
+        $builder->add(
             'itemNameStyle',
             'text',
             [
@@ -275,6 +287,18 @@ class RecombeePropertiesType extends AbstractType
                     //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'itemShortDescriptionBold',
+            'yesno_button_group',
+            [
+                'label' => 'mautic.plugin.recombee.bold',
+                'attr'  => [
+                ],
+                'data'        => isset($options['data']['itemShortDescriptionBold']) ? :false,
+
             ]
         );
 
@@ -400,6 +424,18 @@ class RecombeePropertiesType extends AbstractType
                     'class'       => 'form-control',
                 ],
                 'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'itemActionBold',
+            'yesno_button_group',
+            [
+                'label' => 'mautic.plugin.recombee.bold',
+                'attr'  => [
+                ],
+                'data'        => isset($options['data']['itemActionBold']) ? :false,
+
             ]
         );
 
@@ -550,6 +586,44 @@ class RecombeePropertiesType extends AbstractType
                     'class'       => 'form-control',
                 ],
                 'required'   => false,
+            ]
+        );
+
+        $builder->add(
+            'itemOldPriceBold',
+            'yesno_button_group',
+            [
+                'label' => 'mautic.plugin.recombee.bold',
+                'attr'  => [
+                ],
+                'data'        => isset($options['data']['itemOldPriceBold']) ? :false,
+
+            ]
+        );
+
+        $builder->add(
+            'header',
+            'textarea',
+            [
+                'label'      => 'mautic.plugin.recombee.header',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'        => 'form-control editor editor-basic',
+                ],
+                'required' => false,
+            ]
+        );
+
+        $builder->add(
+            'footer',
+            'textarea',
+            [
+                'label'      => 'mautic.plugin.recombee.footer',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'        => 'form-control editor editor-basic',
+                ],
+                'required' => false,
             ]
         );
 
