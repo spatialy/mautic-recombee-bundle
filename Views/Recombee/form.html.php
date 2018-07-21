@@ -44,7 +44,7 @@ $recombee = $entity;
                      data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
 
                     <h3><?php echo $view['translator']->trans('mautic.plugin.recombee.preview'); ?></h3>
-
+                    <hr>
                     <?php
                     echo $view->render(
                         'MauticRecombeeBundle:Recombee:generator.html.php',
