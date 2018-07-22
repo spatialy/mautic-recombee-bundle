@@ -289,7 +289,7 @@ class Recombee extends FormEntity
      *
      * @return Recombee
      */
-    public function setTemplateType(string $templateType)
+    public function setTemplateType($templateType)
     {
         $this->isChanged('templateType', $templateType);
         $this->templateType = $templateType;
