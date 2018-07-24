@@ -69,6 +69,7 @@ class SegmentMapping
         switch ($apiRequest) {
             case "AddCartAddition":
                 if (!empty($settings['abandoned_cart_segment'])) {
+                    $this->listModel->removeLead($lead, [$settings['abandoned_cart_segment']]);
                     $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
                 }
                 break;

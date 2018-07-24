@@ -65,7 +65,7 @@ class TokenSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', 0],
+            DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', 100],
         ];
     }
 

@@ -61,6 +61,15 @@ return [
                     'session'
                 ],
             ],
+            'mautic.recombee.inject.custom.content.subscriber' => [
+                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\InjectCustomContentSubscriber::class,
+                'arguments' => [
+                    'mautic.helper.integration',
+                    'mautic.helper.templating',
+                    'translator',
+                    'router',
+                ],
+            ],
         ],
         'models'       => [
             'mautic.recombee.model.recombee' => [

@@ -2,6 +2,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Integration;
 
+use Mautic\CoreBundle\Form\Type\SortableListType;
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
 use Recombee\RecommApi\Requests as Reqs;
@@ -192,6 +193,106 @@ class RecombeeIntegration extends AbstractIntegration
                     ],
                     'multiple'   => false,
                     'expanded'   => false,
+                ]
+            );
+
+            $builder->add(
+                'googleAnalytics',
+                YesNoButtonGroupType::class,
+                [
+                    'label' => 'mautic.plugin.recombee.google.analytics.support',
+                    'data' => !empty($data['googleAnalytics']) ? true : false,
+                ]
+            );
+
+            $builder->add(
+                'clientId',
+                TextType::class,
+                [
+                    'label'       => 'mautic.plugin.recombee.form.client_id',
+                    'attr'        => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}',
+                    ],
+                    'required'    => false,
+                ]
+            );
+
+            $builder->add(
+                'viewId',
+                TextType::class,
+                [
+                    'label'       => 'mautic.plugin.recombee.form.view_id',
+                    'attr'        => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
+                    ],
+                    'required'    => false,
+                ]
+            );
+
+            $builder->add(
+                'ecommerce',
+                'yesno_button_group',
+                [
+                    'label'      => $this->translator->trans('mautic.plugin.recombee.ecommerce'),
+                    'label_attr' => ['class' => 'control-label'],
+                    'attr'       => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
+                    ],
+                    'data'=> !empty($data['ecommerce']) ? true: false,
+                    'required' => false,
+                ]
+            );
+
+            $builder->add(
+                'currency',
+                TextType::class,
+                [
+                    'label'       => 'mautic.plugin.recombee.form.currency',
+                    'attr'        => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{
+                        "integration_details_featureSettings_googleAnalytics_1":[
+                            "checked"
+                        ] 
+                    }',
+
+                    ],
+                    'required' => false,
+                ]
+            );
+
+
+            $builder->add(
+                'goal',
+                'yesno_button_group',
+                [
+                    'label'      => $this->translator->trans('mautic.plugin.recombee.goals.enabled'),
+                    'label_attr' => ['class' => 'control-label'],
+                    'attr'       => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
+                    ],
+                    'data'=> !empty($data['goal']) ? true : false,
+                    'required' => false,
+                ]
+            );
+
+            $builder->add(
+                'goals',
+                SortableListType::class,
+                [
+                    'with_labels'            => true,
+                    'label'            => $this->translator->trans('mautic.plugin.recombee.goals'),
+                    'add_value_button' => $this->translator->trans('mautic.core.form.add'),
+                    'option_notblank'  => false,
+                    'attr'=> [
+                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}',
+                    ],
+                    'option_required' => false,
+
                 ]
             );
         }
