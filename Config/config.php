@@ -182,6 +182,7 @@ return [
                     'mautic.recombee.service.token',
                     'mautic.recombee.service.token.finder',
                     'mautic.recombee.service.token.generator',
+                    'mautic.page.model.trackable',
                 ],
             ],
             'mautic.recombee.service.token.generator'     => [

@@ -180,7 +180,7 @@ class CampaignSubscriber extends CommonSubscriber
                 'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
                 'formType'        => RecombeeEmailSendType::class,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_email'],
-                'channel'         => 'recombee',
+                'channel'         => 'recombee-email',
                 'channelIdField'  => 'email',
             ]
         );
@@ -193,6 +193,8 @@ class CampaignSubscriber extends CommonSubscriber
                 'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
                 'formType'               => RecombeeFocusType::class,
                 'formTypeOptions'        => ['update_select' => 'campaignevent_properties_focus'],
+                'channel'         => 'recombee-focus',
+                'channelIdField'  => 'focus',
                 'connectionRestrictions' => [
                     'anchor' => [
                         'decision.inaction',
@@ -214,6 +216,8 @@ class CampaignSubscriber extends CommonSubscriber
                 'eventName'       => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
                 'formType'        => RecombeeDynamicContentType::class,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_dynamicContent'],
+                'channel'         => 'recombee-dynamic-content',
+                'channelIdField'  => 'dynamic_content',
             ]
         );
 

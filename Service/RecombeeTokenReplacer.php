@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
+use Mautic\PageBundle\Model\TrackableModel;
 use Recombee\RecommApi\Exceptions as Ex;
 use Recombee\RecommApi\Requests as Reqs;
 
@@ -33,24 +34,41 @@ class RecombeeTokenReplacer
 
     private $replacedTokens;
 
+    /**
+     * @var TrackableModel
+     */
+    private $trackableModel;
+
+    /**
+     * RecombeeTokenReplacer constructor.
+     *
+     * @param RecombeeToken       $recombeeToken
+     * @param RecombeeTokenFinder $recombeeTokenFinder
+     * @param RecombeeGenerator   $recombeeGenerator
+     * @param TrackableModel      $trackableModel
+     */
     public function __construct(
         RecombeeToken $recombeeToken,
         RecombeeTokenFinder $recombeeTokenFinder,
-        RecombeeGenerator $recombeeGenerator
+        RecombeeGenerator $recombeeGenerator,
+        TrackableModel $trackableModel
     ) {
         $this->recombeeToken       = $recombeeToken;
         $this->recombeeTokenFinder = $recombeeTokenFinder;
         $this->recombeeGenerator   = $recombeeGenerator;
+        $this->trackableModel = $trackableModel;
     }
 
     /**
      * @param       $content
      * @param array $options
      *
+     * @param array $utmTags
+     *
      * @return mixed
      * @internal param $event
      */
-    public function replaceTokensFromContent($content, $options = [])
+    public function replaceTokensFromContent($content, $options = [], $utmTags = [])
     {
         $tokens = $this->recombeeTokenFinder->findTokens($content);
         if (!empty($tokens)) {
@@ -61,7 +79,9 @@ class RecombeeTokenReplacer
             foreach ($tokens as $key => $token) {
                 $token->setAddOptions($options);
                 $tokenContent = $this->recombeeGenerator->getContentByToken($token);
+                $this->createTrackableContent($tokenContent);
                 if (!empty($tokenContent)) {
+
                     $content      = str_replace($key, $tokenContent, $content);
                     $this->replacedTokens[$key] = $tokenContent;
                 }else{
@@ -73,6 +93,28 @@ class RecombeeTokenReplacer
 
         return $content;
     }
+
+    public function createTrackableContent(&$content, $channel, $channelId, $utmTags = [])
+    {
+        list($content, $trackables) = $this->trackableModel->parseContentForTrackables(
+            $content,
+            [],
+            $channel,
+            $channelId
+        );
+
+        /**
+         * @var string
+         * @var Trackable $trackable
+         */
+        foreach ($trackables as $token => $trackable) {
+            $tokens[$token] = $this->trackableModel->generateTrackableUrl($trackable, [], false, $utmTags);
+        }
+
+        $content = str_replace(array_keys($tokens), array_values($tokens), $content);
+    }
+
+
 
     /**
      * @return boolean

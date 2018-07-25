@@ -99,6 +99,7 @@ class InjectCustomContentSubscriber extends CommonSubscriber
        //     return;
         }
 
+
         $filters = '';
         $tags = [];
         $utmTags = ['source'=>'madesimple.cloud'];

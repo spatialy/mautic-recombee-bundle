@@ -65,7 +65,7 @@ class TokenSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', 100],
+            DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', -10],
         ];
     }
 
@@ -91,7 +91,7 @@ class TokenSubscriber extends CommonSubscriber
             return;
         }
 
-        $this->setContentByMetadata($event, $metadata, $leadId);
+        $this->setContentByMetadata($event, $metadata, $leadId, $clickthrough);
 
     }
 
@@ -101,7 +101,7 @@ class TokenSubscriber extends CommonSubscriber
      * @param $metadata
      * @param $leadId
      */
-    private function setContentByMetadata($event, $metadata, $leadId)
+    private function setContentByMetadata($event, $metadata, $leadId, $clickthrough)
     {
         if (empty($metadata['type']) || empty($metadata['campaignId'])) {
             return;
@@ -112,7 +112,8 @@ class TokenSubscriber extends CommonSubscriber
         $content    =
             $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $content,
-                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId)
+                $this->getOptionsBasedOnRecommendationsType($type, $campaignId, $leadId),
+                $clickthrough
             );
 
         $event->setContent($content);
