@@ -20,7 +20,7 @@
                         <div class="col-xs-12 col-sm-3">
 
                             <span class="label" style="background-color:#787a7a"><?php echo $utm; ?></span>
-                            &nbsp;<small><?php echo $value; ?></small>
+                            &nbsp;<small><?php echo end($value); ?></small>
                         </div>
                         <?php
                     }

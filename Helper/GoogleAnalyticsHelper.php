@@ -87,13 +87,15 @@ class GoogleAnalyticsHelper
         foreach ($this->utmTags as $fields) {
             foreach ($fields as $utmTags) {
                 foreach ($utmTags as $key => $tag) {
+                    if (empty($tag)) {
+                        continue;
+                    }
                     if (!isset($flat[$key][$tag])) {
                         $flat[$key][$tag] = $tag;
                     }
                 }
             }
         }
-
         return $flat;
     }
 
@@ -104,7 +106,7 @@ class GoogleAnalyticsHelper
             $filterImp = [];
             foreach ($utmTag as $tag) {
                 //$filter.= 'ga:'.strtolower($key).'=='.$utmTag.';';
-                $filterImp[] = 'ga:'.str_replace('utm', '', $key).'=='.$tag.'';
+                $filterImp[] = 'ga:'.strtolower(str_replace('utm', '', $key)).'=='.$tag.'';
             }
             $filter .= implode(',', $filterImp).';';
         }
@@ -183,6 +185,11 @@ class GoogleAnalyticsHelper
     public function setRecombeeEvents($recombeeEvents)
     {
         $this->recombeeEvents = $recombeeEvents;
+        foreach ($recombeeEvents as $recombeeEvent) {
+            if (!empty($recombeeEvent['channel']) && !empty($recombeeEvent['channelId'])) {
+                $this->getUtmTagsFromChannel($recombeeEvent['channel'],$recombeeEvent['channelId']);
+            }
+        }
     }
 
     /**
@@ -199,16 +206,20 @@ class GoogleAnalyticsHelper
         }
 
         $q = $this->entityManager->getConnection()->createQueryBuilder();
+        if ($channel == 'email') {
+            $table = 'emails';
+        }else{
+            $table = $channel;
+        }
 
         $q->select('e.utm_tags')
-            ->from(MAUTIC_TABLE_PREFIX.$channel, 'e')
+            ->from(MAUTIC_TABLE_PREFIX.$table, 'e')
             ->where(
                 $q->expr()->like('e.id', ':channelId')
             )
             ->setParameter('channelId', $channelId);
 
         $this->utmTags[$channel][$channelId] = unserialize($q->execute()->fetchColumn());
-
         return $this->utmTags[$channel][$channelId];
     }
 }

@@ -75,9 +75,6 @@ class InjectCustomContentSubscriber extends CommonSubscriber
             return;
         }
 
-        foreach ($recombeeEvents as $recombeeEvent) {
-
-        }
         $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
 
         $dateFrom = '';
@@ -88,10 +85,9 @@ class InjectCustomContentSubscriber extends CommonSubscriber
             $dateFrom = $dateRangeForm->children['date_from']->vars['data'];
             $dateTo = $dateRangeForm->children['date_to']->vars['data'];
         }
-
         $customContentEvent->addTemplate('MauticRecombeeBundle:Analytics:analytics-details.html.php',
             [
-                'tags'   => $this->analyticsHelper->getFlatUtmTags(),
+                'tags'   =>     $this->analyticsHelper->getFlatUtmTags(),
                 'keys'       => $this->analyticsHelper->getIntegrationFeatures(),
                 'filters'    => $this->analyticsHelper->getFilter(),
                 'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),

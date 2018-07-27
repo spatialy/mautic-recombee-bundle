@@ -71,6 +71,8 @@ return [
                 'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\DashboardSubscriber::class,
                 'arguments' => [
                     'mautic.recombee.model.recombee',
+                    'mautic.recombee.helper',
+                    'mautic.recombee.helper.google.analytics',
                 ],
             ],
         ],

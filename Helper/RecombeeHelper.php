@@ -328,13 +328,14 @@ class RecombeeHelper
     {
         $q = $this->entityManager->getConnection()->createQueryBuilder();
 
-        $q->select('e.id, e.name, e.type, e.campaign_id, e.channel, e.channel_id')
+        $q->select('e.id, e.name, e.type, e.campaign_id, e.channel, e.channel_id as channelId')
             ->from(MAUTIC_TABLE_PREFIX.'campaign_events', 'e')
             ->where(
                 $q->expr()->like('e.type', ':type')
             )
             ->setParameter('type', "recombee%")
-            ->orderBy('e.id', 'DESC');
+            ->orderBy('e.id', 'DESC')
+            ->setMaxResults(1);
 
         return $q->execute()->fetchAll();
     }

@@ -14,6 +14,8 @@ namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 use Mautic\DashboardBundle\Event\WidgetDetailEvent;
 use Mautic\DashboardBundle\EventListener\DashboardSubscriber as MainDashboardSubscriber;
 use Mautic\PointBundle\Model\PointModel;
+use MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper;
+use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 
 /**
@@ -53,14 +55,28 @@ class DashboardSubscriber extends MainDashboardSubscriber
     private $recombeeModel;
 
     /**
+     * @var RecombeeHelper
+     */
+    private $recombeeHelper;
+
+    /**
+     * @var GoogleAnalyticsHelper
+     */
+    private $analyticsHelper;
+
+    /**
      * DashboardSubscriber constructor.
      *
-     * @param RecombeeModel $recombeeModel
+     * @param RecombeeModel         $recombeeModel
+     * @param RecombeeHelper        $recombeeHelper
+     * @param GoogleAnalyticsHelper $analyticsHelper
      */
-    public function __construct(RecombeeModel $recombeeModel)
+    public function __construct(RecombeeModel $recombeeModel, RecombeeHelper $recombeeHelper, GoogleAnalyticsHelper $analyticsHelper)
     {
 
         $this->recombeeModel = $recombeeModel;
+        $this->recombeeHelper = $recombeeHelper;
+        $this->analyticsHelper = $analyticsHelper;
     }
 
 
@@ -74,15 +90,24 @@ class DashboardSubscriber extends MainDashboardSubscriber
         $this->checkPermissions($event);
         $canViewOthers = $event->hasPermission('recombee:recombee:viewother');
 
-        if ($event->getType() == 'recombee.analytics') {
+        if ($event->getType() == 'recombee.analytics' && $this->analyticsHelper->enableRecombeeIntegration()) {
             $widget = $event->getWidget();
             $params = $widget->getParams();
-
-            if (!$event->isCached()) {
-                $event->setTemplateData([]);
+            if (!$event->isCached() || 1==1) {
+                $recombeeEvents = $this->recombeeHelper->getRecombeeEvents();
+                $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
+                $event->setTemplateData([
+                    'tags'   =>     $this->analyticsHelper->getFlatUtmTags(),
+                    'keys'       => $this->analyticsHelper->getIntegrationFeatures(),
+                    'filters'    => $this->analyticsHelper->getFilter(),
+                    'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
+                    'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
+                    'dateFrom' => '2018-07-20',
+                    'dateTo' => '2018-07-27',
+                ]);
             }
 
-            $event->setTemplate('MauticRecombeeBundle:SubscribedEvents:Dashboard/Recombee.google.analytics.html.php');
+            $event->setTemplate('MauticRecombeeBundle:Analytics:analytics-details.html.php');
             $event->stopPropagation();
         }
     }
