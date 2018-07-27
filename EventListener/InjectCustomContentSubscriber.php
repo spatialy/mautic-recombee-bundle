@@ -18,6 +18,7 @@ use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\CoreBundle\Helper\TemplatingHelper;
 use Mautic\CoreBundle\Translation\Translator;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper;
 use MauticPlugin\MauticRecombeeBundle\Integration\RecombeeIntegration;
 use Symfony\Component\Form\FormView;
 use Symfony\Component\Routing\RouterInterface;
@@ -25,40 +26,21 @@ use Symfony\Component\Translation\TranslatorInterface;
 
 class InjectCustomContentSubscriber extends CommonSubscriber
 {
+
     /**
-     * @var IntegrationHelper
+     * @var GoogleAnalyticsHelper
      */
-    protected $integrationHelper;
+    private $analyticsHelper;
 
     /**
-     * @var TemplatingHelper
-     */
-    protected $templatingHelper;
-
-    /** @var Translator */
-    protected $translator;
-
-    /** @var array */
-    private $metrics = [];
-
-    /**
-     * ButtonSubscriber constructor.
+     * InjectCustomContentSubscriber constructor.
      *
-     * @param IntegrationHelper              $integrationHelper
-     * @param TemplatingHelper               $templateHelper
-     * @param Translator|TranslatorInterface $translator
-     * @param RouterInterface                $router
+     * @param GoogleAnalyticsHelper $analyticsHelper
      */
-    public function __construct(
-        IntegrationHelper $integrationHelper,
-        TemplatingHelper $templateHelper,
-        TranslatorInterface $translator,
-        RouterInterface $router
-    ) {
-        $this->integrationHelper = $integrationHelper;
-        $this->templateHelper    = $templateHelper;
-        $this->translator        = $translator;
-        $this->router            = $router;
+    public function __construct(GoogleAnalyticsHelper $analyticsHelper)
+    {
+
+        $this->analyticsHelper = $analyticsHelper;
     }
 
     public static function getSubscribedEvents()
@@ -73,18 +55,12 @@ class InjectCustomContentSubscriber extends CommonSubscriber
      */
     public function injectViewCustomContent(CustomContentEvent $customContentEvent)
     {
-                /** @var RecombeeIntegration $recombeeIntegration */
-        $recombeeIntegration = $this->integrationHelper->getIntegrationObject('Recombee');
-        if (!$recombeeIntegration || !$recombeeIntegration->getIntegrationSettings()->getIsPublished() || $customContentEvent->getContext() != 'details.stats.graph.below' || $customContentEvent->getViewName()!= 'MauticCampaignBundle:Campaign:details.html.php'
+        if (!$this->analyticsHelper->enableRecombeeIntegration() || $customContentEvent->getContext() != 'details.stats.graph.below' || $customContentEvent->getViewName()!= 'MauticCampaignBundle:Campaign:details.html.php'
         ) {
             return;
         }
 
-        $keys = $recombeeIntegration->getIntegrationSettings()->getFeatureSettings();
-        if (empty($keys['clientId']) || empty($keys['viewId'])) {
-            return;
-        }
-
+        //events from table by start/last
         $parameters = $customContentEvent->getVars();
         $campaignEvents = $parameters['campaignEvents'];
         /** @var Event $campaignEvent */
@@ -96,17 +72,13 @@ class InjectCustomContentSubscriber extends CommonSubscriber
         }
         // No Recombee events for this campaign
         if (empty($recombeeEvents)) {
-       //     return;
+            return;
         }
 
+        foreach ($recombeeEvents as $recombeeEvent) {
 
-        $filters = '';
-        $tags = [];
-        $utmTags = ['source'=>'madesimple.cloud'];
-        foreach ($utmTags as $tagKey=>$utmTag) {
-            $tags[$tagKey] = $utmTag;
-            $filters.= 'ga:'.strtolower($tagKey).'=='.$utmTag.';';
         }
+        $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
 
         $dateFrom = '';
         $dateTo = '';
@@ -117,76 +89,18 @@ class InjectCustomContentSubscriber extends CommonSubscriber
             $dateTo = $dateRangeForm->children['date_to']->vars['data'];
         }
 
-        // Remove last line
-        $filters  = substr_replace($filters, '', -1);
-        $filters = str_replace('ga:content', 'ga:adContent', $filters);
-        $content = $this->templateHelper->getTemplating()->render(
-            'MauticRecombeeBundle:Analytics:analytics-details.html.php',
+        $customContentEvent->addTemplate('MauticRecombeeBundle:Analytics:analytics-details.html.php',
             [
-                'tags'   => $tags,
-                'keys'       => $keys,
-                'filters'    => $filters,
-                'metrics'    => $this->getMetricsFromConfig($keys),
-                'rawMetrics' => $this->getRawMetrics(),
+                'tags'   => $this->analyticsHelper->getFlatUtmTags(),
+                'keys'       => $this->analyticsHelper->getIntegrationFeatures(),
+                'filters'    => $this->analyticsHelper->getFilter(),
+                'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
+                'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
                 'dateFrom' => $dateFrom,
                 'dateTo' => $dateTo,
-
-            ]
-        );
-
-        $customContentEvent->addContent($content);
+            ]);
 
     }
 
-    private function getRawMetrics()
-    {
-        $rawMetrics = [];
-        foreach ($this->metrics as $metrics) {
-            foreach ($metrics as $metric => $label) {
-                $rawMetrics[$metric] = $label;
-            }
-        }
-
-        return $rawMetrics;
-    }
-
-
-    /**
-     * @param $keys
-     */
-    private function getMetricsFromConfig($keys)
-    {
-        if (!empty($this->metrics)) {
-            return $this->metrics;
-        }
-        $metrics = [
-            'overview' => [
-                'ga:sessions'           => $this->translator->trans('plugin.extendee.analytics.sessions'),
-                'ga:avgSessionDuration' => $this->translator->trans('plugin.extendee.analytics.average.duration'),
-                'ga:bounceRate'         => $this->translator->trans('plugin.extendee.analytics.bounce.rate'),
-            ],
-        ];
-
-        if (!empty($keys['ecommerce'])) {
-            $metrics['ecommerce']['ga:transactions']       = $this->translator->trans(
-                'plugin.extendee.analytics.transactions'
-            );
-            $metrics['ecommerce']['ga:transactionRevenue'] = $this->translator->trans(
-                'plugin.extendee.analytics.transactions.revenue'
-            );
-
-            $metrics['ecommerce']['ga:revenuePerTransaction'] = $this->translator->trans(
-                'plugin.extendee.analytics.revenue.per.transaction'
-            );
-        }
-        if (!empty($keys['goals']) && !empty($keys['goals']['list'])) {
-            foreach ($keys['goals']['list'] as $goal) {
-                $metrics['goals']['ga:goal'.$goal['value'].'Completions'] = $goal['label'];
-            }
-        }
-        $this->metrics = $metrics;
-
-        return $metrics;
-    }
 
 }

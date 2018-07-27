@@ -64,10 +64,13 @@ return [
             'mautic.recombee.inject.custom.content.subscriber' => [
                 'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\InjectCustomContentSubscriber::class,
                 'arguments' => [
-                    'mautic.helper.integration',
-                    'mautic.helper.templating',
-                    'translator',
-                    'router',
+                    'mautic.recombee.helper.google.analytics',
+                ],
+            ],
+            'mautic.recombee.dashboard.subscriber' => [
+                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\DashboardSubscriber::class,
+                'arguments' => [
+                    'mautic.recombee.model.recombee',
                 ],
             ],
         ],
@@ -127,6 +130,14 @@ return [
             ],
         ],
         'other'        => [
+            'mautic.recombee.helper.google.analytics'=> [
+                'class' => MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper::class,
+                'arguments' => [
+                    'mautic.helper.integration',
+                    'translator',
+                    'doctrine.orm.entity_manager'
+                ],
+            ],
             'mautic.recombee.helper'                      => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper::class,
                 'arguments' => [
@@ -134,6 +145,7 @@ return [
                     'mautic.recombee.model.recombee',
                     'translator',
                     'mautic.security',
+                    'doctrine.orm.entity_manager'
                 ],
             ],
             'mautic.recombee.api.recombee'                => [

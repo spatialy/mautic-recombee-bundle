@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Helper;
 
+use Doctrine\ORM\EntityManager;
 use Mautic\CoreBundle\Security\Permissions\CorePermissions;
 use Mautic\LeadBundle\Entity\Lead;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
@@ -67,23 +68,31 @@ class RecombeeHelper
     private $security;
 
     /**
+     * @var EntityManager
+     */
+    private $entityManager;
+
+    /**
      * RecombeeHelper constructor.
      *
      * @param IntegrationHelper   $integrationHelper
      * @param RecombeeModel       $recombeeModel
      * @param TranslatorInterface $translator
      * @param CorePermissions     $security
+     * @param EntityManager       $entityManager
      */
     public function __construct(
         IntegrationHelper $integrationHelper,
         RecombeeModel $recombeeModel,
         TranslatorInterface $translator,
-        CorePermissions $security
+        CorePermissions $security,
+        EntityManager $entityManager
     ) {
         $this->integrationHelper = $integrationHelper;
         $this->recombeeModel     = $recombeeModel;
         $this->translator        = $translator;
         $this->security          = $security;
+        $this->entityManager     = $entityManager;
     }
 
     /**
@@ -311,4 +320,24 @@ class RecombeeHelper
 
         return $params;
     }
+
+    /**
+     * @return array
+     */
+    public function getRecombeeEvents()
+    {
+        $q = $this->entityManager->getConnection()->createQueryBuilder();
+
+        $q->select('e.id, e.name, e.type, e.campaign_id, e.channel, e.channel_id')
+            ->from(MAUTIC_TABLE_PREFIX.'campaign_events', 'e')
+            ->where(
+                $q->expr()->like('e.type', ':type')
+            )
+            ->setParameter('type', "recombee%")
+            ->orderBy('e.id', 'DESC');
+
+        return $q->execute()->fetchAll();
+    }
+
+
 }
