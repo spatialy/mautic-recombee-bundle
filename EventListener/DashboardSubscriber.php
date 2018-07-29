@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 
+use Mautic\CoreBundle\Helper\DateTimeHelper;
 use Mautic\DashboardBundle\Event\WidgetDetailEvent;
 use Mautic\DashboardBundle\EventListener\DashboardSubscriber as MainDashboardSubscriber;
 use Mautic\PointBundle\Model\PointModel;
@@ -90,6 +91,7 @@ class DashboardSubscriber extends MainDashboardSubscriber
         $this->checkPermissions($event);
         $canViewOthers = $event->hasPermission('recombee:recombee:viewother');
 
+
         if ($event->getType() == 'recombee.analytics' && $this->analyticsHelper->enableRecombeeIntegration()) {
             $widget = $event->getWidget();
             $params = $widget->getParams();
@@ -102,12 +104,12 @@ class DashboardSubscriber extends MainDashboardSubscriber
                     'filters'    => $this->analyticsHelper->getFilter(),
                     'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
                     'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
-                    'dateFrom' => '2018-07-20',
-                    'dateTo' => '2018-07-27',
+                    'dateFrom' =>  (new DateTimeHelper($params['dateFrom']))->toLocalString('Y-m-d'),
+                    'dateTo' =>  (new DateTimeHelper($params['dateTo']))->toLocalString('Y-m-d'),
                 ]);
             }
 
-            $event->setTemplate('MauticRecombeeBundle:Analytics:analytics-details.html.php');
+                $event->setTemplate('MauticRecombeeBundle:Analytics:analytics-dashboard.html.php');
             $event->stopPropagation();
         }
     }

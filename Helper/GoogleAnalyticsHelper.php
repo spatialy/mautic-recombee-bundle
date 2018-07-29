@@ -14,6 +14,8 @@ namespace MauticPlugin\MauticRecombeeBundle\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use Symfony\Component\Form\FormFactory;
+use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 
 class GoogleAnalyticsHelper
@@ -41,23 +43,43 @@ class GoogleAnalyticsHelper
 
     private $utmTags = [];
 
+
+    /**
+     * @var RouterInterface
+     */
+    private $router;
+
+    /**
+     * @var FormFactory
+     */
+    private $formFactory;
+
     /**
      * Generator constructor.
      *
      * @param IntegrationHelper   $integrationHelper
      * @param TranslatorInterface $translator
      * @param EntityManager       $entityManager
+     * @param FormFactory         $formFactory
+     * @param RouterInterface     $router
+     *
+     * @internal param FormFactoryBuilder $formFactoryBuilder
      */
     public function __construct(
         IntegrationHelper $integrationHelper,
         TranslatorInterface $translator,
-        EntityManager $entityManager
+        EntityManager $entityManager,
+        FormFactory $formFactory,
+        RouterInterface $router
     ) {
 
-        $this->integrationHelper = $integrationHelper;
-        $this->translator        = $translator;
-        $this->entityManager     = $entityManager;
+        $this->integrationHelper  = $integrationHelper;
+        $this->translator         = $translator;
+        $this->entityManager      = $entityManager;
+        $this->router             = $router;
+        $this->formFactory = $formFactory;
     }
+
 
     /**
      * @return bool
@@ -78,6 +100,19 @@ class GoogleAnalyticsHelper
         return false;
     }
 
+    public function createForm()
+    {
+        return $this->formFactory->create(
+            'recombee_utm_tags',
+            [],
+            [
+                'utmSource'  => ['madesimple.cloud'],
+                'utmMedium'  => ['email'],
+                'utmCampaign'  => ['zlava'],
+            ]
+        );
+    }
+
     /**
      * @return array
      */
@@ -91,11 +126,13 @@ class GoogleAnalyticsHelper
                         continue;
                     }
                     if (!isset($flat[$key][$tag])) {
+                        $key = strtolower(str_replace('utm', '', $key));
                         $flat[$key][$tag] = $tag;
                     }
                 }
             }
         }
+
         return $flat;
     }
 
@@ -106,11 +143,12 @@ class GoogleAnalyticsHelper
             $filterImp = [];
             foreach ($utmTag as $tag) {
                 //$filter.= 'ga:'.strtolower($key).'=='.$utmTag.';';
-                $filterImp[] = 'ga:'.strtolower(str_replace('utm', '', $key)).'=='.$tag.'';
+                $filterImp[] = 'ga:'.$key.'=='.$tag.'';
             }
             $filter .= implode(',', $filterImp).';';
         }
-        $filter  = substr_replace($filter, '', -1);
+        $filter = substr_replace($filter, '', -1);
+
         return str_replace('ga:content', 'ga:adContent', $filter);
     }
 
@@ -132,7 +170,7 @@ class GoogleAnalyticsHelper
             ],
         ];
 
-        if (!empty($keys['ecommerce'])) {
+        if (!empty($this->integrationFeatures['ecommerce'])) {
             $metrics['ecommerce']['ga:transactions']       = $this->translator->trans(
                 'plugin.extendee.analytics.transactions'
             );
@@ -187,7 +225,7 @@ class GoogleAnalyticsHelper
         $this->recombeeEvents = $recombeeEvents;
         foreach ($recombeeEvents as $recombeeEvent) {
             if (!empty($recombeeEvent['channel']) && !empty($recombeeEvent['channelId'])) {
-                $this->getUtmTagsFromChannel($recombeeEvent['channel'],$recombeeEvent['channelId']);
+                $this->getUtmTagsFromChannel($recombeeEvent['channel'], $recombeeEvent['channelId']);
             }
         }
     }
@@ -206,9 +244,12 @@ class GoogleAnalyticsHelper
         }
 
         $q = $this->entityManager->getConnection()->createQueryBuilder();
+
         if ($channel == 'email') {
             $table = 'emails';
-        }else{
+        } elseif ($channel == 'dynamicContent') {
+            $table = 'dynamic_content';
+        } else {
             $table = $channel;
         }
 
@@ -220,6 +261,7 @@ class GoogleAnalyticsHelper
             ->setParameter('channelId', $channelId);
 
         $this->utmTags[$channel][$channelId] = unserialize($q->execute()->fetchColumn());
+
         return $this->utmTags[$channel][$channelId];
     }
 }

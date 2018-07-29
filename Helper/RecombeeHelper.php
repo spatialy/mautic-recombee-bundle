@@ -334,8 +334,7 @@ class RecombeeHelper
                 $q->expr()->like('e.type', ':type')
             )
             ->setParameter('type', "recombee%")
-            ->orderBy('e.id', 'DESC')
-            ->setMaxResults(1);
+            ->orderBy('e.id', 'DESC');
 
         return $q->execute()->fetchAll();
     }

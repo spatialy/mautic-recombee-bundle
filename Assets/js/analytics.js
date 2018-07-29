@@ -12,6 +12,9 @@ if (!Mautic.eAnalytics) {
 }
 
 Mautic.eAnalytics.ready(function () {
+    mQuery('.analytics-choose select').change(function(){
+        getData();
+    })
 
     Mautic.eAnalytics.auth.authorize({
         container: 'auth-button',
@@ -37,6 +40,22 @@ Mautic.eAnalytics.ready(function () {
 function getData () {
     document.getElementById("analytics-loading").style.display = 'none';
 
+    var selectedFilters = [];
+    mQuery('.analytics-choose select').each(function(){
+        var opts = mQuery(this).val();
+        var key = mQuery(this).attr('name');
+        var filters = [];
+        if(opts) {
+            opts.forEach(function (entry) {
+                filters.push('ga:' + key + '==' + entry);
+            });
+            selectedFilters.push(filters.join(','));
+        }
+
+    })
+    filters = selectedFilters.join(';');
+    console.log(filters);
+
     var dataChart = new gapi.analytics.googleCharts.DataChart({
         query: {
             'ids': ids,
@@ -54,8 +73,8 @@ function getData () {
                 height:'100px'
             }
         }
-    }).execute();
-
+    })
+    dataChart.execute();
 
     query({
         'ids': ids,

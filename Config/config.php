@@ -130,6 +130,10 @@ return [
                     'mautic.recombee.service.api.commands',
                 ],
             ],
+            'mautic.form.type.recombee.utm_tags' => [
+                'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeUtmTagsType::class,
+                'alias' => 'recombee_utm_tags',
+            ],
         ],
         'other'        => [
             'mautic.recombee.helper.google.analytics'=> [
@@ -137,7 +141,9 @@ return [
                 'arguments' => [
                     'mautic.helper.integration',
                     'translator',
-                    'doctrine.orm.entity_manager'
+                    'doctrine.orm.entity_manager',
+                    'form.factory',
+                    'router',
                 ],
             ],
             'mautic.recombee.helper'                      => [
