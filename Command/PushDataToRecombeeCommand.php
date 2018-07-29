@@ -215,7 +215,7 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
 
 
                 $start = 0;
-                $limit = 10;
+                $limit = 300;
                 $items = ['init'];
                 while (count($items) > 0) {
                     try {
