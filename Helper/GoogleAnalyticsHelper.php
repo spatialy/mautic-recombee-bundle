@@ -14,6 +14,8 @@ namespace MauticPlugin\MauticRecombeeBundle\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use MauticPlugin\MauticExtendeeAnalyticsBundle\Integration\EAnalyticsIntegration;
+use MauticPlugin\MauticRecombeeBundle\Integration\RecombeeIntegration;
 use Symfony\Component\Form\FormFactory;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -32,7 +34,8 @@ class GoogleAnalyticsHelper
 
     private $metrics;
 
-    private $integrationFeatures;
+    private $analyticsFeatures;
+    private $recombeeFeatures;
 
     private $recombeeEvents;
 
@@ -80,6 +83,20 @@ class GoogleAnalyticsHelper
         $this->formFactory = $formFactory;
     }
 
+    public function enableEAnalyticsIntegration()
+    {
+        /** @var EAnalyticsIntegration $analyticsIntegration */
+        $analyticsIntegration = $this->integrationHelper->getIntegrationObject('EAnalytics');
+        if ($analyticsIntegration && $analyticsIntegration->getIntegrationSettings()->getIsPublished()) {
+            $this->analyticsFeatures = $analyticsIntegration->getKeys();
+            if (empty($this->analyticsFeatures['clientId']) || empty($this->analyticsFeatures['viewId'])) {
+                return false;
+            }
+            return true;
+        }
+
+        return false;
+    }
 
     /**
      * @return bool
@@ -88,12 +105,8 @@ class GoogleAnalyticsHelper
     {
         /** @var RecombeeIntegration $recombeeIntegration */
         $recombeeIntegration = $this->integrationHelper->getIntegrationObject('Recombee');
-        if ($recombeeIntegration && $recombeeIntegration->getIntegrationSettings()->getIsPublished()) {
-            $this->integrationFeatures = $recombeeIntegration->getIntegrationSettings()->getFeatureSettings();
-            if (empty($this->integrationFeatures['clientId']) || empty($this->integrationFeatures['viewId'])) {
-                return false;
-            }
-
+        if ($recombeeIntegration && $recombeeIntegration->getIntegrationSettings()->getIsPublished() && $this->enableEAnalyticsIntegration()) {
+            $this->recombeeFeatures = $recombeeIntegration->getIntegrationSettings()->getFeatureSettings();
             return true;
         }
 
@@ -170,7 +183,7 @@ class GoogleAnalyticsHelper
             ],
         ];
 
-        if (!empty($this->integrationFeatures['ecommerce'])) {
+        if (!empty($this->analyticsFeatures['ecommerce'])) {
             $metrics['ecommerce']['ga:transactions']       = $this->translator->trans(
                 'plugin.extendee.analytics.transactions'
             );
@@ -183,8 +196,8 @@ class GoogleAnalyticsHelper
             );
         }
 
-        if (!empty($this->integrationFeatures['goals']) && !empty($this->integrationFeatures['goals']['list'])) {
-            foreach ($this->integrationFeatures['goals']['list'] as $goal) {
+        if (!empty($this->analyticsFeatures['goals']) && !empty($this->analyticsFeatures['goals']['list'])) {
+            foreach ($this->analyticsFeatures['goals']['list'] as $goal) {
                 $metrics['goals']['ga:goal'.$goal['value'].'Completions'] = $goal['label'];
             }
         }
@@ -212,9 +225,9 @@ class GoogleAnalyticsHelper
     /**
      * @return mixed
      */
-    public function getIntegrationFeatures()
+    public function getAnalyticsFeatures()
     {
-        return $this->integrationFeatures;
+        return $this->analyticsFeatures;
     }
 
     /**
@@ -263,5 +276,13 @@ class GoogleAnalyticsHelper
         $this->utmTags[$channel][$channelId] = unserialize($q->execute()->fetchColumn());
 
         return $this->utmTags[$channel][$channelId];
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getRecombeeFeatures()
+    {
+        return $this->recombeeFeatures;
     }
 }

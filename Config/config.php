@@ -234,6 +234,7 @@ return [
             'mautic.integration.recombee' => [
                 'class'     => \MauticPlugin\MauticRecombeeBundle\Integration\RecombeeIntegration::class,
                 'arguments' => [
+
                 ],
             ],
         ],

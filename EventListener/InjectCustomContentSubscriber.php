@@ -60,6 +60,12 @@ class InjectCustomContentSubscriber extends CommonSubscriber
             return;
         }
 
+        if (empty($this->analyticsHelper->getRecombeeFeatures()['campaignGoogleAnalytics'])) {
+
+            return;
+        }
+
+
         //events from table by start/last
         $parameters = $customContentEvent->getVars();
         $campaignEvents = $parameters['campaignEvents'];
@@ -88,7 +94,7 @@ class InjectCustomContentSubscriber extends CommonSubscriber
         $customContentEvent->addTemplate('MauticRecombeeBundle:Analytics:analytics-details.html.php',
             [
                 'tags'   =>     $this->analyticsHelper->getFlatUtmTags(),
-                'keys'       => $this->analyticsHelper->getIntegrationFeatures(),
+                'keys'       => $this->analyticsHelper->getAnalyticsFeatures(),
                 'filters'    => $this->analyticsHelper->getFilter(),
                 'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
                 'rawMetrics' => $this->analyticsHelper->getRawMetrics(),

@@ -4,7 +4,10 @@ namespace MauticPlugin\MauticRecombeeBundle\Integration;
 
 use Mautic\CoreBundle\Form\Type\SortableListType;
 use Mautic\CoreBundle\Form\Type\YesNoButtonGroupType;
+use Mautic\CoreBundle\Templating\Helper\AnalyticsHelper;
 use Mautic\PluginBundle\Integration\AbstractIntegration;
+use MauticPlugin\MauticExtendeeAnalyticsBundle\Integration\EAnalyticsIntegration;
+use MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
@@ -128,9 +131,9 @@ class RecombeeIntegration extends AbstractIntegration
 
                                 }
 
-                             /*   if (is_array($response) && !empty($response['error'])) {
-                                    $context->buildViolation($response['error'])->addViolation();
-                                }*/
+                                /*   if (is_array($response) && !empty($response['error'])) {
+                                       $context->buildViolation($response['error'])->addViolation();
+                                   }*/
 
                             }
                         ),
@@ -148,7 +151,6 @@ class RecombeeIntegration extends AbstractIntegration
             );
 
 
-
             $builder->add(
                 'abandoned_cart_segment',
                 'leadlist_choices',
@@ -156,8 +158,8 @@ class RecombeeIntegration extends AbstractIntegration
                     'label'      => 'mautic.recombee.segment.abandoned.cart',
                     'label_attr' => ['class' => 'control-label'],
                     'attr'       => [
-                        'class' => 'form-control',
-                        'tooltip'=> 'mautic.recombee.segment.abandoned.cart.tooltip',
+                        'class'        => 'form-control',
+                        'tooltip'      => 'mautic.recombee.segment.abandoned.cart.tooltip',
                         'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
                     ],
                     'multiple'   => false,
@@ -172,8 +174,8 @@ class RecombeeIntegration extends AbstractIntegration
                     'label'      => 'mautic.recombee.segment.abandoned.cart.order',
                     'label_attr' => ['class' => 'control-label'],
                     'attr'       => [
-                        'class' => 'form-control',
-                        'tooltip'=> 'mautic.recombee.segment.abandoned.cart.order.tooltip',
+                        'class'        => 'form-control',
+                        'tooltip'      => 'mautic.recombee.segment.abandoned.cart.order.tooltip',
                         'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
                     ],
                     'multiple'   => false,
@@ -188,113 +190,25 @@ class RecombeeIntegration extends AbstractIntegration
                     'label'      => 'mautic.recombee.segment.abandoned.cart.order.cart',
                     'label_attr' => ['class' => 'control-label'],
                     'attr'       => [
-                        'class' => 'form-control',
+                        'class'        => 'form-control',
                         'data-show-on' => '{"integration_details_featureSettings_abandoned_cart_1":["checked"]}',
                     ],
                     'multiple'   => false,
                     'expanded'   => false,
                 ]
             );
-
-            $builder->add(
-                'googleAnalytics',
-                YesNoButtonGroupType::class,
-                [
-                    'label' => 'mautic.plugin.recombee.google.analytics.support',
-                    'data' => !empty($data['googleAnalytics']) ? true : false,
-                ]
-            );
-
-            $builder->add(
-                'clientId',
-                TextType::class,
-                [
-                    'label'       => 'mautic.plugin.recombee.form.client_id',
-                    'attr'        => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}',
-                    ],
-                    'required'    => false,
-                ]
-            );
-
-            $builder->add(
-                'viewId',
-                TextType::class,
-                [
-                    'label'       => 'mautic.plugin.recombee.form.view_id',
-                    'attr'        => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
-                    ],
-                    'required'    => false,
-                ]
-            );
-
-            $builder->add(
-                'ecommerce',
-                'yesno_button_group',
-                [
-                    'label'      => $this->translator->trans('mautic.plugin.recombee.ecommerce'),
-                    'label_attr' => ['class' => 'control-label'],
-                    'attr'       => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
-                    ],
-                    'data'=> !empty($data['ecommerce']) ? true: false,
-                    'required' => false,
-                ]
-            );
-
-            $builder->add(
-                'currency',
-                TextType::class,
-                [
-                    'label'       => 'mautic.plugin.recombee.form.currency',
-                    'attr'        => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{
-                        "integration_details_featureSettings_googleAnalytics_1":[
-                            "checked"
-                        ] 
-                    }',
-
-                    ],
-                    'required' => false,
-                ]
-            );
-
-
-            $builder->add(
-                'goal',
-                'yesno_button_group',
-                [
-                    'label'      => $this->translator->trans('mautic.plugin.recombee.goals.enabled'),
-                    'label_attr' => ['class' => 'control-label'],
-                    'attr'       => [
-                        'class' => 'form-control',
-                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}'
-                    ],
-                    'data'=> !empty($data['goal']) ? true : false,
-                    'required' => false,
-                ]
-            );
-
-            $builder->add(
-                'goals',
-                SortableListType::class,
-                [
-                    'with_labels'            => true,
-                    'label'            => $this->translator->trans('mautic.plugin.recombee.goals'),
-                    'add_value_button' => $this->translator->trans('mautic.core.form.add'),
-                    'option_notblank'  => false,
-                    'attr'=> [
-                        'data-show-on' => '{"integration_details_featureSettings_googleAnalytics_1":["checked"]}',
-                    ],
-                    'option_required' => false,
-
-                ]
-            );
+            /** @var GoogleAnalyticsHelper $analyticsHelper */
+            $analyticsHelper = $this->factory->get('mautic.recombee.helper.google.analytics');
+            if ($analyticsHelper->enableEAnalyticsIntegration()) {
+                $builder->add(
+                    'campaignGoogleAnalytics',
+                    YesNoButtonGroupType::class,
+                    [
+                        'label' => 'mautic.plugin.recombee.google.analytics.campaign',
+                        'data'  => !empty($data['campaignGoogleAnalytics']) ? true : false,
+                    ]
+                );
+            }
         }
     }
 }

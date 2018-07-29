@@ -100,7 +100,7 @@ class DashboardSubscriber extends MainDashboardSubscriber
                 $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
                 $event->setTemplateData([
                     'tags'   =>     $this->analyticsHelper->getFlatUtmTags(),
-                    'keys'       => $this->analyticsHelper->getIntegrationFeatures(),
+                    'keys'       => $this->analyticsHelper->getAnalyticsFeatures(),
                     'filters'    => $this->analyticsHelper->getFilter(),
                     'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
                     'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
