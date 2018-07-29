@@ -292,7 +292,7 @@ class CampaignSubscriber extends CommonSubscriber
         }
 
         $config     = $event->getConfig();
-        $emailId    = (int) $config['email'];
+        $emailId    = $config['email']['email'];
         $email      = $this->emailModel->getEntity($emailId);
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
@@ -313,7 +313,6 @@ class CampaignSubscriber extends CommonSubscriber
                 $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId)
             )
         );
-
         // check if cart has some items
         if (!$this->recombeeTokenReplacer->hasItems()) {
             return $event->setFailed(

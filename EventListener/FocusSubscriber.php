@@ -48,7 +48,7 @@ class FocusSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', -100],
+            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', 500],
         ];
     }
 
