@@ -23,7 +23,7 @@ use Mautic\DynamicContentBundle\Entity\DynamicContent;
 use Mautic\DynamicContentBundle\Model\DynamicContentModel;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
-use Mautic\LeadBundle\Entity\DoNotContact;
+use Mautic\LeadBundle\Entity\DoNotContact as DNC;
 use Mautic\LeadBundle\Model\LeadModel;
 use Mautic\NotificationBundle\Form\Type\MobileNotificationSendType;
 use Mautic\NotificationBundle\Form\Type\NotificationSendType;
@@ -217,7 +217,7 @@ class CampaignSubscriber extends CommonSubscriber
                 'formType'        => RecombeeDynamicContentType::class,
                 'formTypeOptions' => ['update_select' => 'campaignevent_properties_dynamicContent'],
                 'channel'         => 'dynamicContent',
-                'channelIdField'  => 'dynamicContent',
+                'channelIdField'  => 'dynamic_content',
             ]
         );
 
@@ -575,7 +575,7 @@ class CampaignSubscriber extends CommonSubscriber
     {
         $lead = $event->getLead();
 
-        if ($this->leadModel->isContactable($lead, 'notification') !== DoNotContact::IS_CONTACTABLE) {
+        if ($this->leadModel->isContactable($lead, 'notification') !== DNC::IS_CONTACTABLE) {
             return $event->setFailed('mautic.notification.campaign.failed.not_contactable');
         }
 

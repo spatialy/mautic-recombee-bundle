@@ -79,7 +79,7 @@ class RecombeeTokenReplacer
             foreach ($tokens as $key => $token) {
                 $token->setAddOptions($options);
                 $tokenContent = $this->recombeeGenerator->getContentByToken($token);
-                $this->createTrackableContent($tokenContent);
+                //$this->createTrackableContent($tokenContent);
                 if (!empty($tokenContent)) {
 
                     $content      = str_replace($key, $tokenContent, $content);
