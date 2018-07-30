@@ -9,36 +9,37 @@
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
 ?>
+<div class="analytics-case">
+    <div class="col-xs-12 va-m">
+        <div class="panel">
+            <div class="col-xs-12 mt-20">
+                <h5 class="text-white dark-md fw-sb mb-xs">
+                    <small class="pull-right">
+                        <?php echo $view['translator']->trans('mautic.core.date.from'); ?>
+                        <strong style="color:#666"><?php echo $dateFrom; ?></strong>
+                        <?php echo $view['translator']->trans('mautic.core.date.to'); ?>
+                        <strong style="color:#666"><?php echo $dateTo; ?></strong>
+                    </small>
+                    <span class="fa fa-line-chart"></span>
+                    <?php echo $view['translator']->trans('mautic.plugin.recombee.google.analytics.overview'); ?>
+                </h5>
+            </div>
 
-<div class="col-xs-12 va-m">
-    <div class="panel">
-        <div class="col-xs-12 mt-20">
-            <h5 class="text-white dark-md fw-sb mb-xs">
-                <small class="pull-right">
-                    <?php echo $view['translator']->trans('mautic.core.date.from'); ?>
-                    <strong style="color:#666"><?php echo $dateFrom; ?></strong>
-                    <?php echo $view['translator']->trans('mautic.core.date.to'); ?>
-                    <strong style="color:#666"><?php echo $dateTo; ?></strong>
-                </small>
-                <span class="fa fa-line-chart"></span>
-                <?php echo $view['translator']->trans('mautic.plugin.recombee.google.analytics.overview'); ?>
-            </h5>
-        </div>
 
+            <div class="panel-body box-layout">
+                <div class="row">
+                    <div class="col-xs-12 va-m mb-20">
+                        <?php echo $view->render(
+                            'MauticExtendeeAnalyticsBundle:Analytics:header.html.php',
+                            ['tags' => $tags]
+                        ); ?>
+                    </div>
 
-        <div class="panel-body box-layout">
-            <div class="row">
-                <div class="col-xs-12 va-m mb-20">
                     <?php echo $view->render(
-                        'MauticExtendeeAnalyticsBundle:Analytics:header.html.php',
-                        ['tags' => $tags]
+                        'MauticExtendeeAnalyticsBundle:Analytics:data.html.php',
+                        ['metrics' => $metrics]
                     ); ?>
                 </div>
-
-                <?php echo $view->render(
-                    'MauticExtendeeAnalyticsBundle:Analytics:data.html.php',
-                    ['metrics' => $metrics]
-                ); ?>
             </div>
         </div>
     </div>

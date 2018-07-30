@@ -14,6 +14,7 @@ namespace MauticPlugin\MauticRecombeeBundle\Helper;
 
 use Doctrine\ORM\EntityManager;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use MauticPlugin\MauticExtendeeAnalyticsBundle\Helper\GoogleAnalyticsTrait;
 use MauticPlugin\MauticExtendeeAnalyticsBundle\Integration\EAnalyticsIntegration;
 use MauticPlugin\MauticRecombeeBundle\Integration\RecombeeIntegration;
 use Symfony\Component\Form\FormFactory;
@@ -22,6 +23,7 @@ use Symfony\Component\Translation\TranslatorInterface;
 
 class GoogleAnalyticsHelper
 {
+    use GoogleAnalyticsTrait;
     /**
      * @var IntegrationHelper
      */
@@ -83,20 +85,6 @@ class GoogleAnalyticsHelper
         $this->formFactory = $formFactory;
     }
 
-    public function enableEAnalyticsIntegration()
-    {
-        /** @var EAnalyticsIntegration $analyticsIntegration */
-        $analyticsIntegration = $this->integrationHelper->getIntegrationObject('EAnalytics');
-        if ($analyticsIntegration && $analyticsIntegration->getIntegrationSettings()->getIsPublished()) {
-            $this->analyticsFeatures = $analyticsIntegration->getKeys();
-            if (empty($this->analyticsFeatures['clientId']) || empty($this->analyticsFeatures['viewId'])) {
-                return false;
-            }
-            return true;
-        }
-
-        return false;
-    }
 
     /**
      * @return bool
@@ -111,123 +99,6 @@ class GoogleAnalyticsHelper
         }
 
         return false;
-    }
-
-    public function createForm()
-    {
-        return $this->formFactory->create(
-            'recombee_utm_tags',
-            [],
-            [
-                'utmSource'  => ['madesimple.cloud'],
-                'utmMedium'  => ['email'],
-                'utmCampaign'  => ['zlava'],
-            ]
-        );
-    }
-
-    /**
-     * @return array
-     */
-    public function getFlatUtmTags()
-    {
-        $flat = [];
-        foreach ($this->utmTags as $fields) {
-            foreach ($fields as $utmTags) {
-                foreach ($utmTags as $key => $tag) {
-                    if (empty($tag)) {
-                        continue;
-                    }
-                    if (!isset($flat[$key][$tag])) {
-                        $key = strtolower(str_replace('utm', '', $key));
-                        $flat[$key][$tag] = $tag;
-                    }
-                }
-            }
-        }
-
-        return $flat;
-    }
-
-    public function getFilter()
-    {
-        $filter = '';
-        foreach ($this->getFlatUtmTags() as $key => $utmTag) {
-            $filterImp = [];
-            foreach ($utmTag as $tag) {
-                //$filter.= 'ga:'.strtolower($key).'=='.$utmTag.';';
-                $filterImp[] = 'ga:'.$key.'=='.$tag.'';
-            }
-            $filter .= implode(',', $filterImp).';';
-        }
-        $filter = substr_replace($filter, '', -1);
-
-        return str_replace('ga:content', 'ga:adContent', $filter);
-    }
-
-
-    /**
-     * @return array
-     */
-    public function getMetricsFromConfig()
-    {
-
-        if (!empty($this->metrics)) {
-            return $this->metrics;
-        }
-        $metrics = [
-            'overview' => [
-                'ga:sessions'           => $this->translator->trans('plugin.extendee.analytics.sessions'),
-                'ga:avgSessionDuration' => $this->translator->trans('plugin.extendee.analytics.average.duration'),
-                'ga:bounceRate'         => $this->translator->trans('plugin.extendee.analytics.bounce.rate'),
-            ],
-        ];
-
-        if (!empty($this->analyticsFeatures['ecommerce'])) {
-            $metrics['ecommerce']['ga:transactions']       = $this->translator->trans(
-                'plugin.extendee.analytics.transactions'
-            );
-            $metrics['ecommerce']['ga:transactionRevenue'] = $this->translator->trans(
-                'plugin.extendee.analytics.transactions.revenue'
-            );
-
-            $metrics['ecommerce']['ga:revenuePerTransaction'] = $this->translator->trans(
-                'plugin.extendee.analytics.revenue.per.transaction'
-            );
-        }
-
-        if (!empty($this->analyticsFeatures['goals']) && !empty($this->analyticsFeatures['goals']['list'])) {
-            foreach ($this->analyticsFeatures['goals']['list'] as $goal) {
-                $metrics['goals']['ga:goal'.$goal['value'].'Completions'] = $goal['label'];
-            }
-        }
-
-        $this->metrics = $metrics;
-
-        return $metrics;
-    }
-
-    /**
-     * @return array
-     */
-    public function getRawMetrics()
-    {
-        $rawMetrics = [];
-        foreach ($this->metrics as $metrics) {
-            foreach ($metrics as $metric => $label) {
-                $rawMetrics[$metric] = $label;
-            }
-        }
-
-        return $rawMetrics;
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getAnalyticsFeatures()
-    {
-        return $this->analyticsFeatures;
     }
 
     /**
@@ -262,6 +133,7 @@ class GoogleAnalyticsHelper
             $table = 'emails';
         } elseif ($channel == 'dynamicContent') {
             $table = 'dynamic_content';
+            return;
         } else {
             $table = $channel;
         }
