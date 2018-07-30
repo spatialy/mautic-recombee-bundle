@@ -8,12 +8,19 @@
  *
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
+
+if (!isset($params)) {
+    $params = [];
+}
 ?>
 <div class="analytics-case">
     <div class="col-xs-12 va-m mb-20">
         <?php echo $view->render(
             'MauticExtendeeAnalyticsBundle:Analytics:header.html.php',
-            ['tags' => $tags]
+            [
+                'tags'   => $tags,
+                'params' => $params,
+            ]
         ); ?>
     </div>
     <?php echo $view->render(
@@ -22,6 +29,7 @@
             'metrics'  => $metrics,
             'dateFrom' => $dateFrom,
             'dateTo'   => $dateTo,
+            'params'   => $params,
         ]
     ); ?>
 </div>
