@@ -75,13 +75,7 @@ return [
                     'mautic.recombee.helper.google.analytics',
                 ],
             ],
-            'mautic.recombee.buildjs.subscriber' => [
-                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
-                'arguments' => [
-                    'mautic.helper.integration'
-                ],
-            ],
-        ],
+                 ],
         'models'       => [
             'mautic.recombee.model.recombee' => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel::class,
