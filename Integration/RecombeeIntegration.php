@@ -142,6 +142,31 @@ class RecombeeIntegration extends AbstractIntegration
             );
         } elseif ($formArea == 'features') {
 
+
+            $builder->add(
+                'mapDetailView',
+                YesNoButtonGroupType::class,
+                [
+                    'label' => 'mautic.plugin.recombee.mapping.detail.view',
+                    'data'  => !empty($data['mapDetailView']) ? true : false,
+                ]
+            );
+
+            $builder->add(
+                'mapDetailView_param',
+                TextType::class,
+                [
+                    'label'       => 'mautic.plugin.recombee.mapping.detail.view.param',
+                    'required'    => false,
+                    'attr'        => [
+                        'class' => 'form-control',
+                        'data-show-on' => '{"integration_details_featureSettings_mapDetailView_1":["checked"]}',
+
+                    ],
+                ]
+            );
+
+
             $builder->add(
                 'abandoned_cart',
                 YesNoButtonGroupType::class,

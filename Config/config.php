@@ -17,21 +17,21 @@ return [
                 ],
             ],
             'mautic.recombee.campaignbundle.subscriber'  => [
-                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\CampaignSubscriber::class,
-                'arguments' => [
-                    'mautic.lead.model.lead',
-                    'mautic.email.model.email',
-                    'mautic.campaign.model.event',
-                    'mautic.email.model.send_email_to_user',
-                    'mautic.recombee.service.replacer',
-                    'mautic.recombee.service.campaign.lead.details',
-                    'mautic.page.helper.tracking',
-                    'mautic.focus.model.focus',
-                    'session',
-                    'mautic.helper.integration',
-                    'mautic.dynamicContent.model.dynamicContent',
-                    'doctrine.orm.entity_manager'
-                ],
+                    'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\CampaignSubscriber::class,
+                    'arguments' => [
+                        'mautic.lead.model.lead',
+                        'mautic.email.model.email',
+                        'mautic.campaign.model.event',
+                        'mautic.email.model.send_email_to_user',
+                        'mautic.recombee.service.replacer',
+                        'mautic.recombee.service.campaign.lead.details',
+                        'mautic.page.helper.tracking',
+                        'mautic.focus.model.focus',
+                        'session',
+                        'mautic.helper.integration',
+                        'mautic.dynamicContent.model.dynamicContent',
+                        'doctrine.orm.entity_manager'
+                    ],
             ],
             'mautic.recombee.token.subscriber'  => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\TokenSubscriber::class,
@@ -73,6 +73,12 @@ return [
                     'mautic.recombee.model.recombee',
                     'mautic.recombee.helper',
                     'mautic.recombee.helper.google.analytics',
+                ],
+            ],
+            'mautic.recombee.buildjs.subscriber' => [
+                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
+                'arguments' => [
+                    'mautic.helper.integration'
                 ],
             ],
         ],
