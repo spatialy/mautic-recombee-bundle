@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Form\Type;
 
+use Mautic\CoreBundle\Form\Type\SortableListType;
 use MauticPlugin\MauticFocusBundle\Form\Type\FocusShowType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -38,6 +39,19 @@ class RecombeeFocusType extends AbstractType
             ]
         );
 
+        if (!empty($options['urls'])) {
+            $builder->add(
+                'urls',
+                SortableListType::class,
+                [
+                    'label'           => 'mautic.email.click.urls.contains',
+                    'option_required' => false,
+                    'with_labels'     => false,
+                    'required'        => false,
+                ]
+            );
+        }
+
         $builder->add(
             'type',
             RecombeeOptionsType::class,
@@ -52,7 +66,7 @@ class RecombeeFocusType extends AbstractType
      */
     public function configureOptions(OptionsResolver $resolver)
     {
-        $resolver->setDefined(['update_select']);
+        $resolver->setDefined(['update_select', 'urls']);
     }
 
     /**

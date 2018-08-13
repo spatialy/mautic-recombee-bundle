@@ -67,7 +67,7 @@ final class RecombeeEvents
      *
      * @var string
      */
-    const ON_CAMPAIGN_TRIGGER_ACTION = 'mautic.plugin.extendee.on_campaign_trigger_action';
+    const ON_CAMPAIGN_TRIGGER_ACTION = 'mautic.plugin.recombee.on_campaign_trigger_action';
 
 
     /**
@@ -78,7 +78,17 @@ final class RecombeeEvents
      *
      * @var string
      */
-    const ON_CAMPAIGN_TRIGGER_CONDITION = 'mautic.plugin.extendee.on_campaign_trigger_condition';
+    const ON_CAMPAIGN_TRIGGER_CONDITION = 'mautic.plugin.recombee.on_campaign_trigger_condition';
+
+    /**
+     * The mautic.plugin.recombee.on_campaign_trigger_decision event is fired when the campaign decision is fired.
+     *
+     * The event listener receives a
+     * Mautic\CampaignBundle\Event\CampaignExecutionEvent
+     *
+     * @var string
+     */
+    const ON_CAMPAIGN_TRIGGER_DECISION = 'mautic.plugin.recombee.on_campaign_trigger_decision';
 
 
 }

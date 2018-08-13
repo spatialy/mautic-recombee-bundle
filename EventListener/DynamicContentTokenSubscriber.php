@@ -19,9 +19,9 @@ use MauticPlugin\MauticRecombeeBundle\EventListener\Service\CampaignLeadDetails;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 
 /**
- * Class TokenSubscriber.
+ * Class DynamicContentTokenSubscriber.
  */
-class TokenSubscriber extends CommonSubscriber
+class DynamicContentTokenSubscriber extends CommonSubscriber
 {
 
     /**
@@ -68,6 +68,8 @@ class TokenSubscriber extends CommonSubscriber
             DynamicContentEvents::TOKEN_REPLACEMENT => ['onDynamicContentTokenReplacement', 200],
         ];
     }
+
+
 
     /**
      * @param TokenReplacementEvent $event

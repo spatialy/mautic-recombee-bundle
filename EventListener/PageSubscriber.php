@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 
+use Mautic\CampaignBundle\Model\EventModel;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\CoreBundle\Helper\BuilderTokenHelper;
 use Mautic\CoreBundle\Translation\Translator;
@@ -53,6 +54,11 @@ class PageSubscriber extends CommonSubscriber
      */
     private $HTMLReplacer;
 
+    /**
+     * @var EventModel
+     */
+    private $eventModel;
+
 
     /**
      * PageSubscriber constructor.
@@ -61,17 +67,20 @@ class PageSubscriber extends CommonSubscriber
      * @param RecombeeTokenReplacer     $recombeeTokenReplacer
      * @param ApiCommands               $apiCommands
      * @param RecombeeTokenHTMLReplacer $HTMLReplacer
+     * @param EventModel                $eventModel
      */
     public function __construct(
         RecombeeHelper $recombeeHelper,
         RecombeeTokenReplacer $recombeeTokenReplacer,
         ApiCommands $apiCommands,
-        RecombeeTokenHTMLReplacer $HTMLReplacer
+        RecombeeTokenHTMLReplacer $HTMLReplacer,
+        EventModel $eventModel
     ) {
         $this->recombeeHelper        = $recombeeHelper;
         $this->recombeeTokenReplacer = $recombeeTokenReplacer;
         $this->apiCommands           = $apiCommands;
         $this->HTMLReplacer          = $HTMLReplacer;
+        $this->eventModel = $eventModel;
     }
 
     /**
@@ -92,6 +101,11 @@ class PageSubscriber extends CommonSubscriber
      */
     public function onPageHit(PageHitEvent $event)
     {
+        $hit      = $event->getHit();
+        if (!$hit->getRedirect() && !$hit->getEmail()) {
+            $this->campaignEventModel->triggerEvent('recombee.focus.insert', ['hit' => $hit]);
+        }
+
         $request = $event->getRequest();
         if (!empty($request->get('Recombee'))) {
             $commands = \GuzzleHttp\json_decode($request->get('Recombee'), true);
@@ -103,6 +117,7 @@ class PageSubscriber extends CommonSubscriber
                 $this->apiCommands->callCommand($apiRequest, $options);
             }
         }
+
     }
 
     /**

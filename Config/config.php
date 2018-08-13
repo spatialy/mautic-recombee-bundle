@@ -14,6 +14,7 @@ return [
                     'mautic.recombee.service.replacer',
                     'mautic.recombee.service.api.commands',
                     'mautic.recombee.service.token.html.replacer',
+                    'mautic.campaign.model.event'
                 ],
             ],
             'mautic.recombee.campaignbundle.subscriber'  => [
@@ -33,8 +34,8 @@ return [
                         'doctrine.orm.entity_manager'
                     ],
             ],
-            'mautic.recombee.token.subscriber'  => [
-                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\TokenSubscriber::class,
+            'mautic.recombee.dynamic.content.token.subscriber'  => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\DynamicContentTokenSubscriber::class,
                 'arguments' => [
                     'mautic.recombee.service.replacer',
                     'doctrine.orm.entity_manager',
@@ -55,10 +56,12 @@ return [
                     'mautic.recombee.service.replacer',
                 ],
             ],
-            'mautic.recombee.focus.subscriber'     => [
-                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\FocusSubscriber::class,
+            'mautic.recombee.focus.token.subscriber'     => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\FocusTokenSubscriber::class,
                 'arguments' => [
-                    'session'
+                    'session',
+                     'mautic.campaign.model.event',
+                     'mautic.focus.model.focus'
                 ],
             ],
             'mautic.recombee.inject.custom.content.subscriber' => [

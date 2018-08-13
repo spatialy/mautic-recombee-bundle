@@ -156,12 +156,12 @@ class CampaignSubscriber extends CommonSubscriber
             CampaignEvents::CAMPAIGN_ON_BUILD             => ['onCampaignBuild', 0],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION    => [
                 ['onCampaignTriggerActionSendRecombeeEmail', 0],
-                ['onCampaignTriggerActionInjectRecombeeFocus', 1],
               //  ['onCampaignTriggerActionSendNotification', 2],
                 ['onCampaignTriggerActionDynamiContent', 3],
                 ['onCampaignTriggerActionDynamiContentRemove', 4],
             ],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_CONDITION => ['onCampaignTriggerCondition', 0],
+            RecombeeEvents::ON_CAMPAIGN_TRIGGER_DECISION => ['onCampaignTriggerDecisionInjectRecombeeFocus', 0],
 
         ];
     }
@@ -171,6 +171,23 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignBuild(CampaignBuilderEvent $event)
     {
+           $event->addDecision(
+                 'recombee.focus',
+                 [
+                     'label'                  => 'mautic.recombee.focus.campaign.event.send',
+                     'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
+                     'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_DECISION,
+                     'formType'               => RecombeeFocusType::class,
+                     'formTypeOptions'        => [
+                         'update_select' => 'campaignevent_properties_focus',
+                         'urls'          => true,
+                     ],
+                     'channel'         => 'focus',
+                     'channelIdField'  => 'focus',
+                 ]
+             );
+
+
 
         $event->addAction(
             'recombee.email.send',
@@ -185,7 +202,7 @@ class CampaignSubscriber extends CommonSubscriber
             ]
         );
 
-        $event->addAction(
+     /*   $event->addAction(
             'recombee.focus',
             [
                 'label'                  => 'mautic.recombee.focus.campaign.event.send',
@@ -206,7 +223,7 @@ class CampaignSubscriber extends CommonSubscriber
                     ],
                 ],
             ]
-        );
+        );*/
 
         $event->addAction(
             'recombee.dynamic.content',
@@ -346,23 +363,45 @@ class CampaignSubscriber extends CommonSubscriber
     /**
      * @param CampaignExecutionEvent $event
      */
-    public function onCampaignTriggerActionInjectRecombeeFocus(CampaignExecutionEvent $event)
+    public function onCampaignTriggerDecisionInjectRecombeeFocus(CampaignExecutionEvent $event)
     {
 
-        if (!$event->checkContext('recombee.focus')) {
+        if (!$event->checkContext('recombee.focus.insert')) {
             return;
         }
 
         $focusId = (int) $event->getConfig()['focus']['focus'];
         if (!$focusId) {
-            return $event->setResult('Focus ID #'.$focusId.' doesn\'t exist.');
+            return $event->setFailed('Focus ID #'.$focusId.' doesn\'t exist.');
         }
 
         /** @var Focus $focus */
         $focus = $this->focusModel->getEntity($focusId);
 
-        if (!$focus) {
-            return $event->setResult(false);
+        // Stop If Focus not exist or not published
+        if (!$focus || !$focus->isPublished()) {
+            return $event->setFailed('Focus ID #'.$focusId.' doesn\'t exist or is not  published.');
+
+        }
+
+        $eventDetails = $event->getEventDetails();
+        // STOP sent campaignEventModel just if Focus Item is opened
+        if (!empty($eventDetails['hit'])) {
+            $hit = $eventDetails['hit'];
+            // Limit to URLS
+            if (!empty($eventConfig['urls']['list'])) {
+                $limitToUrl = $eventConfig['urls']['list'];
+                $isUrl      = false;
+                foreach ($limitToUrl as $url) {
+                    if (preg_match('/'.preg_quote($url, '/').'/i', $hit->getUrl())) {
+                        $isUrl = true;
+                    }
+                }
+                // page hit url doesn't match
+                if (!$isUrl) {
+                    return $event->setResult(false);
+                }
+            }
         }
 
         $campaignId = $event->getEvent()['campaign']['id'];
@@ -371,8 +410,7 @@ class CampaignSubscriber extends CommonSubscriber
 
         $event->setChannel('recombee-focus', $focusId);
         $focusContent = $this->focusModel->getContent($focus->toArray());
-        $content      =
-            $this->recombeeTokenReplacer->replaceTokensFromContent(
+        $this->recombeeTokenReplacer->replaceTokensFromContent(
                 $focusContent['focus'],
                 $this->getOptionsBasedOnRecommendationsType($event->getConfig()['type'], $campaignId, $leadId)
             );
@@ -384,21 +422,18 @@ class CampaignSubscriber extends CommonSubscriber
             );
         }
         $tokens      = $this->recombeeTokenReplacer->getReplacedTokens();
-        $contentHash = md5(serialize($tokens));
-        $this->session->set($contentHash, serialize($tokens));
 
         $values                 = [];
         $values['focus_item'][] = [
             'id' => $focusId,
             'js' => $this->router->generate(
                 'mautic_recombee_js_generate_focus',
-                ['id' => $focusId, 'recombee' => $contentHash],
+                ['id' => $focusId],
                 true
             ),
         ];
-        $this->trackingHelper->updateSession($values);
 
-        return $this->setResults($event);
+        return $this->setResults(['event'=>$event, 'tokens'=>$tokens]);
     }
 
 
@@ -561,7 +596,50 @@ class CampaignSubscriber extends CommonSubscriber
         if (!$lead || !$lead->getId()) {
             return $event->setResult(false);
         }
+    }
 
+    /**
+     * @param CampaignExecutionEvent $event
+     */
+    public function onCampaignTriggerDecisionInjectRecombeeFocus2(CampaignExecutionEvent $event)
+    {
+        $focusId      = (int) $event->getConfig()['focus'];
+        $eventDetails = $event->getEventDetails();
+        $eventConfig  = $event->getConfig();
+        if (!$focusId) {
+            return $event->setResult(false);
+        }
+        // STOP sent campaignEventModel just if Focus Item is opened
+        if (empty($eventDetails['stop']) && !empty($eventDetails['hit'])) {
+            $hit = $eventDetails['hit'];
+            // Limit to URLS
+            if (!empty($eventConfig['urls']['list'])) {
+                $limitToUrl = $eventConfig['urls']['list'];
+                $isUrl      = false;
+                foreach ($limitToUrl as $url) {
+                    if (preg_match('/'.preg_quote($url, '/').'/i', $hit->getUrl())) {
+                        $isUrl = true;
+                    }
+                }
+                // page hit url doesn't match
+                if (!$isUrl) {
+                    return $event->setResult(false);
+                }
+            }
+            // Set Focus Item JS url to session
+            $values                 = [];
+            $values['focus_item'][] = [
+                'id' => $focusId,
+                'js' => $this->router->generate('mautic_focus_generate', ['id' => $focusId], true),
+            ];
+            $this->trackingHelper->updateSession($values);
+            return $event->setResult(false);
+        } elseif (!empty($eventDetails['stop']) && !empty($eventDetails['focus']) && $eventDetails['focus']->getId() == $focusId) {
+            // Decision return true If we trigger it on open event
+            return $event->setResult(true);
+        } else {
+            return $event->setResult(false);
+        }
     }
 
 
