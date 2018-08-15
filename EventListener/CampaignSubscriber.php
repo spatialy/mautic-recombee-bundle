@@ -172,7 +172,7 @@ class CampaignSubscriber extends CommonSubscriber
     public function onCampaignBuild(CampaignBuilderEvent $event)
     {
            $event->addDecision(
-                 'recombee.focus',
+                 'recombee.focus.insert',
                  [
                      'label'                  => 'mautic.recombee.focus.campaign.event.send',
                      'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
@@ -369,7 +369,6 @@ class CampaignSubscriber extends CommonSubscriber
         if (!$event->checkContext('recombee.focus.insert')) {
             return;
         }
-
         $focusId = (int) $event->getConfig()['focus']['focus'];
         if (!$focusId) {
             return $event->setFailed('Focus ID #'.$focusId.' doesn\'t exist.');
@@ -385,6 +384,7 @@ class CampaignSubscriber extends CommonSubscriber
         }
 
         $eventDetails = $event->getEventDetails();
+        $eventConfig = $event->getConfig();
         // STOP sent campaignEventModel just if Focus Item is opened
         if (!empty($eventDetails['hit'])) {
             $hit = $eventDetails['hit'];
@@ -422,18 +422,19 @@ class CampaignSubscriber extends CommonSubscriber
             );
         }
         $tokens      = $this->recombeeTokenReplacer->getReplacedTokens();
-
+        $contentHash = md5(serialize($tokens));
+        $this->session->set($contentHash, serialize($tokens));
         $values                 = [];
         $values['focus_item'][] = [
             'id' => $focusId,
             'js' => $this->router->generate(
-                'mautic_recombee_js_generate_focus',
-                ['id' => $focusId],
+                'mautic_focus_generate',
+                ['id' => $focusId, 'recombee' => $contentHash],
                 true
             ),
         ];
-
-        return $this->setResults(['event'=>$event, 'tokens'=>$tokens]);
+        $this->trackingHelper->updateSession($values);
+        return $event->setResult(array_merge($this->getDefaultRecombeeResults($event), ['event'=>$event, 'tokens'=>$tokens]));
     }
 
 
@@ -504,6 +505,17 @@ class CampaignSubscriber extends CommonSubscriber
 
         $event->setChannel('recombee-dynamic-content');
         return $this->setResults($event);
+    }
+
+    /**
+     * @param CampaignExecutionEvent $event
+     */
+    private function getDefaultRecombeeResults(CampaignExecutionEvent $event)
+    {
+        return [
+            'type'       => $event->getConfig()['type'],
+            'campaignId' => $event->getEvent()['campaign']['id'],
+        ];
     }
 
     /**

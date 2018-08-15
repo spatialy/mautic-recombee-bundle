@@ -103,7 +103,7 @@ class PageSubscriber extends CommonSubscriber
     {
         $hit      = $event->getHit();
         if (!$hit->getRedirect() && !$hit->getEmail()) {
-            $this->campaignEventModel->triggerEvent('recombee.focus.insert', ['hit' => $hit]);
+            $response = $this->eventModel->triggerEvent('recombee.focus.insert', ['hit' => $hit]);
         }
 
         $request = $event->getRequest();

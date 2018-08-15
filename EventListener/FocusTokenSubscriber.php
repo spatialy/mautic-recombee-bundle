@@ -74,8 +74,7 @@ class FocusTokenSubscriber extends CommonSubscriber
      */
     public function onTokenReplacement(TokenReplacementEvent $event)
     {
-        $sessionName       = $this->request->get('recombee');
-        if (empty($event->getClickthrough()['focus_id'])) {
+        if (!$this->request->get('recombee') || empty($event->getClickthrough()['focus_id'])) {
             return;
         }
 
@@ -84,21 +83,17 @@ class FocusTokenSubscriber extends CommonSubscriber
             return;
         }
 
-        $reponse = $this->eventModel->triggerEvent('recombee.focus.view', ['focus' => $focus], 'focus',
-            $focus->getId());
-        if (empty($reponse['tokens'])) {
-            return;
-        }
-        $tokens = $reponse['tokens'];
-
         /** @var Lead $lead */
         $content = $event->getContent();
         if ($content) {
+            $tokensFromSession = $this->session->get($this->request->get('recombee'));
+            $tokens = unserialize($tokensFromSession);
             foreach ($tokens as $key => $tokenContent) {
                 $content = str_replace($key, $tokenContent, $content);
 
             }
             $event->setContent($content);
+            $this->session->remove($this->request->get('recombee'));
         }
     }
 }

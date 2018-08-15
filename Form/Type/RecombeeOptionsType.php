@@ -34,7 +34,8 @@ class RecombeeOptionsType extends AbstractType
             'choice',
             [
                 'choices'     => [
-                    'recommendations' => 'mautic.plugin.recombee.form.type.recommendations',
+                    'recommend_items_to_user' => 'mautic.plugin.recombee.form.type.recommend_items_to_user',
+                    'recommend_items_to_item' => 'mautic.plugin.recombee.form.type.recommend_items_to_user',
                     'abandoned_cart'  => 'mautic.plugin.recombee.form.type.abandoned_cart',
                     'advanced'        => 'mautic.plugin.recombee.form.type.advanced',
                 ],
