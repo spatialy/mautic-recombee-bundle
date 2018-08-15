@@ -174,8 +174,8 @@ class CampaignSubscriber extends CommonSubscriber
            $event->addDecision(
                  'recombee.focus.insert',
                  [
-                     'label'                  => 'mautic.recombee.focus.campaign.event.send',
-                     'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
+                     'label'                  => 'mautic.recombee.focus.insert.campaign.event.send',
+                     'description'            => 'mautic.recombee.focus.insert.campaign.event.send.desc',
                      'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_DECISION,
                      'formType'               => RecombeeFocusType::class,
                      'formTypeOptions'        => [
