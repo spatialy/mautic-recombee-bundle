@@ -65,7 +65,7 @@ class FocusTokenSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
-            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', 500],
+            FocusEvents::TOKEN_REPLACEMENT => ['onTokenReplacement', 200],
         ];
     }
 
@@ -88,10 +88,7 @@ class FocusTokenSubscriber extends CommonSubscriber
         if ($content) {
             $tokensFromSession = $this->session->get($this->request->get('recombee'));
             $tokens = unserialize($tokensFromSession);
-            foreach ($tokens as $key => $tokenContent) {
-                $content = str_replace($key, $tokenContent, $content);
-
-            }
+            $content = str_replace(array_keys($tokens), array_values($tokens), $content);
             $event->setContent($content);
             $this->session->remove($this->request->get('recombee'));
         }

@@ -215,7 +215,7 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
 
 
                 $start = 0;
-                $limit = 300;
+                $limit = 100;
                 $items = ['init'];
                 while (count($items) > 0) {
                     try {
@@ -248,7 +248,6 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
                     } catch (\Exception $e) {
 
                     }
-
                     $start += count($items);
                 }
                 $output->write($translator->trans('mautic.plugin.recombee.integration.total.processed').': '.$start);
