@@ -337,6 +337,8 @@ class CampaignSubscriber extends CommonSubscriber
             );
         }
 
+        $email->setSubject($this->recombeeTokenReplacer->getRecombeeGenerator()->replaceTagsFromContent($email->getSubject()));
+
         $result = $this->emailModel->sendEmail($email, $leadCredentials, $options);
         if (is_array($result)) {
             $errors = implode('<br />', $result);

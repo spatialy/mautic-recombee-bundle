@@ -60,6 +60,14 @@ class RecombeeTokenReplacer
     }
 
     /**
+     * @return RecombeeGenerator
+     */
+    public function getRecombeeGenerator()
+    {
+        return $this->recombeeGenerator;
+    }
+
+    /**
      * @param       $content
      * @param array $options
      *
@@ -81,7 +89,6 @@ class RecombeeTokenReplacer
                 $tokenContent = $this->recombeeGenerator->getContentByToken($token);
                 //$this->createTrackableContent($tokenContent);
                 if (!empty($tokenContent)) {
-
                     $content      = str_replace($key, $tokenContent, $content);
                     $this->replacedTokens[$key] = $tokenContent;
                 }else{

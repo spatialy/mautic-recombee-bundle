@@ -54,6 +54,9 @@ class RecombeeGenerator
      */
     private $templateHelper;
 
+    /** @var array $items */
+    private $items = [];
+
     /**
      * RecombeeGenerator constructor.
      *
@@ -106,7 +109,8 @@ class RecombeeGenerator
                     $items = $this->apiCommands->getCommandOutput();
                     break;
             }
-            return $items['recomms'];
+            $this->items = $items['recomms'];
+            return $this->items;
 
         } catch (Ex\ApiTimeoutException $e) {
             die(print_r($e->getMessage()));
@@ -120,7 +124,21 @@ class RecombeeGenerator
         }
     }
 
+    /**
+     * @param $content
+     *
+     * @return string
+     */
+    public function replaceTagsFromContent($content)
+    {
+        return $this->twig->createTemplate($content)->render($this->getFirstItem()['values']);
+    }
 
+    /**
+     * @param RecombeeToken $recombeeToken
+     *
+     * @return string|void
+     */
     public function getContentByToken(RecombeeToken $recombeeToken)
     {
         /** @var Recombee $recombee */
@@ -163,7 +181,7 @@ class RecombeeGenerator
             $bodyTemplate   = $this->twig->createTemplate($recombee->getTemplate()['body']);
         }
 
-        return $this->getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate, $items);
+        return $this->getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate);
 
 
     }
@@ -172,22 +190,14 @@ class RecombeeGenerator
      *
      * @return string
      */
-    private function getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate, array $items)
+    private function getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate)
     {
-        $output = '';
-        $tokens = [];
-        // create comma separated IDs parameter named by keys
-        $tokens['keys'] = implode(',', array_column($items, 'id'));
-        foreach ($items as $item) {
-            $item['values'] = array_merge($item['values'], $tokens);
-            foreach ($item['values'] as $key => &$ite) {
-                if (is_array($ite)) {
-                    $ite = implode(', ', $ite);
-                }
-            }
+        $output = $headerTemplate->render($this->getFirstItem()['values']);
+        foreach ($this->getItems() as $item) {
             $output .= $bodyTemplate->render($item['values']);
         }
-        return $headerTemplate->render($tokens).$output.$footerTemplate->render($tokens);
+        $output.= $footerTemplate->render($this->getFirstItem()['values']);
+        return $output;
     }
 
 
@@ -205,6 +215,54 @@ class RecombeeGenerator
     public function getFooter()
     {
         return $this->footer;
+    }
+
+    /**
+     * @return array
+     */
+    public function getItems()
+    {
+        $keys = $this->getItemsKeys();
+        foreach ($this->items as &$item) {
+            foreach ($item['values'] as $key => &$ite) {
+                if (is_array($ite)) {
+                    $ite = implode(', ', $ite);
+                }
+            }
+            $item['values']['keys'] = $keys;
+        }
+        return $this->items;
+    }
+
+    /**
+     * @param array $items
+     */
+    public function setItems($items)
+    {
+        $this->items = $items;
+    }
+
+    /**
+     * Return new token keys with comma separated item IDs
+     *
+     * @param string $separator
+     *
+     * @return string
+     */
+    private function getItemsKeys($separator = ',')
+    {
+        return  implode($separator, array_column($this->items, 'id'));
+    }
+
+    /**
+     * Get first item
+     *
+     * @return array
+     */
+    public function getFirstItem()
+    {
+        $items = $this->getItems();
+        return current($items);
     }
 }
 
