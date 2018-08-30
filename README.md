@@ -41,7 +41,7 @@ Items import
 
 Items are parsed from your external JSON file. This command should run initial, but also you can update your items one time per 24/48 hours.
 
-`php app/console mautic:recombee:import ---type=items`  
+`php app/console mautic:recombee:import --type=items`  
 `--file="path/to/items.json"`
 
 Results from command

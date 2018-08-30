@@ -11,12 +11,9 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Api\Service;
 
-use Mautic\CoreBundle\Translation\Translator;
-use MauticPlugin\MauticRecombeeBundle\Api\RecombeeApi;
-use Psr\Log\LoggerInterface;
+use Mautic\CoreBundle\Helper\InputHelper;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
-use Recurr\Transformer\TranslatorInterface;
 
 class ProcessData
 {
@@ -47,10 +44,23 @@ class ProcessData
      */
     public function __construct(array $items, $funcProperty, $funcValue)
     {
+        // Prevent attributes with diacritics
+        foreach ($items as $key=>$item) {
+            foreach ($item as $key2 => $value) {
+                if ($newKey2 = InputHelper::transliterate(trim($key2))) {
+                    if ($key2 != $newKey2) {
+                        $items[$key][$newKey2] = $value;
+                        unset($items[$key][$key2]);
+                    }
+                }
+            }
+        }
+
         $funcProperty = 'Recombee\RecommApi\Requests\\'.$funcProperty;
         $funcValue    = 'Recombee\RecommApi\Requests\\'.$funcValue;
         $items        = $this->itemsToMultiArray($items);
         $uniqueParams = [];
+
         foreach ($items as $item) {
             /** @todo  check */
             if (!isset($item['id'])) {
@@ -76,17 +86,17 @@ class ProcessData
                         continue;
                     }
                 }
-
                 if (!isset($uniqueParams[$key]) || $uniqueParams[$key] != '') {
                     $uniqueParams[$key] = $value;
                 }
                 // convert date to timestamp
-                if (is_string($value) && (bool) strtotime($value)) {
+                if ($this->isDateTime($value)) {
                     $item[$key] = strtotime($value);
                 }
             }
             $this->requestsPropertyValues[] = new $funcValue($itemId, $item, ['cascadeCreate' => true]);
         }
+
         $allowedImagesFileTypes = ['gif', 'png', 'jpg'];
         foreach ($uniqueParams as $key => $value) {
             if (is_array($value)) {
@@ -102,12 +112,32 @@ class ProcessData
                     $this->requestsPropertyName[] = new $funcProperty($key, 'double');
                 } elseif (is_bool($value)) {
                     $this->requestsPropertyName[] = new $funcProperty($key, 'boolean');
-                } elseif ((bool) strtotime($value) === true) {
+                } elseif ($this->isDateTime($value)){
                     $this->requestsPropertyName[] = new $funcProperty($key, 'timestamp');
                 } else {
                     $this->requestsPropertyName[] = new $funcProperty($key, 'string');
                 }
             }
+        }
+    }
+
+    /**
+     * @param $date
+     *
+     * @return bool
+     */
+    private function isDateTime($date)
+    {
+        $d = \DateTime::createFromFormat('Y-m-d g:i:s', $date);
+        $d2 = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
+
+        if(($d && $d->format('Y-m-d g:i:s') == $date) || ($d2 && $d2->format('Y-m-d H:i:s') == $date))
+        {
+            return true;
+        }
+        else
+        {
+            return false;
         }
     }
 
