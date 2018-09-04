@@ -21,6 +21,7 @@ use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\DynamicContentBundle\DynamicContentEvents;
 use Mautic\DynamicContentBundle\Entity\DynamicContent;
 use Mautic\DynamicContentBundle\Model\DynamicContentModel;
+use Mautic\EmailBundle\Helper\UrlMatcher;
 use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
 use Mautic\LeadBundle\Entity\DoNotContact as DNC;
@@ -171,7 +172,7 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignBuild(CampaignBuilderEvent $event)
     {
-           $event->addDecision(
+          $event->addDecision(
                  'recombee.focus.insert',
                  [
                      'label'                  => 'mautic.recombee.focus.insert.campaign.event.send',
@@ -367,7 +368,6 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignTriggerDecisionInjectRecombeeFocus(CampaignExecutionEvent $event)
     {
-
         if (!$event->checkContext('recombee.focus.insert')) {
             return;
         }
@@ -375,7 +375,6 @@ class CampaignSubscriber extends CommonSubscriber
         if (!$focusId) {
             return $event->setFailed('Focus ID #'.$focusId.' doesn\'t exist.');
         }
-
         /** @var Focus $focus */
         $focus = $this->focusModel->getEntity($focusId);
 
@@ -390,22 +389,19 @@ class CampaignSubscriber extends CommonSubscriber
         // STOP sent campaignEventModel just if Focus Item is opened
         if (!empty($eventDetails['hit'])) {
             $hit = $eventDetails['hit'];
-            // Limit to URLS
-            if (!empty($eventConfig['urls']['list'])) {
-                $limitToUrl = $eventConfig['urls']['list'];
-                $isUrl      = false;
-                foreach ($limitToUrl as $url) {
-                    if (preg_match('/'.preg_quote($url, '/').'/i', $hit->getUrl())) {
-                        $isUrl = true;
-                    }
+            $includeUrls = (array) $eventConfig['includeUrls']['list'];
+            if (!empty($includeUrls)) {
+                if (UrlMatcher::hasMatch($includeUrls, $hit->getUrl()) === false) {
+                    return $event->setResult(false);
                 }
-                // page hit url doesn't match
-                if (!$isUrl) {
+            }
+            $excludeUrls = (array) $eventConfig['excludeUrls']['list'];
+            if (!empty($excludeUrls)) {
+                if (UrlMatcher::hasMatch($excludeUrls, $hit->getUrl())) {
                     return $event->setResult(false);
                 }
             }
         }
-
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
 
@@ -426,7 +422,6 @@ class CampaignSubscriber extends CommonSubscriber
         $tokens      = $this->recombeeTokenReplacer->getReplacedTokens();
         $contentHash = md5(serialize($tokens));
         $this->session->set($contentHash, serialize($tokens));
-        $values                 = [];
         $values['focus_item'][] = [
             'id' => $focusId,
             'js' => $this->router->generate(
@@ -588,7 +583,7 @@ class CampaignSubscriber extends CommonSubscriber
                                         "enabled" => true,
                                         "weight"  => 1.0,
                                         "min-age" => $cartMinAge,
-                                        "max-age" => $cartMaxAge,
+                                        "max-age" => $cartMaxAge+60,
                                     ],
                                 ],
                                 "filter-purchased-max-age" => $cartMaxAge,
@@ -611,51 +606,6 @@ class CampaignSubscriber extends CommonSubscriber
             return $event->setResult(false);
         }
     }
-
-    /**
-     * @param CampaignExecutionEvent $event
-     */
-    public function onCampaignTriggerDecisionInjectRecombeeFocus2(CampaignExecutionEvent $event)
-    {
-        $focusId      = (int) $event->getConfig()['focus'];
-        $eventDetails = $event->getEventDetails();
-        $eventConfig  = $event->getConfig();
-        if (!$focusId) {
-            return $event->setResult(false);
-        }
-        // STOP sent campaignEventModel just if Focus Item is opened
-        if (empty($eventDetails['stop']) && !empty($eventDetails['hit'])) {
-            $hit = $eventDetails['hit'];
-            // Limit to URLS
-            if (!empty($eventConfig['urls']['list'])) {
-                $limitToUrl = $eventConfig['urls']['list'];
-                $isUrl      = false;
-                foreach ($limitToUrl as $url) {
-                    if (preg_match('/'.preg_quote($url, '/').'/i', $hit->getUrl())) {
-                        $isUrl = true;
-                    }
-                }
-                // page hit url doesn't match
-                if (!$isUrl) {
-                    return $event->setResult(false);
-                }
-            }
-            // Set Focus Item JS url to session
-            $values                 = [];
-            $values['focus_item'][] = [
-                'id' => $focusId,
-                'js' => $this->router->generate('mautic_focus_generate', ['id' => $focusId], true),
-            ];
-            $this->trackingHelper->updateSession($values);
-            return $event->setResult(false);
-        } elseif (!empty($eventDetails['stop']) && !empty($eventDetails['focus']) && $eventDetails['focus']->getId() == $focusId) {
-            // Decision return true If we trigger it on open event
-            return $event->setResult(true);
-        } else {
-            return $event->setResult(false);
-        }
-    }
-
 
     /**
      * @param CampaignExecutionEvent $event
@@ -724,7 +674,7 @@ class CampaignSubscriber extends CommonSubscriber
             new TokenReplacementEvent(
                 $notification->getMessage(),
                 $lead,
-                ['channel' => ['notification', $notification->getId()]]
+                ['channel' => ['recombee-notification', $notification->getId()]]
             )
         );
 

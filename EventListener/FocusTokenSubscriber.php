@@ -77,20 +77,26 @@ class FocusTokenSubscriber extends CommonSubscriber
         if (!$this->request->get('recombee') || empty($event->getClickthrough()['focus_id'])) {
             return;
         }
-
-        $focus = $this->focusModel->getEntity();
+        $focus = $this->focusModel->getEntity($event->getClickthrough()['focus_id']);
         if (!$focus) {
             return;
         }
-
         /** @var Lead $lead */
         $content = $event->getContent();
         if ($content) {
             $tokensFromSession = $this->session->get($this->request->get('recombee'));
+            if (!$tokensFromSession) {
+                for ($i = 0; $i < 2; $i++) {
+                    sleep(1);
+                    $tokensFromSession = $this->session->get($this->request->get('recombee'));
+                    if ($tokensFromSession) {
+                        break;
+                    }
+                }
+            }
             $tokens = unserialize($tokensFromSession);
             $content = str_replace(array_keys($tokens), array_values($tokens), $content);
             $event->setContent($content);
-            $this->session->remove($this->request->get('recombee'));
         }
     }
 }

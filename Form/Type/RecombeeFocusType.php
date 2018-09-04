@@ -41,10 +41,21 @@ class RecombeeFocusType extends AbstractType
 
         if (!empty($options['urls'])) {
             $builder->add(
-                'urls',
+                'includeUrls',
                 SortableListType::class,
                 [
                     'label'           => 'mautic.email.click.urls.contains',
+                    'option_required' => false,
+                    'with_labels'     => false,
+                    'required'        => false,
+                ]
+            );
+
+            $builder->add(
+                'excludeUrls',
+                SortableListType::class,
+                [
+                    'label'           => 'mautic.recombee.click.urls.not.contains',
                     'option_required' => false,
                     'with_labels'     => false,
                     'required'        => false,
