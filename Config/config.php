@@ -137,6 +137,11 @@ return [
                 'class' => MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeUtmTagsType::class,
                 'alias' => 'recombee_utm_tags',
             ],
+            'mautic.form.type.recombee..notificationsend_list' => [
+                'class'     => \MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeNotificationSendType::class,
+                'arguments' => 'router',
+                'alias'     => 'recombee_notificationsend_list',
+            ],
         ],
         'other'        => [
             'mautic.recombee.helper.google.analytics'=> [

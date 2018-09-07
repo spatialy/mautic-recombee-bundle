@@ -37,6 +37,7 @@ use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentRemoveType
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeDynamicContentType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeFocusType;
+use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeNotificationSendType;
 use MauticPlugin\MauticRecombeeBundle\RecombeeEvents;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 use Symfony\Component\HttpFoundation\Session\Session;
@@ -157,7 +158,7 @@ class CampaignSubscriber extends CommonSubscriber
             CampaignEvents::CAMPAIGN_ON_BUILD             => ['onCampaignBuild', 0],
             RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION    => [
                 ['onCampaignTriggerActionSendRecombeeEmail', 0],
-              //  ['onCampaignTriggerActionSendNotification', 2],
+                ['onCampaignTriggerActionSendNotification', 2],
                 ['onCampaignTriggerActionDynamiContent', 3],
                 ['onCampaignTriggerActionDynamiContentRemove', 4],
             ],
@@ -203,29 +204,6 @@ class CampaignSubscriber extends CommonSubscriber
             ]
         );
 
-     /*   $event->addAction(
-            'recombee.focus',
-            [
-                'label'                  => 'mautic.recombee.focus.campaign.event.send',
-                'description'            => 'mautic.recombee.focus.campaign.event.send.desc',
-                'eventName'              => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                'formType'               => RecombeeFocusType::class,
-                'formTypeOptions'        => ['update_select' => 'campaignevent_properties_focus'],
-                'channel'         => 'focus',
-                'channelIdField'  => 'focus',
-                'connectionRestrictions' => [
-                    'anchor' => [
-                        'decision.inaction',
-                    ],
-                    'source' => [
-                        'decision' => [
-                            'page.pagehit',
-                        ],
-                    ],
-                ],
-            ]
-        );*/
-
         $event->addAction(
             'recombee.dynamic.content',
             [
@@ -239,7 +217,6 @@ class CampaignSubscriber extends CommonSubscriber
             ]
         );
 
-
         $event->addAction(
             'recombee.dynamic.content.remove',
             [
@@ -249,44 +226,21 @@ class CampaignSubscriber extends CommonSubscriber
             ]
         );
 
-        /*
-         * Notification postpone at the moment
-         *
-         *
-         */
-        /*$integration = $this->integrationHelper->getIntegrationObject('OneSignal');
+        $integration = $this->integrationHelper->getIntegrationObject('OneSignal');
         if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
-
-            $features = $integration->getSupportedFeatures();
-
-            if (in_array('mobile', $features)) {
-                $event->addAction(
-                    'recombee.send_mobile_notification',
-                    [
-                        'label'            => 'mautic.recombee.notification.mobile.campaign.event.send',
-                        'description'      => 'mautic.recombee.notification.mobile.campaign.event.send.tooltip',
-                        'eventName'        => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                        'formType'         => MobileNotificationSendType::class,
-                        'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
-                        'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
-                        'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
-                    ]
-                );
-            }
-
             $event->addAction(
                 'recombee.send_notification',
                 [
                     'label'            => 'mautic.recombee.notification.campaign.event.send',
                     'description'      => 'mautic.recombee.notification.campaign.event.send',
                     'eventName'        => RecombeeEvents::ON_CAMPAIGN_TRIGGER_ACTION,
-                    'formType'         => NotificationSendType::class,
+                    'formType'         => RecombeeNotificationSendType::class,
                     'formTypeOptions'  => ['update_select' => 'campaignevent_properties_notification'],
-                    'formTheme'        => 'MauticNotificationBundle:FormTheme\NotificationSendList',
+                    'formTheme'        => 'MauticRecombeeBundle:FormTheme\NotificationSendList',
                     'timelineTemplate' => 'MauticNotificationBundle:SubscribedEvents\Timeline:index.html.php',
                 ]
             );
-        }*/
+        }
     }
 
     /**
@@ -612,7 +566,7 @@ class CampaignSubscriber extends CommonSubscriber
      *
      * @return CampaignExecutionEvent
      */
-    public function onCampaignTriggerAction(CampaignExecutionEvent $event)
+    public function onCampaignTriggerActionSendNotification(CampaignExecutionEvent $event)
     {
         $lead = $event->getLead();
 
@@ -640,13 +594,8 @@ class CampaignSubscriber extends CommonSubscriber
         $playerID = [];
 
         foreach ($pushIDs as $pushID) {
-            // Skip non-mobile PushIDs if this is a mobile event
-            if ($event->checkContext('notification.send_mobile_notification') && $pushID->isMobile() == false) {
-                continue;
-            }
-
             // Skip mobile PushIDs if this is a non-mobile event
-            if ($event->checkContext('notification.send_notification') && $pushID->isMobile() == true) {
+            if ($pushID->isMobile() == true) {
                 continue;
             }
 

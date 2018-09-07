@@ -44,7 +44,10 @@ class RecombeeFocusType extends AbstractType
                 'includeUrls',
                 SortableListType::class,
                 [
-                    'label'           => 'mautic.email.click.urls.contains',
+                    'label' => 'mautic.page.include.urls',
+                    'attr' => [
+                      'tooltip' => 'mautic.page.urls.desc'
+                    ],
                     'option_required' => false,
                     'with_labels'     => false,
                     'required'        => false,
@@ -55,7 +58,10 @@ class RecombeeFocusType extends AbstractType
                 'excludeUrls',
                 SortableListType::class,
                 [
-                    'label'           => 'mautic.recombee.click.urls.not.contains',
+                    'label'           => 'mautic.page.include.urls',
+                    'attr' => [
+                        'tooltip' => 'mautic.page.urls.desc'
+                    ],
                     'option_required' => false,
                     'with_labels'     => false,
                     'required'        => false,
