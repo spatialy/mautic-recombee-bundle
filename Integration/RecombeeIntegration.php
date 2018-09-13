@@ -143,6 +143,18 @@ class RecombeeIntegration extends AbstractIntegration
         } elseif ($formArea == 'features') {
 
             $builder->add(
+                'currency',
+                TextType::class,
+                [
+                    'label'      => 'mautic.plugin.recombee.form.currency',
+                    'label_attr' => ['class' => 'control-label'],
+                    'attr'       => [
+                        'class'        => 'form-control',
+                    ],
+                ]
+            );
+
+            $builder->add(
                 'abandoned_cart',
                 YesNoButtonGroupType::class,
                 [

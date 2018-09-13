@@ -57,6 +57,9 @@ class RecombeeGenerator
     /** @var array $items */
     private $items = [];
 
+    /** @var array  */
+    private $cache = [];
+
     /**
      * RecombeeGenerator constructor.
      *
@@ -89,6 +92,11 @@ class RecombeeGenerator
      */
     public function getResultByToken(RecombeeToken $recombeeToken, $options = [])
     {
+        $hash = md5(serialize($recombeeToken).serialize($options));
+        if (!empty($this->cache[$hash])) {
+            return $this->cache[$hash];
+        }
+
         $recombee = $this->recombeeModel->getEntity($recombeeToken->getId());
 
         if (!$recombee instanceof Recombee) {
@@ -110,6 +118,7 @@ class RecombeeGenerator
                     break;
             }
             $this->items = $items['recomms'];
+            $this->cache[$hash] = $this->items;
             return $this->items;
 
         } catch (Ex\ApiTimeoutException $e) {
@@ -182,8 +191,6 @@ class RecombeeGenerator
         }
 
         return $this->getTemplateContent($headerTemplate, $footerTemplate, $bodyTemplate);
-
-
     }
 
     /**

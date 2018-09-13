@@ -33,11 +33,17 @@
     <?php endif; ?>
     <?php if (!empty($recombee->getProperties()['itemPrice'])): ?>
         <p class="recombee-price-case">
-            <span class="recombee-price"><?php echo $recombee->getProperties()['itemPrice']; ?></span>
+            <span class="recombee-price">
+                <?php echo $recombee->getProperties()['itemPrice']; ?><?php if (!empty($settings['currency'])): ?><?php echo $settings['currency']; ?><?php endif; ?>
+            </span>
             <?php if (!empty($recombee->getProperties()['itemOldPrice'])): ?>
                 <span class="recombee-price-old"
                       style="text-decoration: line-through"><?php echo $recombee->getProperties(
-                    )['itemOldPrice']; ?></span>
+                    )['itemOldPrice']; ?>€
+                    <?php if (!empty($settings['currency'])): ?>
+                        <?php echo $settings['currency']; ?>
+                    <?php endif; ?>
+                </span>
             <?php endif; ?>
         </p>
     <?php endif; ?>

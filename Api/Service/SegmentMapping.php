@@ -69,16 +69,15 @@ class SegmentMapping
         switch ($apiRequest) {
             case "AddCartAddition":
                 if (!empty($settings['abandoned_cart_segment'])) {
-                    $this->listModel->removeLead($lead, [$settings['abandoned_cart_segment']]);
-                    $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']]);
+                    $this->listModel->addLead($lead, [$settings['abandoned_cart_segment']],true);
                 }
                 break;
             case "AddPurchase":
                 if (!empty($settings['abandoned_cart_order_segment'])) {
-                    $this->listModel->addLead($lead, [$settings['abandoned_cart_order_segment']]);
+                    $this->listModel->addLead($lead, [$settings['abandoned_cart_order_segment']], true);
                 }
                 if (!empty($settings['abandoned_cart_order_segment_remove'])) {
-                    $this->listModel->removeLead($lead, [$settings['abandoned_cart_order_segment_remove']]);
+                    $this->listModel->removeLead($lead, [$settings['abandoned_cart_order_segment_remove']], true);
                 }
                 break;
         }

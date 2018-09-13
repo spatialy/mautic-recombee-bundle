@@ -60,6 +60,14 @@ class RecombeeTokenReplacer
     }
 
     /**
+     * @return RecombeeToken
+     */
+    public function getRecombeeToken()
+    {
+        return $this->recombeeToken;
+    }
+
+    /**
      * @return RecombeeGenerator
      */
     public function getRecombeeGenerator()
@@ -71,12 +79,10 @@ class RecombeeTokenReplacer
      * @param       $content
      * @param array $options
      *
-     * @param array $utmTags
-     *
      * @return mixed
      * @internal param $event
      */
-    public function replaceTokensFromContent($content, $options = [], $utmTags = [])
+    public function replaceTokensFromContent($content, $options = [])
     {
         $tokens = $this->recombeeTokenFinder->findTokens($content);
         if (!empty($tokens)) {
@@ -87,7 +93,6 @@ class RecombeeTokenReplacer
             foreach ($tokens as $key => $token) {
                 $token->setAddOptions($options);
                 $tokenContent = $this->recombeeGenerator->getContentByToken($token);
-                //$this->createTrackableContent($tokenContent);
                 if (!empty($tokenContent)) {
                     $content      = str_replace($key, $tokenContent, $content);
                     $this->replacedTokens[$key] = $tokenContent;
@@ -101,26 +106,16 @@ class RecombeeTokenReplacer
         return $content;
     }
 
-    public function createTrackableContent(&$content, $channel, $channelId, $utmTags = [])
+    /**
+     * @param               $content
+     * @param RecombeeToken $recombeeToken
+     * @param array $options
+     */
+    public function replaceTagsFromContent($content, RecombeeToken $recombeeToken, $options = [])
     {
-        list($content, $trackables) = $this->trackableModel->parseContentForTrackables(
-            $content,
-            [],
-            $channel,
-            $channelId
-        );
-
-        /**
-         * @var string
-         * @var Trackable $trackable
-         */
-        foreach ($trackables as $token => $trackable) {
-            $tokens[$token] = $this->trackableModel->generateTrackableUrl($trackable, [], false, $utmTags);
-        }
-
-        $content = str_replace(array_keys($tokens), array_values($tokens), $content);
+        $this->recombeeGenerator->getResultByToken($recombeeToken, $options);
+        return $this->recombeeGenerator->replaceTagsFromContent($content);
     }
-
 
 
     /**
@@ -141,14 +136,6 @@ class RecombeeTokenReplacer
     public function getReplacedTokens()
     {
         return $this->replacedTokens;
-    }
-
-    /**
-     * @param mixed $replacedTokens
-     */
-    public function setReplacedTokens($replacedTokens)
-    {
-        $this->replacedTokens = $replacedTokens;
     }
 
 }

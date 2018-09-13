@@ -39,6 +39,8 @@ use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeEmailSendType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeFocusType;
 use MauticPlugin\MauticRecombeeBundle\Form\Type\RecombeeNotificationSendType;
 use MauticPlugin\MauticRecombeeBundle\RecombeeEvents;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTagsReplacer;
+use MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken;
 use MauticPlugin\MauticRecombeeBundle\Service\RecombeeTokenReplacer;
 use Symfony\Component\HttpFoundation\Session\Session;
 
@@ -605,6 +607,25 @@ class CampaignSubscriber extends CommonSubscriber
         if (empty($playerID)) {
             return $event->setFailed('mautic.notification.campaign.failed.not_subscribed');
         }
+
+        $config     = $event->getConfig();
+        $campaignId = $event->getEvent()['campaign']['id'];
+        $leadId     = $event->getLead()->getId();
+
+        // create token from data
+        $this->recombeeTokenReplacer->getRecombeeToken()->setToken(['userId' => $leadId, 'limit' => 1]);
+        $recombeeTagsReplacer = new RecombeeTagsReplacer($this->recombeeTokenReplacer, $this->recombeeTokenReplacer->getRecombeeToken(), $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId));
+
+        $notification->setMessage($recombeeTagsReplacer->replaceTags($notification->getMessage()));
+        // check if cart has some items
+        if ($this->recombeeTokenReplacer->hasItems() === false) {
+            return $event->setFailed(
+                'No recombee results for this contact #'.$leadId.' and  notification #'.$notificationId
+            );
+        }
+
+        $notification->setHeading($recombeeTagsReplacer->replaceTags($notification->getHeading()));
+        $notification->setUrl($recombeeTagsReplacer->replaceTags($notification->getUrl()));
 
         if ($url = $notification->getUrl()) {
             $url = $this->notificationApi->convertToTrackedUrl(

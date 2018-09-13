@@ -21,7 +21,7 @@ class RecombeeTokenFinder
 
     private $recombeeTokens = [];
 
-    private $recombeeRegex = '{Recombee=(.*?)}';
+    private $recombeeRegex = '{recombee=(.*?)}';
 
     /**
      * @var RecombeeToken

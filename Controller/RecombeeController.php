@@ -148,11 +148,13 @@ class RecombeeController extends AbstractStandardFormController
     {
         /** @var ApiCommands $apiCommands */
         $apiCommands = $this->get('mautic.recombee.service.api.commands');
+        $integration = $this->get('mautic.integration.recombee');
         $viewParameters = [];
         switch ($action) {
             case 'new':
             case 'edit':
               $viewParameters['properties'] = $apiCommands->callCommand('ListItemProperties');
+              $viewParameters['settings'] =   $integration->getIntegrationSettings()->getFeatureSettings();
             break;
         }
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
