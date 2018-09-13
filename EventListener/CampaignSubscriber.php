@@ -308,6 +308,7 @@ class CampaignSubscriber extends CommonSubscriber
                 $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId)
             )
         );
+
         // check if cart has some items
         if (!$this->recombeeTokenReplacer->hasItems()) {
             return $event->setFailed(
@@ -358,7 +359,6 @@ class CampaignSubscriber extends CommonSubscriber
         // Stop If Focus not exist or not published
         if (!$focus || !$focus->isPublished()) {
             return $event->setFailed('Focus ID #'.$focusId.' doesn\'t exist or is not  published.');
-
         }
 
         $eventDetails = $event->getEventDetails();
@@ -635,9 +635,8 @@ class CampaignSubscriber extends CommonSubscriber
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
         // create token from data
-        $this->recombeeTokenReplacer->getRecombeeToken()->setToken(['userId' => $leadId, 'limit' => 1]);
+        $this->recombeeTokenReplacer->getRecombeeToken()->setToken(['userId' => $leadId, 'limit' => 10]);
         $recombeeTagsReplacer = new RecombeeTagsReplacer($this->recombeeTokenReplacer, $this->recombeeTokenReplacer->getRecombeeToken(), $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId));
-
         $notification->setMessage($recombeeTagsReplacer->replaceTags($notification->getMessage()));
         // check if cart has some items
         if ($this->recombeeTokenReplacer->hasItems() === false) {
@@ -648,6 +647,12 @@ class CampaignSubscriber extends CommonSubscriber
 
         $notification->setHeading($recombeeTagsReplacer->replaceTags($notification->getHeading()));
         $notification->setUrl($recombeeTagsReplacer->replaceTags($notification->getUrl()));
+        if (method_exists($notification, 'getActionButtonUrl1') && $notification->getActionButtonUrl1()) {
+            $notification->setActionButtonUrl1($recombeeTagsReplacer->replaceTags($notification->getActionButtonUrl1()));
+        }
+        if (method_exists($notification, 'getActionButtonUrl2') && $notification->getActionButtonUrl2()) {
+            $notification->setActionButtonUrl2($recombeeTagsReplacer->replaceTags($notification->getActionButtonUrl2()));
+        }
 
         if ($url = $notification->getUrl()) {
             $url = $this->notificationApi->convertToTrackedUrl(
