@@ -92,7 +92,7 @@ class RecombeeGenerator
      */
     public function getResultByToken(RecombeeToken $recombeeToken, $options = [])
     {
-        $hash = md5(serialize($recombeeToken).serialize($options));
+        $hash = md5(\GuzzleHttp\json_encode($recombeeToken).\GuzzleHttp\json_encode($options));
         if (!empty($this->cache[$hash])) {
             return $this->cache[$hash];
         }

@@ -113,8 +113,12 @@ class RecombeeTokenReplacer
      */
     public function replaceTagsFromContent($content, RecombeeToken $recombeeToken, $options = [])
     {
+        $recombeeToken->setAddOptions($options);
         $this->recombeeGenerator->getResultByToken($recombeeToken, $options);
-        return $this->recombeeGenerator->replaceTagsFromContent($content);
+        $content = $this->recombeeGenerator->replaceTagsFromContent($content);;
+        $this->replacedTokens[] = $content;
+
+        return $content;
     }
 
 

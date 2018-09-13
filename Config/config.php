@@ -31,7 +31,9 @@ return [
                         'session',
                         'mautic.helper.integration',
                         'mautic.dynamicContent.model.dynamicContent',
-                        'doctrine.orm.entity_manager'
+                        'doctrine.orm.entity_manager',
+                        'mautic.notification.model.notification',
+                        'mautic.notification.api',
                     ],
             ],
             'mautic.recombee.dynamic.content.token.subscriber'  => [

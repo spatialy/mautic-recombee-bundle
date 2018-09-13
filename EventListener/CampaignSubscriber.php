@@ -18,7 +18,6 @@ use Mautic\CampaignBundle\Event\CampaignExecutionEvent;
 use Mautic\CampaignBundle\Model\EventModel;
 use Mautic\CoreBundle\Event\TokenReplacementEvent;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
-use Mautic\DynamicContentBundle\DynamicContentEvents;
 use Mautic\DynamicContentBundle\Entity\DynamicContent;
 use Mautic\DynamicContentBundle\Model\DynamicContentModel;
 use Mautic\EmailBundle\Helper\UrlMatcher;
@@ -26,8 +25,12 @@ use Mautic\EmailBundle\Model\EmailModel;
 use Mautic\EmailBundle\Model\SendEmailToUser;
 use Mautic\LeadBundle\Entity\DoNotContact as DNC;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\NotificationBundle\Api\AbstractNotificationApi;
+use Mautic\NotificationBundle\Event\NotificationSendEvent;
 use Mautic\NotificationBundle\Form\Type\MobileNotificationSendType;
 use Mautic\NotificationBundle\Form\Type\NotificationSendType;
+use Mautic\NotificationBundle\Model\NotificationModel;
+use Mautic\NotificationBundle\NotificationEvents;
 use Mautic\PageBundle\Helper\TrackingHelper;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use MauticPlugin\MauticFocusBundle\Entity\Focus;
@@ -105,20 +108,34 @@ class CampaignSubscriber extends CommonSubscriber
      */
     private $entityManager;
 
+    /**
+     * @var NotificationModel
+     */
+    private $notificationModel;
 
     /**
-     * @param LeadModel             $leadModel
-     * @param EmailModel            $emailModel
-     * @param EventModel            $eventModel
-     * @param SendEmailToUser       $sendEmailToUser
-     * @param RecombeeTokenReplacer $recombeeTokenReplacer
-     * @param CampaignLeadDetails   $campaignLeadDetails
-     * @param TrackingHelper        $trackingHelper
-     * @param FocusModel            $focusModel
-     * @param Session               $session
-     * @param IntegrationHelper     $integrationHelper
-     * @param DynamicContentModel   $dynamicContentModel
-     * @param EntityManager         $entityManager
+     * @var AbstractNotificationApi
+     */
+    private $notificationApi;
+
+
+    /**
+     * @param LeadModel               $leadModel
+     * @param EmailModel              $emailModel
+     * @param EventModel              $eventModel
+     * @param SendEmailToUser         $sendEmailToUser
+     * @param RecombeeTokenReplacer   $recombeeTokenReplacer
+     * @param CampaignLeadDetails     $campaignLeadDetails
+     * @param TrackingHelper          $trackingHelper
+     * @param FocusModel              $focusModel
+     * @param Session                 $session
+     * @param IntegrationHelper       $integrationHelper
+     * @param DynamicContentModel     $dynamicContentModel
+     * @param EntityManager           $entityManager
+     *
+     * @param NotificationModel       $notificationModel
+     *
+     * @param AbstractNotificationApi $notificationApi
      *
      * @internal param MessageQueueModel $messageQueueModel
      */
@@ -134,7 +151,9 @@ class CampaignSubscriber extends CommonSubscriber
         Session $session,
         IntegrationHelper $integrationHelper,
         DynamicContentModel $dynamicContentModel,
-        EntityManager $entityManager
+        EntityManager $entityManager,
+        NotificationModel $notificationModel,
+        AbstractNotificationApi $notificationApi
     ) {
         $this->leadModel             = $leadModel;
         $this->emailModel            = $emailModel;
@@ -149,6 +168,8 @@ class CampaignSubscriber extends CommonSubscriber
 
         $this->dynamicContentModel = $dynamicContentModel;
         $this->entityManager       = $entityManager;
+        $this->notificationModel = $notificationModel;
+        $this->notificationApi = $notificationApi;
     }
 
     /**
@@ -570,21 +591,23 @@ class CampaignSubscriber extends CommonSubscriber
      */
     public function onCampaignTriggerActionSendNotification(CampaignExecutionEvent $event)
     {
+        if (!$event->checkContext('recombee.send_notification')) {
+            return;
+        }
+
         $lead = $event->getLead();
 
         if ($this->leadModel->isContactable($lead, 'notification') !== DNC::IS_CONTACTABLE) {
             return $event->setFailed('mautic.notification.campaign.failed.not_contactable');
         }
-
         $notificationId = (int) $event->getConfig()['notification'];
 
         /** @var \Mautic\NotificationBundle\Entity\Notification $notification */
         $notification = $this->notificationModel->getEntity($notificationId);
 
-        if ($notification->getId() !== $notificationId) {
+        if ($notification && $notification->getId() !== $notificationId) {
             return $event->setFailed('mautic.notification.campaign.failed.missing_entity');
         }
-
         if (!$notification->getIsPublished()) {
             return $event->setFailed('mautic.notification.campaign.failed.unpublished');
         }
@@ -611,7 +634,6 @@ class CampaignSubscriber extends CommonSubscriber
         $config     = $event->getConfig();
         $campaignId = $event->getEvent()['campaign']['id'];
         $leadId     = $event->getLead()->getId();
-
         // create token from data
         $this->recombeeTokenReplacer->getRecombeeToken()->setToken(['userId' => $leadId, 'limit' => 1]);
         $recombeeTagsReplacer = new RecombeeTagsReplacer($this->recombeeTokenReplacer, $this->recombeeTokenReplacer->getRecombeeToken(), $this->getOptionsBasedOnRecommendationsType($config['type'], $campaignId, $leadId));
@@ -653,7 +675,6 @@ class CampaignSubscriber extends CommonSubscriber
             NotificationEvents::NOTIFICATION_ON_SEND,
             new NotificationSendEvent($tokenEvent->getContent(), $notification->getHeading(), $lead)
         );
-
         // prevent rewrite notification entity
         $sendNotification = clone $notification;
         $sendNotification->setUrl($url);
@@ -662,7 +683,8 @@ class CampaignSubscriber extends CommonSubscriber
 
         $response = $this->notificationApi->sendNotification(
             $playerID,
-            $sendNotification
+            $sendNotification,
+            $notification
         );
 
         $event->setChannel('notification', $notification->getId());
