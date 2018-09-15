@@ -7,6 +7,11 @@ return [
     'version'     => '0.9.0',
     'services'    => [
         'events'       => [
+        /*    'mautic.recombee.js.subscriber'  => [
+                'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
+                'arguments' => [
+                ],
+            ],*/
             'mautic.recombee.pagebundle.subscriber'  => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\PageSubscriber::class,
                 'arguments' => [
@@ -265,9 +270,9 @@ return [
                 'path'       => '/recombee/template/{id}',
                 'controller' => 'MauticRecombeeBundle:Recombee:template',
             ],
-            'mautic_recombee_js_generate_focus' => [
-                'path'       => '/recombee/focus/{id}.js',
-                'controller' => 'MauticRecombeeBundle:Recombee:generate',
+            'mautic_recombee_process_action' => [
+                'path'       => '/recombee/send/event',
+                'controller' => 'MauticRecombeeBundle:Recombee:process',
             ],
         ],
         'api'    => [
