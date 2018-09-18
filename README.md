@@ -22,6 +22,7 @@ Sign in for news: [mtcrecombee.com](https://mtcrecombee.com/)
 - Emails
 - Focus (popups)
 - Dynamic content
+- Web Push notification
 
 ## Create Recombee account for free
 
@@ -115,7 +116,7 @@ Adds a detail view of a given item made by a given user.
 `$options = ['userId' => 1, 'itemdId' => 1];`  
 `$apiRequest->makeRequest('recombee/'.$component, $options, 'POST');`
 
-## Send data realtime by Mautic pixel
+## Send data realtime by JS API
 
 Add Mautic tracking code to website
 

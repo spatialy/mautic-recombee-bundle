@@ -7,7 +7,7 @@ return [
     'version'     => '0.9.0',
     'services'    => [
         'events'       => [
-        /*    'mautic.recombee.js.subscriber'  => [
+            /*'mautic.recombee.js.subscriber'  => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\EventListener\BuildJsSubscriber::class,
                 'arguments' => [
                 ],

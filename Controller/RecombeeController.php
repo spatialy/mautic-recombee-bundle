@@ -126,7 +126,7 @@ class RecombeeController extends AbstractStandardFormController
     {
         if (empty($objectId)) {
             return $this->newStandard();
-        }else{
+        } else {
             return $this->editAction($objectId);
         }
     }
@@ -150,17 +150,18 @@ class RecombeeController extends AbstractStandardFormController
     protected function getViewArguments(array $args, $action)
     {
         /** @var ApiCommands $apiCommands */
-        $apiCommands = $this->get('mautic.recombee.service.api.commands');
-        $integration = $this->get('mautic.integration.recombee');
+        $apiCommands    = $this->get('mautic.recombee.service.api.commands');
+        $integration    = $this->get('mautic.integration.recombee');
         $viewParameters = [];
         switch ($action) {
             case 'new':
             case 'edit':
-              $viewParameters['properties'] = $apiCommands->callCommand('ListItemProperties');
-              $viewParameters['settings'] =   $integration->getIntegrationSettings()->getFeatureSettings();
-            break;
+                $viewParameters['properties'] = $apiCommands->callCommand('ListItemProperties');
+                $viewParameters['settings']   = $integration->getIntegrationSettings()->getFeatureSettings();
+                break;
         }
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
+
         return $args;
     }
 
@@ -176,22 +177,35 @@ class RecombeeController extends AbstractStandardFormController
                 ]
             );
         }
+        /** @var ApiCommands $apiCommands */
+        $apiCommands = $this->get('mautic.recombee.service.api.commands');
+        /** @var LeadModel $leadModel */
+        $leadModel = $this->get('mautic.lead.model.lead');
+        $lead      = $leadModel->getCurrentLead();
+
+
         /** @var ContactTracker $contactTracker */
-        $contactTracker = $this->get('mautic.tracker.contact');
-        $lead = $contactTracker->getContact();
-        $options = $this->request->request->all();
-        if (!empty($options) && !empty($options['component'])) {
-            $component = $options['component'];
-            unset($options['component']);
-            $options['userId'] = $lead->getId();
-            /** @var ApiCommands  $apiCommands */
-            $apiCommands = $this->get('mautic.recombee.service.api.commands');
-            $apiCommands->callCommand($component, $options);
-            return new JsonResponse(
-                [
-                    'response' => $apiCommands->getCommandOutput(),
-                ]
-            );
+        //$contactTracker = $this->get('mautic.tracker.contact');
+        $options           = $this->request->request->all();
+
+        $recombee = $this->request->get('recombee');
+        $requests = json_decode(base64_decode($recombee), true);
+        $response = [];
+        foreach ($requests as $request) {
+            $request = json_decode($request, true);
+            if (!is_array($request) || !isset($request['component'])) {
+                continue;
+            }
+            $component = $request['component'];
+            $request['userId'] = $lead->getId();
+            unset($request['component']);
+            $apiCommands->callCommand($component, $request);
+            $response[] = $apiCommands->getCommandOutput();
         }
+        return new JsonResponse(
+            [
+                'response' => $response,
+            ]
+        );
     }
 }
