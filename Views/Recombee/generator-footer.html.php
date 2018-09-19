@@ -11,6 +11,11 @@
 
 
 ?>
-<?php echo $recombee->getProperties()['footer']; ?>
+<?php if ($preview) {
+    echo html_entity_decode($recombee->getProperties()['footer']);
+    ?>;
+<?php } else {
+    echo $recombee->getProperties()['footer']; ?>
+<?php } ?>;
     </div>
 </div>

@@ -88,5 +88,11 @@ $class = 'recombee-template-'.$recombee->getId();
 
 </style>
 <div class="recombee-global-row <?php echo $class ?>">
-    <?php echo $recombee->getProperties()['header']; ?>
+
+    <?php if ($preview) {
+        echo html_entity_decode($recombee->getProperties()['header']);
+        ?>;
+    <?php } else {
+        echo $recombee->getProperties()['header']; ?>
+    <?php } ?>;
     <div class="recombee-row">

@@ -24,7 +24,7 @@ $recombee = $entity;
     <div class="col-md-4">
         <?php echo $view['form']->row($form['name']); ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-3 recombee-preview">
         <?php echo $view['form']->row($form['numberOfItems']); ?>
     </div>
     <div class="col-md-2">
@@ -44,8 +44,11 @@ $recombee = $entity;
 
                     <h3><?php echo $view['translator']->trans('mautic.plugin.recombee.preview'); ?></h3>
                     <hr>
+                    <div id="recombee-preview-case">
+                        <div style="display:none"  id="recombee-preview-loader" class="lds-roller"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
                     <div id="recombee-preview">
                         <?php
+
                         echo $view->render(
                             'MauticRecombeeBundle:Recombee:generator.html.php',
                             [
@@ -56,6 +59,7 @@ $recombee = $entity;
                         );
                         ?>
                     </div>
+                </div>
                 </div>
             </div>
         </div>
@@ -93,7 +97,7 @@ $recombee = $entity;
 <div class="row">
     <div id="recombee_template_2" data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
 
-        <div class="panel-group" id="accordion" role="tablist" aria-multiselectable="true">
+        <div class="panel-group recombee-preview" id="accordion" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
                 <div class="panel-heading" role="tab" id="headingOne">
                     <h4 class="panel-title">

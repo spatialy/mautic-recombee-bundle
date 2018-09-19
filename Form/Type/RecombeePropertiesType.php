@@ -64,7 +64,6 @@ class RecombeePropertiesType extends AbstractType
                 'attr'       => [
                     'class'       => 'form-control',
                     'data-toggle' => 'color',
-                    'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -136,7 +135,6 @@ class RecombeePropertiesType extends AbstractType
                 'attr'       => [
                     'class'       => 'form-control',
                     'data-toggle' => 'color',
-                    'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -176,7 +174,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -257,7 +254,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -284,7 +280,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -325,7 +320,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -339,7 +333,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -460,7 +453,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
@@ -541,7 +533,6 @@ class RecombeePropertiesType extends AbstractType
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
                     'class'       => 'form-control',
-                    //'onchange'    => 'Mautic.recombeeUpdatePreview()',
                 ],
                 'required'   => false,
             ]
