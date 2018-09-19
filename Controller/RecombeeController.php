@@ -124,11 +124,21 @@ class RecombeeController extends AbstractStandardFormController
      */
     public function viewAction($objectId)
     {
-        if (empty($objectId)) {
-            return $this->newStandard();
-        } else {
-            return $this->editAction($objectId);
-        }
+        //set the page we came from
+        $page = $this->get('session')->get('mautic.recombee.page', 1);
+        $returnUrl = $this->generateUrl('mautic_recombee_index', ['page' => $page]);
+
+        return $this->postActionRedirect(
+            [
+                'returnUrl'       => $returnUrl,
+                'viewParameters'  => ['page' => $page],
+                'contentTemplate' => 'MauticRecombeeBundle:Recombee:index',
+                'passthroughVars' => [
+                    'activeLink'    => '#mautic_recombee_index',
+                    'mauticContent' => 'recombee',
+                ],
+            ]
+        );
     }
 
     /**
