@@ -53,11 +53,24 @@ class EmailSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
+            EmailEvents::EMAIL_ON_BUILD   => ['onPageBuild', 0],
             EmailEvents::EMAIL_ON_SEND    => ['onEmailGenerate', 0],
             EmailEvents::EMAIL_ON_DISPLAY => ['onEmailDisplay', 0],
         ];
     }
 
+    /**
+     * Add email to available page tokens.
+     *
+     * @param EmailBuilderEvent $event
+     */
+    public function onPageBuild(EmailBuilderEvent $event)
+    {
+        if ($event->tokensRequested($this->recombeeHelper->getRecombeeRegex())) {
+            $tokenHelper = new BuilderTokenHelper($this->factory, 'recombee');
+            $event->addTokensFromHelper($tokenHelper, $this->recombeeHelper->getRecombeeRegex(), 'name', 'id', true);
+        }
+    }
 
     /**
      * @param EmailSendEvent $event

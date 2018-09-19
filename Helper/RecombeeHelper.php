@@ -33,13 +33,8 @@ const PROBABILITY_PURCHASED = 0.2;
  */
 class RecombeeHelper
 {
-    private $recombeeItemsToUserRegex = '{RecombeeItems=(.*?)}';
 
-    private $recombeeRegex =
-        [
-            'items' => '{RecombeeItems=(.*?)}',
-            'users' => '{RecombeeUsers=(.*?)}',
-        ];
+    private $recombeeRegex = '{recombee=(.*?)}';
 
     /**
      * @var IntegrationHelper
@@ -107,12 +102,8 @@ class RecombeeHelper
             if (!$entity->isPublished()) {
                 continue;
             }
-            $tokenType = 'RecombeeItems';
-            if ($entity->getType() == 'users') {
-                $tokenType = 'RecombeeUsers';
-            }
 
-            $tokens['{'.$tokenType.'='.$entity->getId().'}'] = $entity->getName();
+            $tokens['{recombee='.$entity->getId().'}'] = $entity->getName();
         }
 
         return $tokens;

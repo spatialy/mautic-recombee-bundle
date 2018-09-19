@@ -89,10 +89,25 @@ class PageSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
+            PageEvents::PAGE_ON_BUILD   => ['onPageBuild', 0],
             PageEvents::PAGE_ON_HIT     => ['onPageHit', 0],
             PageEvents::PAGE_ON_DISPLAY => ['onPageDisplay', 0],
         ];
     }
+
+    /**
+     * Add forms to available page tokens.
+     *
+     * @param PageBuilderEvent $event
+     */
+    public function onPageBuild(Events\PageBuilderEvent $event)
+    {
+        if ($event->tokensRequested($this->recombeeHelper->getRecombeeRegex())) {
+            $tokenHelper = new BuilderTokenHelper($this->factory, 'recombee');
+            $event->addTokensFromHelper($tokenHelper, $this->recombeeHelper->getRecombeeRegex(), 'name', 'id', true);
+        }
+    }
+
 
     /**
      * Trigger actions for page hits.
