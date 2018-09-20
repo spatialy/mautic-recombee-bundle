@@ -51,6 +51,8 @@ class Recombee extends FormEntity
      */
     private $numberOfItems = 9;
 
+    /** @var  string */
+    private $templateMode;
 
     /** @var  string */
     private $templateType;
@@ -101,6 +103,11 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
+        $builder->createField('templateMode', 'string')
+            ->columnName('template_mode')
+            ->nullable()
+            ->build();
+
         $builder->createField('templateType', 'string')
             ->columnName('template_type')
             ->nullable()
@@ -141,6 +148,8 @@ class Recombee extends FormEntity
                 'publishUp',
                 'publishDown',
                 'template',
+                'templateMode',
+                'templateType',
                 'properties',
             ])
             ->build();
@@ -293,6 +302,27 @@ class Recombee extends FormEntity
     {
         $this->isChanged('templateType', $templateType);
         $this->templateType = $templateType;
+
+        return $this;
+    }
+
+    /**
+     * @return string
+     */
+    public function getTemplateMode()
+    {
+        return $this->templateMode;
+    }
+
+    /**
+     * @param string $templateMode
+     *
+     * @return Recombee
+     */
+    public function setTemplateMode($templateMode)
+    {
+        $this->isChanged('templateMode', $templateMode);
+        $this->templateMode = $templateMode;
 
         return $this;
     }

@@ -31,16 +31,18 @@ $recombee = $entity;
         <?php echo $view['form']->row($form['isPublished']); ?>
     </div>
     <div class="col-md-3">
+        <?php echo $view['form']->row($form['templateMode']); ?>
+    </div>
+    <div class="col-md-3">
         <?php echo $view['form']->row($form['templateType']); ?>
     </div>
 </div>
-
 <div class="row">
     <div class="col-md-12">
         <div class="row">
             <div class="col-md-12">
                 <div id="recombee_properties_1"
-                     data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
+                     data-show-on="{&quot;recombee_templateMode_0&quot;:&quot;checked&quot;}">
 
                     <h3><?php echo $view['translator']->trans('mautic.plugin.recombee.preview'); ?></h3>
                     <hr>
@@ -65,7 +67,7 @@ $recombee = $entity;
         </div>
         <div class="row">
             <div class="col-md-12">
-                <div id="recombee_template_1" data-show-on="{&quot;recombee_templateType_1&quot;:&quot;checked&quot;}">
+                <div id="recombee_template_1" data-show-on="{&quot;recombee_templateMode_1&quot;:&quot;checked&quot;}">
 
                     <div class="form-control-custom">
                         <?php
@@ -95,7 +97,7 @@ $recombee = $entity;
 
 
 <div class="row">
-    <div id="recombee_template_2" data-show-on="{&quot;recombee_templateType_0&quot;:&quot;checked&quot;}">
+    <div id="recombee_template_2" data-show-on="{&quot;recombee_templateMode_0&quot;:&quot;checked&quot;}">
 
         <div class="panel-group recombee-preview" id="accordion" role="tablist" aria-multiselectable="true">
             <div class="panel panel-default">
@@ -354,7 +356,7 @@ $recombee = $entity;
 
 <div class="row" style="margin-top:-10px;">
     <div class="col-md-12">
-        <div id="recombee_template" data-show-on="{&quot;recombee_templateType_1&quot;:&quot;checked&quot;}">
+        <div id="recombee_template" data-show-on="{&quot;recombee_templateMode_1&quot;:&quot;checked&quot;}">
 
             <div class="row">
                 <div class="col-xs-12">

@@ -102,6 +102,25 @@ class RecombeeType extends AbstractType
             'templateType',
             'button_group',
             [
+                'label'      => 'mautic.plugin.recombee.form.template_type',
+                'label_attr' => ['class' => 'control-label'],
+                'attr'       => [
+                    'class'    => 'form-control',
+                    'tooltip'  => 'mautic.plugin.recombee.form.template_type.tooltip',
+                ],
+                'choices' => [
+                    'mautic.plugin.recombee.form.web'  => 'web',
+                    'mautic.plugin.recombee.form.email'   => 'email',
+                ],
+                'choices_as_values' => true,
+                'data'=> $options['data']->getTemplateType() ?:'web'
+            ]
+        );
+
+        $builder->add(
+            'templateMode',
+            'button_group',
+            [
                 'label'      => 'mautic.plugin.recombee.form.template_mode',
                 'label_attr' => ['class' => 'control-label'],
                 'attr'       => [
@@ -123,7 +142,7 @@ class RecombeeType extends AbstractType
             [
                 'label' => false,
                 'attr'       => [
-                    'data-show-on' => '{"recombee_templateType_0":"checked"}',
+                    'data-show-on' => '{"recombee_templateMode_0":"checked"}',
                 ],
                 'data'=>$options['data']->getProperties()
             ]
@@ -135,7 +154,7 @@ class RecombeeType extends AbstractType
             [
                 'label' => 'mautic.plugin.recombee.template',
                 'attr'       => [
-                    'data-show-on' => '{"recombee_templateType_1":"checked"}',
+                    'data-show-on' => '{"recombee_templateMode_1":"checked"}',
                 ],
             ]
         );

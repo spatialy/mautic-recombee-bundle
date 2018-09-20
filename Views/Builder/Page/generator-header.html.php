@@ -27,8 +27,8 @@ echo $view->render(
 
     <?php if ($preview) {
         echo html_entity_decode($recombee->getProperties()['header']);
-        ?>;
+        ?>
     <?php } else {
         echo $recombee->getProperties()['header']; ?>
-    <?php } ?>;
+    <?php } ?>
     <div class="recombee-row">
