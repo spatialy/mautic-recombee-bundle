@@ -43,7 +43,7 @@ class AjaxController extends CommonAjaxController
                 }
             }
             $data['content'] = $this->get('mautic.helper.templating')->getTemplating()->render(
-                'MauticRecombeeBundle:Recombee:generator.html.php',
+                'MauticRecombeeBundle:Builder\Page:generator.html.php',
                 [
                     'recombee'  => $recombeeEntity,
                     'settings'  => $this->get('mautic.helper.integration')->getIntegrationObject('Recombee')->getIntegrationSettings()->getFeatureSettings(),

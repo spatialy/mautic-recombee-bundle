@@ -50,7 +50,7 @@ $recombee = $entity;
                         <?php
 
                         echo $view->render(
-                            'MauticRecombeeBundle:Recombee:generator.html.php',
+                            'MauticRecombeeBundle:Builder\Page:generator.html.php',
                             [
                                 'recombee' => $recombee,
                                 'settings' => $settings,
