@@ -133,7 +133,8 @@ class GoogleAnalyticsHelper
             $table = 'emails';
         } elseif ($channel == 'dynamicContent') {
             $table = 'dynamic_content';
-            return;
+        }  elseif ($channel == 'notification') {
+            $table = 'push_notifications';
         } else {
             $table = $channel;
         }
@@ -144,9 +145,15 @@ class GoogleAnalyticsHelper
                 $q->expr()->like('e.id', ':channelId')
             )
             ->setParameter('channelId', $channelId);
+        $utmTags = $q->execute()->fetchColumn();
 
-        $this->utmTags[$channel][$channelId] = unserialize($q->execute()->fetchColumn());
+        try {
+            $tags = \GuzzleHttp\json_decode($utmTags);
+        } catch (\Exception $exception) {
+            $tags = unserialize($utmTags);
+        }
 
+        $this->utmTags[$channel][$channelId] = $tags ;
         return $this->utmTags[$channel][$channelId];
     }
 

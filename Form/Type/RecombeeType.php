@@ -109,7 +109,7 @@ class RecombeeType extends AbstractType
                     'tooltip'  => 'mautic.plugin.recombee.form.template_type.tooltip',
                 ],
                 'choices' => [
-                    'mautic.plugin.recombee.form.web'  => 'web',
+                    'mautic.plugin.recombee.form.web'  => 'page',
                     'mautic.plugin.recombee.form.email'   => 'email',
                 ],
                 'choices_as_values' => true,
@@ -132,7 +132,7 @@ class RecombeeType extends AbstractType
                     'mautic.plugin.recombee.form.html'   => 'html',
                 ],
                 'choices_as_values' => true,
-                'data'=> $options['data']->getTemplateType() ?:'basic'
+                'data'=> $options['data']->getTemplateMode() ?:'basic'
             ]
         );
 

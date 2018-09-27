@@ -27,6 +27,3 @@ $class = 'recombee-template-'.$recombee->getId();
     <tr>
         <td align="center" valign="top">
             <table width="100%" border="0" cellpadding="0" cellspacing="0" bgcolor="#F2F2F2" class="recombee-global-row <?php echo $class ?>">
-                <tr>
-                    <td align="center" valign="top">
-c

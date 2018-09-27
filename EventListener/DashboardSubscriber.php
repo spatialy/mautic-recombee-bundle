@@ -15,6 +15,8 @@ use Mautic\CoreBundle\Helper\DateTimeHelper;
 use Mautic\DashboardBundle\Event\WidgetDetailEvent;
 use Mautic\DashboardBundle\EventListener\DashboardSubscriber as MainDashboardSubscriber;
 use Mautic\PointBundle\Model\PointModel;
+use MauticPlugin\MauticExtendeeAnalyticsBundle\Form\Type\DashboardExtendeeAnalyticsWidgetType;
+use MauticPlugin\MauticRecombeeBundle\Form\Type\DashboardRecombeeAnalyticsWidgetType;
 use MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
@@ -37,7 +39,9 @@ class DashboardSubscriber extends MainDashboardSubscriber
      * @var string
      */
     protected $types = [
-        'recombee.analytics' => [],
+        'recombee.analytics' => [
+            'formAlias' => DashboardExtendeeAnalyticsWidgetType::class,
+        ],
     ];
 
     /**
@@ -72,11 +76,14 @@ class DashboardSubscriber extends MainDashboardSubscriber
      * @param RecombeeHelper        $recombeeHelper
      * @param GoogleAnalyticsHelper $analyticsHelper
      */
-    public function __construct(RecombeeModel $recombeeModel, RecombeeHelper $recombeeHelper, GoogleAnalyticsHelper $analyticsHelper)
-    {
+    public function __construct(
+        RecombeeModel $recombeeModel,
+        RecombeeHelper $recombeeHelper,
+        GoogleAnalyticsHelper $analyticsHelper
+    ) {
 
-        $this->recombeeModel = $recombeeModel;
-        $this->recombeeHelper = $recombeeHelper;
+        $this->recombeeModel   = $recombeeModel;
+        $this->recombeeHelper  = $recombeeHelper;
         $this->analyticsHelper = $analyticsHelper;
     }
 
@@ -95,21 +102,28 @@ class DashboardSubscriber extends MainDashboardSubscriber
         if ($event->getType() == 'recombee.analytics' && $this->analyticsHelper->enableRecombeeIntegration()) {
             $widget = $event->getWidget();
             $params = $widget->getParams();
-            if (!$event->isCached() || 1==1) {
+            if (!$event->isCached() || 1 == 1) {
                 $recombeeEvents = $this->recombeeHelper->getRecombeeEvents();
-                $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
-                $event->setTemplateData([
-                    'tags'   =>     $this->analyticsHelper->getFlatUtmTags(),
-                    'keys'       => $this->analyticsHelper->getAnalyticsFeatures(),
-                    'filters'    => $this->analyticsHelper->getFilter(),
-                    'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
-                    'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
-                    'dateFrom' =>  (new DateTimeHelper($params['dateFrom']))->toLocalString('Y-m-d'),
-                    'dateTo' =>  (new DateTimeHelper($params['dateTo']))->toLocalString('Y-m-d'),
-                ]);
-            }
+                if ($recombeeEvents) {
+                    $this->analyticsHelper->setRecombeeEvents($recombeeEvents);
+                    $this->analyticsHelper->setDynamicFilter($params);
+                    $event->setTemplateData(
+                        [
+                            'tags'       => $this->analyticsHelper->getFlatUtmTags(),
+                            'keys'       => $this->analyticsHelper->getAnalyticsFeatures(),
+                            'filters'    => $this->analyticsHelper->getFilter(),
+                            'metrics'    => $this->analyticsHelper->getMetricsFromConfig(),
+                            'rawMetrics' => $this->analyticsHelper->getRawMetrics(),
+                            'dateFrom'   => (new DateTimeHelper($params['dateFrom']))->toLocalString('Y-m-d'),
+                            'dateTo'     => (new DateTimeHelper($params['dateTo']))->toLocalString('Y-m-d'),
+                            'params'     => $params,
+                            'widget'=>$widget
+                        ]
+                    );
 
-                $event->setTemplate('MauticRecombeeBundle:Analytics:analytics-dashboard.html.php');
+                }
+                $event->setTemplate('MauticExtendeeAnalyticsBundle:Analytics:analytics-dashboard.html.php');
+            }
             $event->stopPropagation();
         }
     }

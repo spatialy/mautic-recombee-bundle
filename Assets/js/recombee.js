@@ -13,7 +13,9 @@ mQuery(document).on('change', '.recombee-preview select', function(){
     Mautic.recombeeUpdatePreview();
 });
 
-
+mQuery(document).on('change', '.recombee-preview input:radio', function(){
+    Mautic.recombeeUpdatePreview();
+});
 
 Mautic.recombeeUpdatePreview = function () {
     mQuery('#recombee-preview').fadeTo('normal', 0.4);

@@ -21,19 +21,19 @@ echo $view['assets']->includeScript('plugins/MauticRecombeeBundle/Assets/js/reco
 $recombee = $entity;
 ?>
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <?php echo $view['form']->row($form['name']); ?>
     </div>
-    <div class="col-md-3 recombee-preview">
-        <?php echo $view['form']->row($form['numberOfItems']); ?>
-    </div>
+    <!--<div class="col-md-3 recombee-preview">
+        <?php /*echo $view['form']->row($form['numberOfItems']); */?>
+    </div>-->
     <div class="col-md-2">
         <?php echo $view['form']->row($form['isPublished']); ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2">
         <?php echo $view['form']->row($form['templateMode']); ?>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-2 recombee-preview">
         <?php echo $view['form']->row($form['templateType']); ?>
     </div>
 </div>

@@ -23,7 +23,7 @@ echo $view->render(
     ]
 );
 ?>
-
+</tr>
             <?php for ($i = 0; $i < $recombee->getNumberOfItems(); $i++): ?>
                 <?php
                 echo $view->render(
@@ -37,10 +37,6 @@ echo $view->render(
                 );
                 ?>
             <?php endfor; ?>
-
-        </td>
-    </tr>
-
 
 <?php
 echo $view->render(

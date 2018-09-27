@@ -8,8 +8,13 @@
  *
  * @license     GNU/GPLv3 http://www.gnu.org/licenses/gpl-3.0.html
  */
-$i = $index - 1;
-if ($i == 0 || $i % $recombee->getProperties()['columns'] === 0) {
+$i = $index;
+if ($i == 0 || ($i % $recombee->getProperties()['columns']) === 0) {
+    if ($i > 0) {
+        ?>
+        </tr>
+        <?php
+    }
     ?>
     <tr>
     <?php
@@ -17,7 +22,8 @@ if ($i == 0 || $i % $recombee->getProperties()['columns'] === 0) {
 ;
 ?>
     <td>
-        <?php if (!empty($recombee->getProperties()['itemImage'])): ?>
+        <?php
+        if (!empty($recombee->getProperties()['itemImage'])): ?>
             <?php if (!empty($recombee->getProperties()['itemUrl'])): ?>
                 <a  href="<?php echo $recombee->getProperties()['itemUrl']; ?>">
             <?php endif; ?>
@@ -66,9 +72,3 @@ if ($i == 0 || $i % $recombee->getProperties()['columns'] === 0) {
         <?php endif; ?>
     </td>
 <?php
-if ($i == 0 || $i % $recombee->getProperties()['columns'] === 0) {
-    ?>
-    </tr>
-    <?php
-};
-?>
