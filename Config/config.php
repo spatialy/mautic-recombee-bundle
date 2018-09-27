@@ -71,21 +71,7 @@ return [
                      'mautic.focus.model.focus'
                 ],
             ],
-            'mautic.recombee.inject.custom.content.subscriber' => [
-                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\InjectCustomContentSubscriber::class,
-                'arguments' => [
-                    'mautic.recombee.helper.google.analytics',
-                ],
-            ],
-            'mautic.recombee.dashboard.subscriber' => [
-                'class'     => \MauticPlugin\MauticRecombeeBundle\EventListener\DashboardSubscriber::class,
-                'arguments' => [
-                    'mautic.recombee.model.recombee',
-                    'mautic.recombee.helper',
-                    'mautic.recombee.helper.google.analytics',
-                ],
-            ],
-                 ],
+        ],
         'models'       => [
             'mautic.recombee.model.recombee' => [
                 'class' => MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel::class,
@@ -151,16 +137,6 @@ return [
             ],
         ],
         'other'        => [
-            'mautic.recombee.helper.google.analytics'=> [
-                'class' => MauticPlugin\MauticRecombeeBundle\Helper\GoogleAnalyticsHelper::class,
-                'arguments' => [
-                    'mautic.helper.integration',
-                    'translator',
-                    'doctrine.orm.entity_manager',
-                    'form.factory',
-                    'router',
-                ],
-            ],
             'mautic.recombee.helper'                      => [
                 'class'     => MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper::class,
                 'arguments' => [
