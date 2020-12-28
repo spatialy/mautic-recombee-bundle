@@ -81,7 +81,7 @@ class LeadSubscriber extends CommonSubscriber
                 return;
             }
             $properties = [];
-
+            $properties[$leadId]['id'] = $leadId;
             foreach ($changes['fields'] as $property => $values) {
                 if (empty($values[1])) {
                     continue;

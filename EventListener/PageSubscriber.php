@@ -11,6 +11,7 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\EventListener;
 
+use Mautic\CampaignBundle\Model\EventModel;
 use Mautic\CoreBundle\EventListener\CommonSubscriber;
 use Mautic\CoreBundle\Helper\BuilderTokenHelper;
 use Mautic\CoreBundle\Translation\Translator;
@@ -53,6 +54,11 @@ class PageSubscriber extends CommonSubscriber
      */
     private $HTMLReplacer;
 
+    /**
+     * @var EventModel
+     */
+    private $eventModel;
+
 
     /**
      * PageSubscriber constructor.
@@ -61,17 +67,20 @@ class PageSubscriber extends CommonSubscriber
      * @param RecombeeTokenReplacer     $recombeeTokenReplacer
      * @param ApiCommands               $apiCommands
      * @param RecombeeTokenHTMLReplacer $HTMLReplacer
+     * @param EventModel                $eventModel
      */
     public function __construct(
         RecombeeHelper $recombeeHelper,
         RecombeeTokenReplacer $recombeeTokenReplacer,
         ApiCommands $apiCommands,
-        RecombeeTokenHTMLReplacer $HTMLReplacer
+        RecombeeTokenHTMLReplacer $HTMLReplacer,
+        EventModel $eventModel
     ) {
         $this->recombeeHelper        = $recombeeHelper;
         $this->recombeeTokenReplacer = $recombeeTokenReplacer;
         $this->apiCommands           = $apiCommands;
         $this->HTMLReplacer          = $HTMLReplacer;
+        $this->eventModel = $eventModel;
     }
 
     /**
@@ -80,10 +89,25 @@ class PageSubscriber extends CommonSubscriber
     public static function getSubscribedEvents()
     {
         return [
+            PageEvents::PAGE_ON_BUILD   => ['onPageBuild', 0],
             PageEvents::PAGE_ON_HIT     => ['onPageHit', 0],
             PageEvents::PAGE_ON_DISPLAY => ['onPageDisplay', 0],
         ];
     }
+
+    /**
+     * Add forms to available page tokens.
+     *
+     * @param PageBuilderEvent $event
+     */
+    public function onPageBuild(Events\PageBuilderEvent $event)
+    {
+        if ($event->tokensRequested($this->recombeeHelper->getRecombeeRegex())) {
+            $tokenHelper = new BuilderTokenHelper($this->factory, 'recombee');
+            $event->addTokensFromHelper($tokenHelper, $this->recombeeHelper->getRecombeeRegex(), 'name', 'id', true);
+        }
+    }
+
 
     /**
      * Trigger actions for page hits.
@@ -92,16 +116,23 @@ class PageSubscriber extends CommonSubscriber
      */
     public function onPageHit(PageHitEvent $event)
     {
+        $hit      = $event->getHit();
+        if (!$hit->getRedirect() && !$hit->getEmail()) {
+            $response = $this->eventModel->triggerEvent('recombee.focus.insert', ['hit' => $hit]);
+        }
+
         $request = $event->getRequest();
         if (!empty($request->get('Recombee'))) {
             $commands = \GuzzleHttp\json_decode($request->get('Recombee'), true);
             foreach ($commands as $apiRequest => $options) {
+                // try get userId If not set directly from tracking code
                 if (!isset($options['userId'])) {
                     $options['userId'] = $event->getLead()->getId();
                 }
                 $this->apiCommands->callCommand($apiRequest, $options);
             }
         }
+
     }
 
     /**
@@ -110,7 +141,7 @@ class PageSubscriber extends CommonSubscriber
     public function onPageDisplay(Events\PageDisplayEvent $event)
     {
         if ($event->getPage()) {
-            $event->setContent($this->recombeeTokenReplacer->replacePageTokens($event->getContent()));
+            $event->setContent($this->recombeeTokenReplacer->replaceTokensFromContent($event->getContent()));
         }
     }
 }

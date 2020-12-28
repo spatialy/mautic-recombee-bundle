@@ -5,7 +5,9 @@ namespace MauticPlugin\MauticRecombeeBundle\Command;
 use Mautic\CoreBundle\Translation\Translator;
 use Mautic\LeadBundle\Entity\Lead;
 use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\PluginBundle\Entity\IntegrationEntity;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
+use Mautic\PluginBundle\Model\IntegrationEntityModel;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiUserItemsInteractions;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
@@ -40,7 +42,7 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
      */
     protected function configure()
     {
-        $this->setName('mautic:integration:recombee:import')
+        $this->setName('mautic:recombee:import')
             ->setDescription('Import data to Recombee')
             ->addOption(
                 '--type',
@@ -56,6 +58,27 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
             );
 
         parent::configure();
+    }
+
+    /**
+     * @param $date
+     * @param $integrationEntityId
+     * @param $internalEntityId
+     * @param $integrationEntityName
+     * @param $internalEntityName
+     *
+     * @return IntegrationEntity
+     */
+    private function createIntegrationEntity($date, $integrationName, $integrationEntityName, $internalEntityName)
+    {
+        $integrationEntity = new IntegrationEntity();
+        $integrationEntity->setDateAdded($date);
+        $integrationEntity->setLastSyncDate($date);
+        $integrationEntity->setIntegration($integrationName);
+        $integrationEntity->setIntegrationEntity($integrationEntityName);
+        $integrationEntity->setInternalEntity($internalEntityName);
+
+        return $integrationEntity;
     }
 
     /**
@@ -114,21 +137,6 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
             );
         }
 
-        if ($type === 'items') {
-            $integrationKeys = $integrationObject->getKeys();
-            $file            = $integrationKeys['import_items'];
-            if (empty($file)) {
-                return $output->writeln(
-                    sprintf(
-                        '<error>ERROR:</error> <info>'.$translator->trans(
-                            'mautic.plugin.recombee.command.option.required',
-                            ['%file' => 'file', 'actions' => 'items']
-                        )
-                    )
-                );
-            }
-        }
-
         if ($type !== 'contacts') {
             if (empty($file)) {
                 return $output->writeln(
@@ -173,28 +181,77 @@ class PushDataToRecombeeCommand extends ContainerAwareCommand
         //$integrationEntity = $em->getRepository(IntegrationEntity::class)->findOneBy($criteria);
         /** @var ApiCommands $serviceApiCommands */
         $serviceApiCommands = $this->getContainer()->get('mautic.recombee.service.api.commands');
+        /** @var IntegrationEntityModel $integrationEntityModel */
+        $integrationEntityModel = $this->getContainer()->get('mautic.plugin.model.integration_entity');
         switch ($type) {
             case "items":
                 $serviceApiCommands->ImportItems($items);
                 break;
             case "contacts":
-                /** @var LeadModel $leadModel */
-                $leadModel = $this->getContainer()->get('mautic.lead.model.lead');
-                $leads     = $leadModel->getEntities(
-                    [
-                        'limit'              => 990,
-                        'orderBy'            => 'l.id',
-                        'orderByDir'         => 'asc',
-                        'withPrimaryCompany' => true,
-                        'withChannelRules'   => true,
-                    ]
-                );
-                /** @var Lead $lead */
-                $items = [];
-                foreach ($leads as $lead) {
-                    $items[$lead->getId()] = $lead->getProfileFields();
+
+                $criteria['integrationEntity'] = 'users';
+                $criteria['internalEntity']    = 'lead';
+                $criteria['integration']       = $integrationObject->getName();
+                /** @var IntegrationEntity $integrationEntity */
+                $integrationEntity = $integrationObject->getIntegrationEntityRepository()->findOneBy($criteria);
+                $filter            = [];
+                if (!$integrationEntity) {
+                    $integrationEntity = $this->createIntegrationEntity(
+                        new \DateTime(),
+                        $integrationObject->getName(),
+                        'users',
+                        'lead'
+                    );
+                    $integrationEntityModel->saveEntity($integrationEntity);
+                } else {
+                    $filter['force'][] = [
+                        'column' => 'l.date_modified',
+                        'expr'   => 'gt',
+                        'value'  => $integrationEntity->getLastSyncDate()->format('Y-m-d H:i:s'),
+                    ];
+                    $integrationEntityModel->getEntityByIdAndSetSyncDate($integrationEntity->getId(), new \DateTime());
+                    $integrationEntityModel->saveEntity($integrationEntity);
                 }
-                $serviceApiCommands->ImportUser($items);
+
+
+                $start = 0;
+                $limit = 100;
+                $items = ['init'];
+                while (count($items) > 0) {
+                    try {
+                        /** @var LeadModel $leadModel */
+                        $leadModel = $this->getContainer()->get('mautic.lead.model.lead');
+                        $leads     = $leadModel->getEntities(
+                            [
+                                'filter'     => $filter,
+                                'start'      => $start,
+                                'limit'      => $limit,
+                                'orderBy'    => 'l.id',
+                                'orderByDir' => 'asc',
+                            ]
+                        );
+                        /** @var Lead $lead */
+                        $items = [];
+                        if (!empty($leads)) {
+                            foreach ($leads as $lead) {
+                                $items[$lead->getId()] = $lead->getProfileFields();
+                            }
+                            $serviceApiCommands->ImportUser($items);
+                            /*if ($serviceApiCommands->hasCommandOutput()) {
+                                $this->displayCmdTextFromResult(
+                                    $serviceApiCommands->getCommandOutput(),
+                                    'user property values',
+                                    $output
+                                );
+                            }*/
+                        }
+                    } catch (\Exception $e) {
+
+                    }
+                    $start += count($items);
+                }
+                $output->write($translator->trans('mautic.plugin.recombee.integration.total.processed').': '.$start);
+                return;
                 break;
         }
 

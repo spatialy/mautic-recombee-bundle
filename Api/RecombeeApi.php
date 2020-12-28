@@ -11,6 +11,8 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Api;
 
+use Mautic\CoreBundle\Helper\CoreParametersHelper;
+use Mautic\CoreBundle\Templating\Helper\VersionHelper;
 use Mautic\PageBundle\Model\TrackableModel;
 use Mautic\PluginBundle\Helper\IntegrationHelper;
 use Monolog\Logger;
@@ -29,6 +31,21 @@ class RecombeeApi extends AbstractRecombeeApi
      */
     protected $logger;
 
+    /**
+     * @var CoreParametersHelper
+     */
+    private $coreParametersHelper;
+
+    /**
+     * @var IntegrationHelper
+     */
+    private $integrationHelper;
+
+    /**
+     * @var VersionHelper
+     */
+    private $versionHelper;
+
 
     /**
      * TwilioApi constructor.
@@ -36,28 +53,52 @@ class RecombeeApi extends AbstractRecombeeApi
      * @param TrackableModel    $pageTrackableModel
      * @param IntegrationHelper $integrationHelper
      * @param Logger            $logger
+     * @param VersionHelper     $versionHelper
+     *
+     * @internal param CoreParametersHelper $coreParametersHelper
      */
     public function __construct(
         TrackableModel $pageTrackableModel,
         IntegrationHelper $integrationHelper,
-        Logger $logger
+        Logger $logger,
+        VersionHelper $versionHelper
     ) {
         $this->logger = $logger;
 
         $integration = $integrationHelper->getIntegrationObject('Recombee');
-
-        if ($integration && $integration->getIntegrationSettings()->getIsPublished()) {
+        if (($integration && $integration->getIntegrationSettings()->getIsPublished()) || isset($_POST['integration_details'])) {
 
             $keys = $integration->getDecryptedApiKeys();
 
-            if (isset($keys['database']) && isset($keys['secret_key'])) {
-                $this->client = new Client(
-                    $keys['database'], $keys['secret_key'], 'https', ['serviceName' => 'mautic']
-                );
+            if (!empty($_POST['integration_details']['apiKeys'])) {
+                $keys = $_POST['integration_details']['apiKeys'];
             }
+            if (empty($keys['database']) && empty($keys['secret_key'])) {
+                $keys['database']   = trim(getenv('d'));
+                $keys['secret_key'] = trim(getenv('s'));
+            }
+
         }
 
+        $database = '';
+        if (!empty($keys['database'])) {
+            $database = $keys['database'];
+        }
+
+        $secretKey = '';
+        if (!empty($keys['secret_key'])) {
+            $secretKey = $keys['secret_key'];
+        }
+
+        $this->client = new Client(
+            $database,
+            $secretKey,
+            'https',
+            ['serviceName' => 'Mautic '.$versionHelper->getVersion()]
+        );
         parent::__construct($pageTrackableModel);
+        $this->integrationHelper = $integrationHelper;
+        $this->versionHelper = $versionHelper;
     }
 
     /**

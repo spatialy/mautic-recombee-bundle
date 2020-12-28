@@ -13,17 +13,20 @@ namespace MauticPlugin\MauticRecombeeBundle\Controller;
 
 use Mautic\CoreBundle\Exception as MauticException;
 use Mautic\CoreBundle\Controller\AbstractStandardFormController;
+use Mautic\LeadBundle\Model\LeadModel;
+use Mautic\LeadBundle\Tracker\ContactTracker;
 use Mautic\PageBundle\Event\PageDisplayEvent;
+use MauticPlugin\MauticRecombeeBundle\Api\Service\ApiCommands;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Helper\RecombeeHelper;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 use Recombee\RecommApi\Requests as Reqs;
 use Recombee\RecommApi\Exceptions as Ex;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class RecombeeController extends AbstractStandardFormController
 {
-
-    private $sessionName = 'mautic.recombee.example';
 
     /**
      * {@inheritdoc}
@@ -103,39 +106,6 @@ class RecombeeController extends AbstractStandardFormController
      */
     public function indexAction($page = 1)
     {
-
-        /** @var RecombeeHelper $recombeeHelper */
-            //  $recombeeHelper = $this->get('mautic.recombee.helper');
-            // $content = '<div><div class="mautic-recombee" data-type="RecommendItemsToItem" data-id="1" data-user-id="65" data-item-id="1"></div></div>';
-            // $content = '<div>{Recombee=1|type=RecommendItemsToItem|user-id=1|item-id=1}</div>';
-        //$recombeeHelper->findTokenToReplace($content);
-//         $recombeeHelper->tokenReplace($content);
-         $template = $this->get('twig')->createTemplate('Hello, {{ name }}');
-//         preg_match_all('/\{\%\s*([^\%\}]*)\s*\%\}|\{\{\s*([^\}\}]*)\s*\}\}/i', ' <p>{{ item.price }}
-// {{ item.url }}
-// {{ item.product }}</p>', $matches);
-//         die(print_r($matches));
-//
-//         $output = $template->render(['name' => 'Bob']);
-//          echo $output;
-//          die();
-
-        /** @var RecombeeHelper $recombeeHelper */
-        /* $recombeeHelper = $this->get('mautic.recombee.helper');
-         try {
-             $response = $recombeeHelper->getClient()->send(new Reqs\AddCartAddition(2, 1000, [ //optional parameters:
-                 'timestamp' => '1519250246',
-                 'cascadeCreate' => true,
-                 'amount' => 1,
-                 'price' => 250,
-             ]));
-         } catch (Ex\ApiException $e) {
-             echo $e->getCode();
-             $response = $e->getMessage();
-         }
-         die(print_r($response));
-         die();*/
-
         return $this->indexStandard($page);
     }
 
@@ -154,11 +124,21 @@ class RecombeeController extends AbstractStandardFormController
      */
     public function viewAction($objectId)
     {
-        if (empty($objectId)) {
-            return $this->newStandard();
-        }else{
-            return $this->editAction($objectId);
-        }
+        //set the page we came from
+        $page = $this->get('session')->get('mautic.recombee.page', 1);
+        $returnUrl = $this->generateUrl('mautic_recombee_index', ['page' => $page]);
+
+        return $this->postActionRedirect(
+            [
+                'returnUrl'       => $returnUrl,
+                'viewParameters'  => ['page' => $page],
+                'contentTemplate' => 'MauticRecombeeBundle:Recombee:index',
+                'passthroughVars' => [
+                    'activeLink'    => '#mautic_recombee_index',
+                    'mauticContent' => 'recombee',
+                ],
+            ]
+        );
     }
 
     /**
@@ -179,39 +159,15 @@ class RecombeeController extends AbstractStandardFormController
      */
     protected function getViewArguments(array $args, $action)
     {
-        /** @var RecombeeHelper $recombeeHelper */
-        $recombeeHelper = $this->get('mautic.recombee.helper');
+        /** @var ApiCommands $apiCommands */
+        $apiCommands    = $this->get('mautic.recombee.service.api.commands');
+        $integration    = $this->get('mautic.integration.recombee');
         $viewParameters = [];
         switch ($action) {
             case 'new':
             case 'edit':
-            case 'example':
-                $entity = $args['entity'];
-
-                $entity->setRecommendationsType('RecommendItemsToUser');
-                $params = $recombeeHelper->getRecombeeKeysFromEntity($entity);
-                $viewParameters['params'] = $params;
-                $properties = $recombeeHelper->getClient()->send(new $params['listPropertyClass']());;
-
-                /*         $template = $this->get('twig')->createTemplate($entity->getTemplate());
-                         $items = [];
-                         $items[] = ['title'=>'test title', 'description'=>'desc'];
-                         $viewParameters['templateOutput'] = $template->render(['items' => $items]);*/
-                $viewParameters['properties'] = $properties;
-
-
-                break;
-            case 'view':
-            case 'example':
-                $entity = $args['entity'];
-
-                $args['viewParameters'] = array_merge(
-                    $args['viewParameters'],
-                    [
-                        'entity' => $entity,
-                        'exampleForm' => $this->generateExampleForm($entity),
-                    ]
-                );
+                $viewParameters['properties'] = $apiCommands->callCommand('ListItemProperties');
+                $viewParameters['settings']   = $integration->getIntegrationSettings()->getFeatureSettings();
                 break;
         }
         $args['viewParameters'] = array_merge($args['viewParameters'], $viewParameters);
@@ -220,95 +176,46 @@ class RecombeeController extends AbstractStandardFormController
     }
 
     /**
-     * Generates example form and action.
-     *
-     * @param   $objectId
-     *
-     * @return array|JsonResponse|\Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
+     * @return JsonResponse
      */
-    protected function exampleAction($objectId)
+    public function processAction()
     {
-        $entity = $this->getModel($this->getModelName())->getEntity($objectId);
-
-        return $this->generateExampleForm($entity);
-    }
-
-    /**
-     * @param Recombee $entity
-     */
-    private function generateExampleForm(Recombee $entity)
-    {
-        /** RecombeeHelper $recombeeHelper  */
-        $recombeeHelper = $this->get('mautic.recombee.helper');
-        //do some default filtering
-        $leadModel = $this->getModel('lead.lead');
-        $session = $this->get('session');
-        $search = $this->request->get('search', $session->get($this->sessionName, ''));
-        $session->set($this->sessionName, $search);
-        $items = [];
-        $filter = [];
-        $search = 'tuli';
-        if (!empty($search)) {
-            $params = $recombeeHelper->getRecombeeKeysFromEntity($entity);
-            try {
-                $items = $recombeeHelper->getClient()->send(new $params['listClass']([ //optional parameters:
-                    'filter' => '"'.strtolower($search).'" in lower(\''.$params['search'].'\')',
-                    'count' => $entity->getNumberOfItems(),
-                    'offset' => 0,
-                    'returnProperties' => true,
-                    'includedProperties' => [$params['search']],
-                ]));
-            } catch (Ex\ApiException $e) {
-                echo $e->getMessage();
-            }
-        }
-
-        $choices = [];
-        foreach ($items as $i) {
-            $choices[$i[$params['key']]] = $i['name'];
-        }
-        $action = $this->generateUrl('mautic_recombee_action',
-            ['objectAction' => 'example', 'objectId' => $entity->getId()]);
-        $form = $this->get('form.factory')->create(
-            'recombee_example',
-            [],
-            [
-                'action' => $action,
-                'choices' => $choices,
-            ]
-        );
-
-        $postActionVars = [
-            'returnUrl' => $action,
-        ];
-
-        $tmpl = $this->request->get('tmpl', 'index');
-        $contentTemplate = 'MauticRecombeeBundle:Recombee:example.html.php';
-        $viewParameters = [
-            'tmpl' => $tmpl,
-            'choices' => $choices,
-            'searchValue' => $search,
-            'filter' => $filter,
-            'action' => $action,
-            'form' => $form->createView(),
-            'currentRoute' => $this->generateUrl(
-                'mautic_recombee_action',
+        if (!$this->get('mautic.security')->isAnonymous()) {
+            return new JsonResponse(
                 [
-                    'objectAction' => 'example',
-                    'objectId' => $entity->getId(),
-                ]
-            ),
-        ];
-            return $this->delegateView(
-                [
-                    'viewParameters' => $viewParameters,
-                    'contentTemplate' => $contentTemplate,
+                    'success' => 0,
                 ]
             );
-           /* return $this->renderView(
-                $contentTemplate,
-                $viewParameters
-            );*/
-    }
+        }
+        /** @var ApiCommands $apiCommands */
+        $apiCommands = $this->get('mautic.recombee.service.api.commands');
+        /** @var LeadModel $leadModel */
+        $leadModel = $this->get('mautic.lead.model.lead');
+        $lead      = $leadModel->getCurrentLead();
 
+
+        /** @var ContactTracker $contactTracker */
+        //$contactTracker = $this->get('mautic.tracker.contact');
+        $options           = $this->request->request->all();
+
+        $recombee = $this->request->get('recombee');
+        $requests = json_decode(base64_decode($recombee), true);
+        $response = [];
+        foreach ($requests as $request) {
+            $request = json_decode($request, true);
+            if (!is_array($request) || !isset($request['component'])) {
+                continue;
+            }
+            $component = $request['component'];
+            $request['userId'] = $lead->getId();
+            unset($request['component']);
+            $apiCommands->callCommand($component, $request);
+            $response[] = $apiCommands->getCommandOutput();
+        }
+        return new JsonResponse(
+            [
+                'response' => $response,
+            ]
+        );
+    }
 }

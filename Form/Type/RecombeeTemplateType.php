@@ -30,11 +30,11 @@ class RecombeeTemplateType extends AbstractType
             'header',
             'textarea',
             [
-                'label'    => 'mautic.plugin.recombee.page.template',
+                'label'    => 'mautic.plugin.recombee.template',
                 'required' => false,
                 'attr'     => [
                     'class' => 'recombee-template',
-                    'rows'  => 2,
+                    'rows'  => 3,
                 ],
             ]
         );
@@ -43,18 +43,11 @@ class RecombeeTemplateType extends AbstractType
             'body',
             'textarea',
             [
-                'label'       => 'mautic.plugin.recombee.page.template',
+                'label'       => 'mautic.plugin.recombee.template',
                 'required'    => true,
                 'attr'        => [
                     'class' => 'recombee-template',
-                    'rows'  => 5,
-                ],
-                'constraints' => [
-                    new NotBlank(
-                        [
-                            'message' => 'mautic.core.value.required',
-                        ]
-                    ),
+                    'rows'  => 6,
                 ],
             ]
         );
@@ -63,11 +56,11 @@ class RecombeeTemplateType extends AbstractType
             'footer',
             'textarea',
             [
-                'label'    => 'mautic.plugin.recombee.page.template',
+                'label'    => 'mautic.plugin.recombee.template',
                 'required' => false,
                 'attr'     => [
                     'class' => 'recombee-template',
-                    'rows'  => 2,
+                    'rows'  => 3,
                 ],
             ]
         );

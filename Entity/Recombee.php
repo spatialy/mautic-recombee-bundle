@@ -46,37 +46,26 @@ class Recombee extends FormEntity
      * @var \DateTime
      */
     private $publishDown;
-
-    /**
-     * @var string
-     */
-    private $filter;
-
-    /**
-     * @var string
-     */
-    private $boost;
-
     /**
      * @var int
      */
     private $numberOfItems = 9;
 
-    /**
-     * @var string
-     */
-    private $pageTemplate;
+    /** @var  string */
+    private $templateMode;
 
-
-    /**
-     * @var string
-     */
-    private $emailTemplate;
+    /** @var  string */
+    private $templateType;
 
     /**
-     * @var string
+     * @var html
      */
-    private $recommendationsType;
+    private $template;
+
+    /**
+     * @var
+     */
+    private $properties;
 
     /**
      * Recombee constructor.
@@ -114,29 +103,25 @@ class Recombee extends FormEntity
             ->nullable()
             ->build();
 
-        $builder->createField('filter', 'text')
+        $builder->createField('templateMode', 'string')
+            ->columnName('template_mode')
             ->nullable()
             ->build();
 
-        $builder->createField('boost', 'text')
+        $builder->createField('templateType', 'string')
+            ->columnName('template_type')
             ->nullable()
             ->build();
 
-        $builder->createField('pageTemplate', 'array')
-            ->columnName('page_template')
+        $builder->createField('template', 'array')
+            ->columnName('template')
             ->nullable()
             ->build();
 
-        $builder->createField('emailTemplate', 'array')
-            ->columnName('email_template')
+        $builder->createField('properties', 'array')
+            ->columnName('properties')
             ->nullable()
             ->build();
-
-        $builder->createField('recommendationsType', 'text')
-            ->columnName('recommendations_type')
-            ->nullable()
-            ->build();
-
     }
 
     /**
@@ -162,11 +147,10 @@ class Recombee extends FormEntity
             ->addProperties([
                 'publishUp',
                 'publishDown',
-                'filter',
-                'boost',
-                'boost',
-                'pageTemplate',
-                'htmlTemplate',
+                'template',
+                'templateMode',
+                'templateType',
+                'properties',
             ])
             ->build();
     }
@@ -244,39 +228,6 @@ class Recombee extends FormEntity
         return $this;
     }
 
-    /**
-     * @return string
-     */
-    public function getBoost()
-    {
-        return $this->boost;
-    }
-
-    /**
-     * @param string $boost
-     */
-    public function setBoost($boost)
-    {
-        $this->isChanged('boost', $boost);
-        $this->boost = $boost;
-    }
-
-    /**
-     * @return string
-     */
-    public function getFilter()
-    {
-        return $this->filter;
-    }
-
-    /**
-     * @param string $filter
-     */
-    public function setFilter($filter)
-    {
-        $this->isChanged('filter', $filter);
-        $this->filter = $filter;
-    }
 
     /**
      * @return int
@@ -295,54 +246,84 @@ class Recombee extends FormEntity
         $this->numberOfItems = $numberOfItems;
     }
 
+
+    /**
+     * @return mixed
+     */
+    public function getTemplate()
+    {
+        return $this->template;
+    }
+
+    /**
+     * @param mixed $template
+     */
+    public function setTemplate($template)
+    {
+        $this->isChanged('template', $template);
+        $this->template = $template;
+    }
+
+    /**
+     * @param mixed $properties
+     *
+     * @return Recombee
+     */
+    public function setProperties($properties)
+    {
+        $this->isChanged('properties', $properties);
+        $this->properties = $properties;
+
+        return $this;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getProperties()
+    {
+        return $this->properties;
+    }
+
     /**
      * @return string
      */
-    public function getPageTemplate()
+    public function getTemplateType()
     {
-        return $this->pageTemplate;
+        return $this->templateType;
     }
 
     /**
-     * @param string $pageTemplate
+     * @param string $templateType
+     *
+     * @return Recombee
      */
-    public function setPageTemplate($pageTemplate)
+    public function setTemplateType($templateType)
     {
-        $this->isChanged('pageTemplate', $pageTemplate);
-        $this->pageTemplate = $pageTemplate;
-    }
+        $this->isChanged('templateType', $templateType);
+        $this->templateType = $templateType;
 
-    /**
-     * @return string
-     */
-    public function getEmailTemplate()
-    {
-        return $this->emailTemplate;
-    }
-
-    /**
-     * @param string $emailTemplate
-     */
-    public function setEmailTemplate($emailTemplate)
-    {
-        $this->isChanged('emailTemplate', $emailTemplate);
-        $this->emailTemplate = $emailTemplate;
+        return $this;
     }
 
     /**
      * @return string
      */
-    public function getRecommendationsType()
+    public function getTemplateMode()
     {
-        return $this->recommendationsType;
+        return $this->templateMode;
     }
 
     /**
-     * @param string $recommendationsType
+     * @param string $templateMode
+     *
+     * @return Recombee
      */
-    public function setRecommendationsType($recommendationsType)
+    public function setTemplateMode($templateMode)
     {
-        $this->isChanged('recommendationsType', $recommendationsType);
-        $this->recommendationsType = $recommendationsType;
+        $this->isChanged('templateMode', $templateMode);
+        $this->templateMode = $templateMode;
+
+        return $this;
     }
 }

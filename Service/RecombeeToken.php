@@ -11,9 +11,8 @@
 
 namespace MauticPlugin\MauticRecombeeBundle\Service;
 
-use Mautic\LeadBundle\Entity\Lead;
-use Mautic\LeadBundle\Tracker\ContactTracker;
-use Mautic\LeadBundle\Tracker\Service\DeviceTrackingService\DeviceTrackingService;
+use Mautic\CampaignBundle\Model\CampaignModel;
+use Mautic\LeadBundle\Model\LeadModel;
 use MauticPlugin\MauticRecombeeBundle\Entity\Recombee;
 use MauticPlugin\MauticRecombeeBundle\Model\RecombeeModel;
 
@@ -47,23 +46,50 @@ class RecombeeToken
      */
     private $contactTracker;
 
+    /**
+     * @var array
+     */
+    private $addOptions = [];
+
+    /**
+     * @var
+     */
+    private $event;
+
+    /**
+     * @var CampaignModel
+     */
+    private $campaignModel;
+
+    /**
+     * @var
+     */
+    private $minAge;
+
+    /**
+     * @var LeadModel
+     */
+    private $leadModel;
+
 
     /**
      * RecombeeToken constructor.
      *
-     * @param RecombeeModel  $recombeeModel
-     * @param ContactTracker $contactTracker
+     * @param RecombeeModel $recombeeModel
+     * @param LeadModel     $leadModel
+     * @param CampaignModel $campaignModel
      */
-    public function __construct(RecombeeModel $recombeeModel, ContactTracker $contactTracker)
+    public function __construct(RecombeeModel $recombeeModel, LeadModel $leadModel, CampaignModel $campaignModel)
     {
         $this->recombeeModel  = $recombeeModel;
-        $this->contactTracker = $contactTracker;
+        $this->campaignModel = $campaignModel;
+        $this->leadModel = $leadModel;
     }
 
 
     public function setToken($values)
     {
-        $this->setIsToken(true);
+        $this->setIsToken(TRUE);
         foreach ($values as $key => $value) {
             $setter = 'set'.ucfirst($key);
             if (method_exists($this, $setter)) {
@@ -71,7 +97,6 @@ class RecombeeToken
             }
         }
     }
-
 
     /**
      * @param $tokenValue
@@ -104,6 +129,7 @@ class RecombeeToken
      */
     public function getType()
     {
+        // default type
         if (!$this->type) {
             return 'RecommendItemsToUser';
         }
@@ -125,7 +151,7 @@ class RecombeeToken
     public function getUserId()
     {
         if (!$this->userId) {
-            if ($lead = $this->contactTracker->getContact()) {
+            if ($lead = $this->leadModel->getCurrentLead()) {
                 return $lead->getId();
             }
         }
@@ -219,7 +245,7 @@ class RecombeeToken
     /**
      * @param boolean $isToken
      */
-    public function setIsToken(bool $isToken)
+    public function setIsToken($isToken)
     {
         $this->isToken = $isToken;
     }
@@ -239,6 +265,72 @@ class RecombeeToken
     {
         $this->entity = $entity;
     }
+
+    public function getOptions($addKeys = [])
+    {
+        // use default set of keys
+        if ($addKeys === true) {
+            $addKeys = ['itemsId', 'userId', 'limit'];
+        }
+        $tokenOptions = [];
+
+        foreach ($addKeys as $key) {
+            $getter = 'get'.ucfirst($key);
+            if (method_exists($this, $getter)) {
+                $tokenOptions[$key] = $this->$getter();
+            }
+        }
+        return array_merge($tokenOptions, $this->getAddOptions());
+    }
+
+    /**
+     * @return array
+     */
+    public function getAddOptions()
+    {
+        return $this->addOptions;
+    }
+
+    /**
+     * @param array $addOptions
+     */
+    public function setAddOptions(array $addOptions)
+    {
+        $this->addOptions = array_merge($this->addOptions, $addOptions);
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getEvent()
+    {
+        return $this->event;
+    }
+
+    /**
+     * @param mixed $event
+     */
+    public function setEvent($event)
+    {
+        $this->event = $event;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getMinAge()
+    {
+        return $this->minAge;
+    }
+
+    /**
+     * @param mixed $minAge
+     */
+    public function setMinAge($minAge)
+    {
+        $this->minAge = $minAge;
+    }
+
 
 
 }

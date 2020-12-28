@@ -21,10 +21,10 @@ class RecombeeTokenFinder
 
     private $recombeeTokens = [];
 
-    private $recombeeRegex = '{Recombee=(.*?)}';
+    private $recombeeRegex = '{recombee=(.*?)}';
 
     /**
-     * @var \MauticPlugin\MauticRecombeeBundle\Service\RecombeeToken
+     * @var RecombeeToken
      */
     private $recombeeToken;
 
@@ -33,7 +33,6 @@ class RecombeeTokenFinder
     {
         $this->recombeeToken = $recombeeToken;
     }
-
 
     public function findTokens($content)
     {
@@ -51,10 +50,11 @@ class RecombeeTokenFinder
         return $this->recombeeTokens;
     }
 
+
     /**
      * @return array
      */
-    public function getRecombeeTokens(): array
+    public function getRecombeeTokens()
     {
         return $this->recombeeTokens;
     }
